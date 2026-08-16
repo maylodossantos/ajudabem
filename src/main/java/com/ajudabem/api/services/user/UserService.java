@@ -9,6 +9,7 @@ import com.ajudabem.api.dto.user.UpdateUserRequestDTO;
 import com.ajudabem.api.dto.user.UserResponseDTO;
 import com.ajudabem.api.exceptions.InvalidPasswordException;
 import com.ajudabem.api.exceptions.UserNotFoundException;
+import com.ajudabem.api.mappers.UserMapper;
 import com.ajudabem.api.repositories.UserRepository;
 import com.ajudabem.api.infra.security.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private final UserRepository repository;
+    private final UserMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
     private final CurrentUserService currentUserService;
@@ -67,28 +69,18 @@ public class UserService {
 
         User user = currentUserService.get();
 
-        return UserResponseDTO.fromEntity(user);
+        return mapper.toResponse(user);
     }
 
     public UserResponseDTO updateCurrentUser(UpdateUserRequestDTO dto) {
 
         User user = currentUserService.get();
 
-        if (dto.name() != null) {
-            user.setName(dto.name());
-        }
-
-        if (dto.phone() != null) {
-            user.setPhone(dto.phone());
-        }
-
-        if (dto.profileImage() != null) {
-            user.setProfile_image(dto.profileImage());
-        }
+        mapper.updateEntity(dto, user);
 
         repository.save(user);
 
-        return UserResponseDTO.fromEntity(user);
+        return mapper.toResponse(user);
     }
 
     public void deleteMe() {

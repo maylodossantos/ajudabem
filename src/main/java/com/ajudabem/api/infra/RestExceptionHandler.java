@@ -2,6 +2,7 @@ package com.ajudabem.api.infra;
 
 import com.ajudabem.api.dto.ErrorResponseDTO;
 import com.ajudabem.api.exceptions.InvalidPasswordException;
+import com.ajudabem.api.exceptions.InvalidTokenException;
 import com.ajudabem.api.exceptions.UserNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -27,6 +28,16 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidPasswordException.class)
     public ResponseEntity<ErrorResponseDTO> invalidPasswordHandler(InvalidPasswordException exception) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponseDTO(
+                        exception.getMessage(),
+                        HttpStatus.UNAUTHORIZED.value(),
+                        LocalDateTime.now()
+                ));
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<ErrorResponseDTO> invalidTokenHandler(InvalidTokenException exception) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ErrorResponseDTO(
                         exception.getMessage(),

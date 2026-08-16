@@ -3,10 +3,10 @@ package com.ajudabem.api.services.assisted_person;
 import com.ajudabem.api.domains.assisted_person.AssistedPerson;
 import com.ajudabem.api.domains.assisted_person.AssistedPersonTag;
 import com.ajudabem.api.domains.assisted_person.RiskLevel;
-import com.ajudabem.api.domains.assisted_person.Tag;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.dto.assited_person.AssistedPersonRequestDTO;
 import com.ajudabem.api.dto.assited_person.AssistedPersonResponseDTO;
+import com.ajudabem.api.mappers.AssistedPersonMapper;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.AssistedPersonTagRepository;
 import com.ajudabem.api.repositories.TagRepository;
@@ -16,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -25,38 +27,29 @@ public class AssistedPersonService {
     private final AssistedPersonTagRepository assistedPersonTagRepository;
     private final CurrentUserService currentUserService;
     private final TagRepository tagRepository;
+    private final AssistedPersonMapper mapper;
 
+    @Transactional
     public AssistedPersonResponseDTO createAssistedPerson(AssistedPersonRequestDTO dto) {
+
         User user = currentUserService.get();
 
-        AssistedPerson newAssistedPerson = new AssistedPerson();
-        List<Tag> tags = tagRepository.findAllById(dto.tagIds());
+        //-> person
 
-        newAssistedPerson.setAuthor(user);
+        AssistedPerson assistedPerson = mapper.toEntity(dto);
 
-        newAssistedPerson.setFull_name(dto.full_name());
-        newAssistedPerson.setAge(dto.age());
-        newAssistedPerson.setGender(dto.gender());
-        newAssistedPerson.setNotes(dto.notes());
+        assistedPerson.setAuthor(user);
+        assistedPerson.setRiskLevel(RiskLevel.MEDIUM);
 
-        newAssistedPerson.setRiskLevel(RiskLevel.MEDIUM);
+        assistedPersonRepository.save(assistedPerson);
 
-        newAssistedPerson.setStreet(dto.street());
-        newAssistedPerson.setNumber(dto.number());
-        newAssistedPerson.setNeighborhood(dto.neighborhood());
-        newAssistedPerson.setCity(dto.city());
-        newAssistedPerson.setState(dto.state());
-        newAssistedPerson.setCountry(dto.country());
+        //-> tags
 
-        assistedPersonRepository.save(newAssistedPerson);
+        List<AssistedPersonTag> tags = createTags(assistedPerson, dto.tagIds());
 
-        List<AssistedPersonTag> assistedPersonTags = tags.stream()
-                .map(tag -> new AssistedPersonTag(newAssistedPerson, tag))
-                .toList();
+        assistedPersonTagRepository.saveAll(tags);
 
-        assistedPersonTagRepository.saveAll(assistedPersonTags);
-
-        return AssistedPersonResponseDTO.fromEntity(newAssistedPerson, assistedPersonTags);
+        return mapper.toResponse(assistedPerson, tags);
     }
 
     @Transactional
@@ -65,42 +58,36 @@ public class AssistedPersonService {
         AssistedPerson assistedPerson = assistedPersonRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Assisted person is not exists"));
 
-        List<AssistedPersonTag> newTags = assistedPersonTagRepository.findByAssistedPerson(assistedPerson);
+        //-> person
 
-        if (dto.full_name() != null) assistedPerson.setFull_name(dto.full_name());
-        if (dto.age() != null) assistedPerson.setAge(dto.age());
-        if (dto.gender() != null) assistedPerson.setGender(dto.gender());
-        if (dto.notes() != null) assistedPerson.setNotes(dto.notes());
-        if (dto.street() != null) assistedPerson.setStreet(dto.street());
-        if (dto.number() != null) assistedPerson.setNumber(dto.number());
-        if (dto.neighborhood() != null) assistedPerson.setNeighborhood(dto.neighborhood());
-        if (dto.city() != null) assistedPerson.setCity(dto.city());
-        if (dto.state() != null) assistedPerson.setState(dto.state());
-        if (dto.country() != null) assistedPerson.setCountry(dto.country());
-        if (dto.tagIds() != null) {
-            assistedPersonTagRepository.deleteByAssistedPerson(assistedPerson);
-            List<Tag> tags = tagRepository.findAllById(dto.tagIds());
-            newTags = tags.stream()
-                    .map(tag -> new AssistedPersonTag(assistedPerson, tag))
-                    .toList();
-            assistedPersonTagRepository.saveAll(newTags);
-        }
+        mapper.updateEntity(dto, assistedPerson);
+
+        //-> tags
+
+        assistedPersonTagRepository.deleteByAssistedPerson(assistedPerson);
+        List<AssistedPersonTag> tags = createTags(assistedPerson, dto.tagIds());
+        assistedPersonTagRepository.saveAll(tags);
 
         assistedPersonRepository.save(assistedPerson);
 
-        return AssistedPersonResponseDTO.fromEntity(assistedPerson, newTags);
+        return mapper.toResponse(assistedPerson, tags);
     }
 
     public List<AssistedPersonResponseDTO> getAll() {
-        List<AssistedPerson> assistedPersonList = assistedPersonRepository.findAll();
-        List<AssistedPersonTag> assistedPersonTags = assistedPersonTagRepository.findAll();
+        List<AssistedPerson> assistedPerson= assistedPersonRepository.findAll();
+        List<AssistedPersonTag> tags = assistedPersonTagRepository.findAll();
 
-        return assistedPersonList.stream()
+        Map<Long, List<AssistedPersonTag>> tagsByPerson = tags.stream()
+                .collect(Collectors.groupingBy(
+                        tag -> tag.getAssistedPerson().getId()
+                ));
+
+        return assistedPerson.stream()
                 .map(person -> {
-                    List<AssistedPersonTag> personTags = assistedPersonTags.stream()
-                            .filter(apt -> apt.getAssistedPerson().getId().equals(person.getId()))
-                            .toList();
-                    return AssistedPersonResponseDTO.fromEntity(person, personTags);
+                    List<AssistedPersonTag> personTags =
+                            tagsByPerson.getOrDefault(person.getId(), List.of());
+
+                    return mapper.toResponse(person, personTags);
                 })
                 .toList();
     }
@@ -108,9 +95,18 @@ public class AssistedPersonService {
     public AssistedPersonResponseDTO getAssistedPerson(Long id) {
         AssistedPerson assistedPerson = assistedPersonRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Assisted person is not exists"));
-        List<AssistedPersonTag> tags = assistedPersonTagRepository.findByAssistedPerson(assistedPerson);
 
-        return AssistedPersonResponseDTO.fromEntity(assistedPerson, tags);
+        List<AssistedPersonTag> tags =
+                assistedPersonTagRepository.findByAssistedPerson(assistedPerson);
+
+        return mapper.toResponse(assistedPerson, tags);
+    }
+
+    private List<AssistedPersonTag> createTags(AssistedPerson person, List<Long> tagIds) {
+        return tagRepository.findAllById(tagIds)
+                .stream()
+                .map(tag -> new AssistedPersonTag(person, tag))
+                .toList();
     }
 
 }

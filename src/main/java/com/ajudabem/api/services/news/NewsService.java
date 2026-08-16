@@ -5,6 +5,7 @@ import com.ajudabem.api.domains.news.News;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.dto.news.NewsRequestDTO;
 import com.ajudabem.api.dto.news.NewsResponseDTO;
+import com.ajudabem.api.mappers.NewsMapper;
 import com.ajudabem.api.repositories.NewsRepository;
 import com.ajudabem.api.services.user.CurrentUserService;
 import lombok.RequiredArgsConstructor;
@@ -18,20 +19,17 @@ public class NewsService {
 
     private final CurrentUserService currentUserService;
     private final NewsRepository repository;
+    private final NewsMapper mapper;
 
     public NewsResponseDTO createNews(NewsRequestDTO dto) {
         User user = currentUserService.get();
-        News newNews = new News();
 
+        News newNews = mapper.toEntity(dto);
         newNews.setAuthor(user);
-        newNews.setContent(dto.content());
-        newNews.setTitle(dto.title());
-        newNews.setSubtitle(dto.subtitle());
-        newNews.setCover_image(dto.cover_image());
 
         repository.save(newNews);
 
-        return NewsResponseDTO.fromEntity(newNews);
+        return mapper.toResponse(newNews);
     }
 
     public NewsResponseDTO updateNews(NewsRequestDTO dto, Long id) {
@@ -39,21 +37,18 @@ public class NewsService {
         News news = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("News is not exists"));
 
-        if(dto.content() != null) news.setContent(dto.content());
-        if(dto.title() != null) news.setTitle(dto.title());
-        if(dto.subtitle() != null) news.setSubtitle(dto.subtitle());
-        if(dto.cover_image() != null) news.setCover_image(dto.cover_image());
+        mapper.updateEntity(dto, news);
 
         repository.save(news);
 
-        return NewsResponseDTO.fromEntity(news);
+        return mapper.toResponse(news);
     }
 
     public List<NewsResponseDTO> getAll() {
         List<News> newsList = repository.findAll();
 
         return newsList.stream()
-                .map(NewsResponseDTO::fromEntity)
+                .map(mapper::toResponse)
                 .toList();
     }
 
@@ -61,6 +56,7 @@ public class NewsService {
         News news = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("News is not exists"));
 
-        return NewsResponseDTO.fromEntity(news);
+        return mapper.toResponse(news);
     }
+
 }

@@ -1,6 +1,7 @@
 package com.ajudabem.api.infra.security;
 
 import com.ajudabem.api.domains.user.User;
+import com.ajudabem.api.exceptions.InvalidTokenException;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
