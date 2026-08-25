@@ -4,6 +4,7 @@ import com.ajudabem.api.dto.user.UpdateUserRequestDTO;
 import com.ajudabem.api.dto.user.UserResponseDTO;
 import com.ajudabem.api.services.user.UserService;
 import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +21,7 @@ public class UserController {
     }
 
     @PutMapping("/me")
-    public ResponseEntity<UserResponseDTO> updateMe(UpdateUserRequestDTO body) {
+    public ResponseEntity<UserResponseDTO> updateMe(@Valid @RequestBody UpdateUserRequestDTO body) {
         return ResponseEntity.ok(userService.updateCurrentUser(body));
     }
 
