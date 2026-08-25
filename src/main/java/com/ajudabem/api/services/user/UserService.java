@@ -7,7 +7,9 @@ import com.ajudabem.api.dto.auth.RegisterRequestDTO;
 import com.ajudabem.api.dto.auth.ResponseDTO;
 import com.ajudabem.api.dto.user.UpdateUserRequestDTO;
 import com.ajudabem.api.dto.user.UserResponseDTO;
+import com.ajudabem.api.exceptions.EmailAlreadyExistsException;
 import com.ajudabem.api.exceptions.InvalidPasswordException;
+import com.ajudabem.api.exceptions.UserAlreadyDeletedException;
 import com.ajudabem.api.exceptions.UserNotFoundException;
 import com.ajudabem.api.mappers.UserMapper;
 import com.ajudabem.api.repositories.UserRepository;
@@ -31,7 +33,7 @@ public class UserService {
     public ResponseDTO register(RegisterRequestDTO dto) {
 
         if (repository.findByEmail(dto.email()).isPresent()) {
-            throw new RuntimeException("Email is using");
+            throw new EmailAlreadyExistsException("Email is using");
         }
 
         User newUser = new User();
@@ -87,10 +89,11 @@ public class UserService {
         User user = currentUserService.get();
 
         if(user.getDeleted()) {
-            throw new RuntimeException("User already deleted");
+            throw new UserAlreadyDeletedException("User already deleted");
         }
 
         user.softDelete();
+        repository.save(user);
     }
 
 }

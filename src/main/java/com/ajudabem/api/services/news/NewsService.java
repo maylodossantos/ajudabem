@@ -5,6 +5,7 @@ import com.ajudabem.api.domains.news.News;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.dto.news.NewsRequestDTO;
 import com.ajudabem.api.dto.news.NewsResponseDTO;
+import com.ajudabem.api.exceptions.NewsNotFoundException;
 import com.ajudabem.api.mappers.NewsMapper;
 import com.ajudabem.api.repositories.NewsRepository;
 import com.ajudabem.api.services.user.CurrentUserService;
@@ -35,7 +36,7 @@ public class NewsService {
     public NewsResponseDTO updateNews(NewsRequestDTO dto, Long id) {
 
         News news = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("News is not exists"));
+                .orElseThrow(() -> new NewsNotFoundException("News is not exists"));
 
         mapper.updateEntity(dto, news);
 
@@ -54,9 +55,17 @@ public class NewsService {
 
     public NewsResponseDTO getNews(Long id) {
         News news = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("News is not exists"));
+                .orElseThrow(() -> new NewsNotFoundException("News is not exists"));
 
         return mapper.toResponse(news);
+    }
+
+    public void deleteNews(Long id) {
+        News news = repository.findById(id)
+                .orElseThrow(() -> new NewsNotFoundException("News is not exists"));
+
+        news.softDelete();
+        repository.save(news);
     }
 
 }

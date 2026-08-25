@@ -6,6 +6,7 @@ import com.ajudabem.api.domains.assisted_person.RiskLevel;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.dto.assited_person.AssistedPersonRequestDTO;
 import com.ajudabem.api.dto.assited_person.AssistedPersonResponseDTO;
+import com.ajudabem.api.exceptions.AssistedPersonNotFoundException;
 import com.ajudabem.api.mappers.AssistedPersonMapper;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.AssistedPersonTagRepository;
@@ -56,7 +57,7 @@ public class AssistedPersonService {
     public AssistedPersonResponseDTO updateAssistedPerson(AssistedPersonRequestDTO dto, Long id) {
 
         AssistedPerson assistedPerson = assistedPersonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assisted person is not exists"));
+                .orElseThrow(() -> new AssistedPersonNotFoundException("Assisted person is not exists"));
 
         //-> person
 
@@ -94,12 +95,21 @@ public class AssistedPersonService {
 
     public AssistedPersonResponseDTO getAssistedPerson(Long id) {
         AssistedPerson assistedPerson = assistedPersonRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Assisted person is not exists"));
+                .orElseThrow(() -> new AssistedPersonNotFoundException("Assisted person is not exists"));
 
         List<AssistedPersonTag> tags =
                 assistedPersonTagRepository.findByAssistedPerson(assistedPerson);
 
         return mapper.toResponse(assistedPerson, tags);
+    }
+
+    @Transactional
+    public void deleteAssistedPerson(Long id) {
+        AssistedPerson assistedPerson = assistedPersonRepository.findById(id)
+                .orElseThrow(() -> new AssistedPersonNotFoundException("Assisted person is not exists"));
+
+        assistedPerson.softDelete();
+        assistedPersonRepository.save(assistedPerson);
     }
 
     private List<AssistedPersonTag> createTags(AssistedPerson person, List<Long> tagIds) {
