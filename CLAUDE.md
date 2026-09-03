@@ -13,6 +13,7 @@ Maven wrapper (`mvnw.cmd` on Windows, `mvnw` on Unix). `JAVA_HOME` is often not 
 $env:JAVA_HOME = "C:\Users\Maylo\.jdks\ms-17.0.20.1"
 ```
 
+- Start local Postgres: `docker compose up -d db` (required before `spring-boot:run`; not required for `test`, see Persistence below)
 - Build: `./mvnw.cmd compile`
 - Run: `./mvnw.cmd spring-boot:run`
 - Test: `./mvnw.cmd test`
@@ -20,6 +21,12 @@ $env:JAVA_HOME = "C:\Users\Maylo\.jdks\ms-17.0.20.1"
 - Package: `./mvnw.cmd package`
 
 Only `ApiApplicationTests` (a default context-load test) exists — there is no feature-level test suite yet.
+
+## Commit convention
+
+`<tipo>: <descrição curta no imperativo>` — one line, no body/description. Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
+
+Example: `chore: migrate persistence from H2 to PostgreSQL with Flyway and Docker Compose`
 
 ## Architecture
 
@@ -32,6 +39,6 @@ Only `ApiApplicationTests` (a default context-load test) exists — there is no 
   - Domain exceptions live flat in `exceptions/` — one class per case, extends `RuntimeException`, single `String message` constructor (e.g. `UserNotFoundException`, `EmailAlreadyExistsException`). New "not found"/"conflict" cases should get their own exception class + a handler here, not a bare `RuntimeException` (those fall through to a generic 500).
   - Exception messages and all other backend-internal strings are in **English**, matching the rest of the codebase.
   - Bean Validation (`@Valid` on `@RequestBody` params + `jakarta.validation.constraints` on the DTO record components) drives request validation. Validation failures use a different shape than other errors — `{status, message: "Erro de validação", errors: {field: message}}` (`ValidationErrorResponseDTO`, built by overriding `handleMethodArgumentNotValid`). The `errors` map's field messages are in **Portuguese** (user-facing); everything else stays in English.
-- **Persistence**: H2 in-memory (`spring.datasource.url=jdbc:h2:mem:testdb`), wiped on every restart. `src/main/resources/data.sql` seeds it; `spring.jpa.defer-datasource-initialization=true` makes Hibernate create the schema before `data.sql` runs. No persistent/prod datasource is configured.
+- **Persistence**: PostgreSQL, run locally via `docker-compose.yml` (service `db`, default db/user/password all `ajudabem`, port 5432 — overridable via `DB_HOST`/`DB_PORT`/`DB_NAME`/`DB_USER`/`DB_PASSWORD` env vars, see `application.properties`). Schema is owned by **Flyway** migrations under `src/main/resources/db/migration/` (`V1__create_schema.sql`, `V2__seed_tags.sql`) — `spring.jpa.hibernate.ddl-auto=validate`, so Hibernate only checks the entities match the migrated schema and never generates DDL itself. Adding/changing a JPA entity field requires a new `V<n>__description.sql` migration file (never edit an already-applied one) that keeps the table in sync, or the app fails to start with a schema validation error. Tests use a separate `src/test/resources/application.properties` pointing at H2 in-memory with `spring.flyway.enabled=false` and `ddl-auto=create-drop`, so `./mvnw.cmd test` needs no Docker/Postgres running.
 - **CORS** is hardcoded to `http://localhost:4200` in `infra/cors/CorsConfig.java` — update if the frontend origin/port changes.
 - Package root `com.ajudabem.api` is organized by technical layer (`controllers/`, `services/<resource>/`, `repositories/`, `domains/<resource>/`, `dto/<resource>/`, `mappers/`, `exceptions/`, `infra/`), not by feature module — a single feature's code is spread across all of these.
