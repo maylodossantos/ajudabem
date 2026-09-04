@@ -3,12 +3,17 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    paths: ['api/**']
   push:
     branches: [main]
+    paths: ['api/**']
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
     steps:
       - uses: actions/checkout@v4
 
@@ -17,6 +22,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
+          cache-dependency-path: api/pom.xml
 
       - name: Run tests
         run: ./mvnw test
