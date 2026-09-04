@@ -9,7 +9,7 @@ on:
     paths: ['api/**']
 
 jobs:
-  test:
+  test-api:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -17,7 +17,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'api/**'
+
       - uses: actions/setup-java@v4
+        if: steps.changes.outputs.api == 'true'
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -25,4 +33,34 @@ jobs:
           cache-dependency-path: api/pom.xml
 
       - name: Run tests
+        if: steps.changes.outputs.api == 'true'
         run: ./mvnw test
+
+  test-client:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            client:
+              - 'client/**'
+
+      - uses: subosito/flutter-action@v2
+        if: steps.changes.outputs.client == 'true'
+        with:
+          flutter-version: '3.47.2'
+          channel: 'stable'
+
+      - name: Install dependencies
+        if: steps.changes.outputs.client == 'true'
+        run: flutter pub get
+
+      - name: Run tests
+        if: steps.changes.outputs.client == 'true'
+        run: flutter test
