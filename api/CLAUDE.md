@@ -22,12 +22,6 @@ $env:JAVA_HOME = "C:\Users\Maylo\.jdks\ms-17.0.20.1"
 
 Only `ApiApplicationTests` (a default context-load test) exists — there is no feature-level test suite yet.
 
-## Commit convention
-
-`<tipo>: <descrição curta no imperativo>` — one line, no body/description. Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`.
-
-Example: `chore: migrate persistence from H2 to PostgreSQL with Flyway and Docker Compose`
-
 ## Architecture
 
 - **Layering**: `Controller → Service → Repository (Spring Data JPA) → Entity`, with MapStruct interfaces in `mappers/` doing all DTO↔entity conversion. Controllers hold no business logic — each endpoint method calls one service method and wraps the result in `ResponseEntity`.
