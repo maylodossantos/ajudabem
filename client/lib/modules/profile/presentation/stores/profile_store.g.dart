@@ -73,10 +73,32 @@ mixin _$ProfileStore on ProfileStoreBase, Store {
     return _$loadAsyncAction.run(() => super.load(token));
   }
 
+  late final _$deleteAccountAsyncAction = AsyncAction(
+    'ProfileStoreBase.deleteAccount',
+    context: context,
+  );
+
+  @override
+  Future<bool> deleteAccount(String token) {
+    return _$deleteAccountAsyncAction.run(() => super.deleteAccount(token));
+  }
+
   late final _$ProfileStoreBaseActionController = ActionController(
     name: 'ProfileStoreBase',
     context: context,
   );
+
+  @override
+  void updateProfile(UserProfile updated) {
+    final _$actionInfo = _$ProfileStoreBaseActionController.startAction(
+      name: 'ProfileStoreBase.updateProfile',
+    );
+    try {
+      return super.updateProfile(updated);
+    } finally {
+      _$ProfileStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
 
   @override
   void clear() {

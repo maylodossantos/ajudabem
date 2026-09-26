@@ -1,6 +1,5 @@
 package com.ajudabem.api.dto.assited_person;
 
-import com.ajudabem.api.domains.assisted_person.AssistedPersonTag;
 import com.ajudabem.api.domains.assisted_person.Gender;
 import com.ajudabem.api.domains.assisted_person.RiskLevel;
 import com.ajudabem.api.dto.user.UserResponseSummaryDTO;

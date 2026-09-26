@@ -20,4 +20,29 @@ class AuthRepositoryImpl implements AuthRepository {
     final model = await _datasource.signIn(params);
     return model.toEntity();
   }
+
+  @override
+  Future<void> forgotPassword(String email) {
+    return _datasource.forgotPassword(email);
+  }
+
+  @override
+  Future<String> verifyCode(String email, String code) {
+    return _datasource.verifyCode(email, code);
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String resetToken,
+    required String password,
+    required String confirmPassword,
+  }) {
+    return _datasource.resetPassword(
+      email: email,
+      resetToken: resetToken,
+      password: password,
+      confirmPassword: confirmPassword,
+    );
+  }
 }

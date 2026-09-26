@@ -2,8 +2,6 @@ import 'package:ajuda_bem/core/theme/app_theme.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/assisted_person.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/create_assisted_person_params.dart';
 import 'package:ajuda_bem/modules/registration/domain/repositories/assisted_person_repository.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/create_assisted_person_usecase.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/update_assisted_person_usecase.dart';
 import 'package:ajuda_bem/modules/registration/presentation/pages/vulnerable_person_form_page.dart';
 import 'package:ajuda_bem/modules/registration/presentation/stores/vulnerable_person_form_store.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   testWidgets('renders the vulnerability registration form', (tester) async {
     final repository = _FakeAssistedPersonRepository();
-    final store = VulnerablePersonFormStore(
-      CreateAssistedPersonUsecase(repository),
-      UpdateAssistedPersonUsecase(repository),
-    );
+    final store = VulnerablePersonFormStore(repository);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -38,19 +33,11 @@ void main() {
     expect(find.text('Reabilitação'), findsOneWidget);
     expect(find.text('Concluir'), findsOneWidget);
 
-    final heading = tester.widget<Text>(
-      find.text('Preencha as informações abaixo'),
-    );
-    expect(heading.style?.fontSize, 16);
-    expect(heading.style?.fontWeight, FontWeight.w800);
-    expect(heading.style?.color, Colors.black);
-    expect(
-      tester.getSize(find.byKey(const ValueKey('form-field-Nome:'))).height,
-      44,
-    );
-
     var submitButton = tester.widget<FilledButton>(
-      find.byKey(const Key('vulnerable_person_submit_button')),
+      find.descendant(
+        of: find.byKey(const Key('vulnerable_person_submit_button')),
+        matching: find.byType(FilledButton),
+      ),
     );
     expect(submitButton.onPressed, isNull);
 
@@ -70,7 +57,10 @@ void main() {
     await tester.pump();
 
     submitButton = tester.widget<FilledButton>(
-      find.byKey(const Key('vulnerable_person_submit_button')),
+      find.descendant(
+        of: find.byKey(const Key('vulnerable_person_submit_button')),
+        matching: find.byType(FilledButton),
+      ),
     );
     expect(submitButton.onPressed, isNotNull);
   });

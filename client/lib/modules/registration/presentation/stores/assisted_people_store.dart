@@ -2,18 +2,16 @@ import 'package:mobx/mobx.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/assisted_person.dart';
-import '../../domain/usecases/delete_assisted_person_usecase.dart';
-import '../../domain/usecases/get_assisted_people_usecase.dart';
+import '../../domain/repositories/assisted_person_repository.dart';
 
 part 'assisted_people_store.g.dart';
 
 class AssistedPeopleStore = AssistedPeopleStoreBase with _$AssistedPeopleStore;
 
 abstract class AssistedPeopleStoreBase with Store {
-  AssistedPeopleStoreBase(this._getAssistedPeople, this._deleteAssistedPerson);
+  AssistedPeopleStoreBase(this._repository);
 
-  final GetAssistedPeopleUsecase _getAssistedPeople;
-  final DeleteAssistedPersonUsecase _deleteAssistedPerson;
+  final AssistedPersonRepository _repository;
 
   @observable
   List<AssistedPerson> people = [];
@@ -37,7 +35,7 @@ abstract class AssistedPeopleStoreBase with Store {
     errorMessage = null;
 
     try {
-      people = await _getAssistedPeople(token);
+      people = await _repository.getAll(token);
     } on AppException catch (error) {
       errorMessage = error.message;
     } catch (_) {
@@ -53,7 +51,7 @@ abstract class AssistedPeopleStoreBase with Store {
     errorMessage = null;
 
     try {
-      await _deleteAssistedPerson(id, token);
+      await _repository.delete(id, token);
       people = people.where((person) => person.id != id).toList();
       return true;
     } on AppException catch (error) {

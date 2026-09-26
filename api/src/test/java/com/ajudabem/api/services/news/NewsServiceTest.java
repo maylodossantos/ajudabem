@@ -2,8 +2,10 @@ package com.ajudabem.api.services.news;
 
 import com.ajudabem.api.domains.news.News;
 import com.ajudabem.api.domains.user.User;
+import com.ajudabem.api.domains.user.UserRole;
 import com.ajudabem.api.dto.news.NewsRequestDTO;
 import com.ajudabem.api.dto.news.NewsResponseDTO;
+import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.exceptions.NewsNotFoundException;
 import com.ajudabem.api.mappers.NewsMapper;
 import com.ajudabem.api.repositories.NewsRepository;
@@ -40,10 +42,16 @@ class NewsServiceTest {
         return new NewsRequestDTO("Title", "Subtitle", "Content", "cover.png");
     }
 
+    private User userWithRole(UserRole role) {
+        User user = new User();
+        user.setId(1L);
+        user.setRole(role);
+        return user;
+    }
+
     @Test
-    void createNews_shouldSetAuthorAndSave() {
-        User author = new User();
-        author.setId(1L);
+    void createNews_shouldSetAuthorAndSave_whenAuthorIsAdmin() {
+        User author = userWithRole(UserRole.ADMIN);
 
         NewsRequestDTO dto = requestDTO();
         News entity = new News();
@@ -61,6 +69,26 @@ class NewsServiceTest {
     }
 
     @Test
+    void createNews_shouldThrowForbiddenActionException_whenAuthorIsOng() {
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.USER_ONG));
+
+        assertThatThrownBy(() -> newsService.createNews(requestDTO()))
+                .isInstanceOf(ForbiddenActionException.class);
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void createNews_shouldThrowForbiddenActionException_whenAuthorIsRegularUser() {
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.USER));
+
+        assertThatThrownBy(() -> newsService.createNews(requestDTO()))
+                .isInstanceOf(ForbiddenActionException.class);
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void updateNews_shouldMapAndSave_whenIdExists() {
         Long id = 1L;
         News entity = new News();
@@ -68,6 +96,7 @@ class NewsServiceTest {
         NewsRequestDTO dto = requestDTO();
         NewsResponseDTO expected = mock(NewsResponseDTO.class);
 
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.ADMIN));
         when(repository.findById(id)).thenReturn(Optional.of(entity));
         when(mapper.toResponse(entity)).thenReturn(expected);
 
@@ -81,11 +110,22 @@ class NewsServiceTest {
     @Test
     void updateNews_shouldThrowNewsNotFoundException_whenIdDoesNotExist() {
         Long id = 404L;
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.ADMIN));
         when(repository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> newsService.updateNews(requestDTO(), id))
                 .isInstanceOf(NewsNotFoundException.class)
-                .hasMessage("News is not exists");
+                .hasMessage("News not found");
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void updateNews_shouldThrowForbiddenActionException_whenAuthorIsRegularUser() {
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.USER));
+
+        assertThatThrownBy(() -> newsService.updateNews(requestDTO(), 1L))
+                .isInstanceOf(ForbiddenActionException.class);
 
         verify(repository, never()).save(any());
     }
@@ -139,6 +179,7 @@ class NewsServiceTest {
         entity.setId(id);
         entity.setDeleted(false);
 
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.ADMIN));
         when(repository.findById(id)).thenReturn(Optional.of(entity));
 
         newsService.deleteNews(id);
@@ -150,10 +191,21 @@ class NewsServiceTest {
     @Test
     void deleteNews_shouldThrowNewsNotFoundException_whenIdDoesNotExist() {
         Long id = 404L;
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.ADMIN));
         when(repository.findById(id)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> newsService.deleteNews(id))
                 .isInstanceOf(NewsNotFoundException.class);
+
+        verify(repository, never()).save(any());
+    }
+
+    @Test
+    void deleteNews_shouldThrowForbiddenActionException_whenAuthorIsRegularUser() {
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.USER));
+
+        assertThatThrownBy(() -> newsService.deleteNews(1L))
+                .isInstanceOf(ForbiddenActionException.class);
 
         verify(repository, never()).save(any());
     }

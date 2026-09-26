@@ -7,11 +7,13 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.List;
 
 @Entity
 @Table(name = "assisted_people")
+@SQLRestriction("deleted = false")
 @Getter
 @Setter
 @AllArgsConstructor
@@ -37,4 +39,12 @@ public class AssistedPerson extends EntityBase {
     private String state;
     private String zip_code;
     private String country;
+
+    @ManyToMany
+    @JoinTable(
+            name = "assisted_person_tags",
+            joinColumns = @JoinColumn(name = "assisted_person_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags;
 }

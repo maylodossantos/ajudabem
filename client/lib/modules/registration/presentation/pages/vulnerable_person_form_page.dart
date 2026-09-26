@@ -4,6 +4,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_section_title.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/assisted_person.dart';
@@ -32,7 +35,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AuthAppBar(showBackButton: true, onBack: Modular.to.pop),
+      appBar: const AuthAppBar(showBackButton: true),
       bottomNavigationBar: Observer(
         builder: (_) => _SubmitBar(
           onPressed: formStore.canSubmit
@@ -54,7 +57,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                 builder: (_) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const _SectionTitle('Preencha as informações abaixo'),
+                    const AppSectionTitle('Preencha as informações abaixo'),
                     const SizedBox(height: 14),
                     const _Question(
                       title: 'Você tem informações pessoais dessa pessoa?',
@@ -68,7 +71,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       onChanged: formStore.setHasPersonalInformation,
                     ),
                     const SizedBox(height: 18),
-                    const _SectionTitle('Informações Gerais'),
+                    const AppSectionTitle('Informações Gerais'),
                     const SizedBox(height: 10),
                     _FormField(
                       label: 'Nome:',
@@ -171,7 +174,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 18),
-                    const _SectionTitle('Necessidades identificadas'),
+                    const AppSectionTitle('Necessidades identificadas'),
                     const SizedBox(height: 12),
                     const _Question(
                       title: 'Como você descreveria essa pessoa?',
@@ -195,7 +198,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       runSpacing: 7,
                       children: [
                         for (final need in _needs)
-                          _NeedButton(
+                          _ToggleButton(
                             label: need,
                             selected: formStore.isNeedSelected(need),
                             onPressed: () => formStore.toggleNeed(need),
@@ -236,20 +239,14 @@ class VulnerablePersonFormPage extends StatelessWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(
-            success
-                ? wasEditing
-                      ? 'Cadastro atualizado com sucesso!'
-                      : 'Pessoa cadastrada com sucesso!'
-                : formStore.errorMessage ??
-                      'Não foi possível concluir o cadastro.',
-          ),
-        ),
-      );
+    showAppSnackBar(
+      context,
+      success
+          ? wasEditing
+                ? 'Cadastro atualizado com sucesso!'
+                : 'Pessoa cadastrada com sucesso!'
+          : formStore.errorMessage ?? 'Não foi possível concluir o cadastro.',
+    );
 
     if (success) {
       Modular.to.navigate(
@@ -260,13 +257,6 @@ class VulnerablePersonFormPage extends StatelessWidget {
 }
 
 abstract final class _FormTypography {
-  static final sectionTitle = GoogleFonts.manrope(
-    color: Colors.black,
-    fontSize: 16,
-    fontWeight: FontWeight.w800,
-    letterSpacing: 0,
-  );
-
   static final question = GoogleFonts.manrope(
     color: Colors.black,
     fontSize: 16,
@@ -294,17 +284,6 @@ abstract final class _FormTypography {
     fontWeight: FontWeight.w500,
     letterSpacing: 0,
   );
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(text, style: _FormTypography.sectionTitle);
-  }
 }
 
 class _Question extends StatelessWidget {
@@ -336,49 +315,20 @@ class _BinaryChoice extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _ChoiceButton(
+        _ToggleButton(
+          width: 58,
           label: 'Sim',
           selected: value == true,
           onPressed: () => onChanged(true),
         ),
         const SizedBox(width: 8),
-        _ChoiceButton(
+        _ToggleButton(
+          width: 58,
           label: 'Não',
           selected: value == false,
           onPressed: () => onChanged(false),
         ),
       ],
-    );
-  }
-}
-
-class _ChoiceButton extends StatelessWidget {
-  const _ChoiceButton({
-    required this.label,
-    required this.selected,
-    required this.onPressed,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
-
-    return SizedBox(
-      width: 58,
-      height: 32,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: selected ? const Color(0xFF037D68) : primary,
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-        child: Text(label, style: _FormTypography.button),
-      ),
     );
   }
 }
@@ -507,32 +457,41 @@ class _MultilineField extends StatelessWidget {
   }
 }
 
-class _NeedButton extends StatelessWidget {
-  const _NeedButton({
+class _ToggleButton extends StatelessWidget {
+  const _ToggleButton({
     required this.label,
     required this.selected,
     required this.onPressed,
+    this.width,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onPressed;
 
+  /// Fixed width for the Sim/Não pair; need chips size to their label.
+  final double? width;
+
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
+    final button = FilledButton(
       onPressed: onPressed,
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 32),
         backgroundColor: selected
             ? const Color(0xFF037D68)
             : Theme.of(context).colorScheme.primary,
-        padding: const EdgeInsets.symmetric(horizontal: 10),
+        padding: EdgeInsets.symmetric(horizontal: width == null ? 10 : 0),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(label, style: _FormTypography.button),
     );
+
+    final fixedWidth = width;
+    return fixedWidth == null
+        ? button
+        : SizedBox(width: fixedWidth, height: 32, child: button);
   }
 }
 
@@ -564,30 +523,11 @@ class _SubmitBar extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(44, 18, 44, 20),
-          child: SizedBox(
-            height: 39,
-            child: FilledButton(
-              key: const Key('vulnerable_person_submit_button'),
-              onPressed: onPressed,
-              child: isLoading
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      isEditing ? 'Salvar alterações' : 'Concluir',
-                      style: GoogleFonts.manrope(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0,
-                      ),
-                    ),
-            ),
+          child: AppPrimaryButton(
+            key: const Key('vulnerable_person_submit_button'),
+            label: isEditing ? 'Salvar alterações' : 'Concluir',
+            isLoading: isLoading,
+            onPressed: onPressed,
           ),
         ),
       ),

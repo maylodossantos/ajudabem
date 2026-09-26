@@ -4,7 +4,7 @@ class AssistedPersonModel {
   const AssistedPersonModel({
     required this.id,
     required this.fullName,
-    required this.riskLevel,
+    this.riskLevel,
     required this.age,
     required this.gender,
     required this.tags,
@@ -22,7 +22,7 @@ class AssistedPersonModel {
     return AssistedPersonModel(
       id: (json['id'] as num?)?.toInt() ?? 0,
       fullName: json['full_name'] as String? ?? '',
-      riskLevel: json['riskLevel'] as String? ?? 'MEDIUM',
+      riskLevel: json['riskLevel'] as String?,
       age: (json['age'] as num?)?.toInt() ?? 0,
       gender: json['gender'] as String? ?? 'OTHER',
       tags: (json['tags'] as List<dynamic>? ?? []).whereType<String>().toList(),
@@ -39,7 +39,7 @@ class AssistedPersonModel {
 
   final int id;
   final String fullName;
-  final String riskLevel;
+  final String? riskLevel;
   final int age;
   final String gender;
   final List<String> tags;

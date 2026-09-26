@@ -5,7 +5,11 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../../core/widgets/app_error_view.dart';
+import '../../../../core/widgets/app_main_navigation.dart';
+import '../../../../core/widgets/app_section_title.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/user_profile.dart';
@@ -51,10 +55,10 @@ class _ProfilePageState extends State<ProfilePage> {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const AuthAppBar(),
-      bottomNavigationBar: AppBottomNavigation(
+      bottomNavigationBar: AppMainNavigation(
         key: const Key('profile_bottom_navigation'),
         currentItem: AppNavigationItem.profile,
-        onRegister: () => Modular.to.navigate(AppRoutes.registrationMenu),
+        profileStore: _profileStore,
       ),
       body: SafeArea(
         top: false,
@@ -69,10 +73,11 @@ class _ProfilePageState extends State<ProfilePage> {
               }
 
               if (_profileStore.errorMessage != null && profile == null) {
-                return _ProfileError(
+                return AppErrorView(
                   message: _profileStore.errorMessage!,
                   onRetry: _loadProfile,
-                  onSignOut: _signOut,
+                  secondaryActionLabel: 'Voltar ao login',
+                  onSecondaryAction: _signOut,
                 );
               }
 
@@ -104,7 +109,7 @@ class _ProfileContent extends StatelessWidget {
         children: [
           _ProfileIdentity(profile: profile),
           const SizedBox(height: 30),
-          const _SectionTitle('Utilitários'),
+          const AppSectionTitle('Utilitários'),
           const SizedBox(height: 10),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,7 +140,7 @@ class _ProfileContent extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
-          const _SectionTitle('Nosso Impacto em Números'),
+          const AppSectionTitle('Nosso Impacto em Números'),
           const SizedBox(height: 10),
           const Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,11 +184,17 @@ class _ProfileContent extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          const _SectionTitle('Configurações'),
+          const AppSectionTitle('Configurações'),
           const SizedBox(height: 8),
-          const _SettingsAction(label: 'Conta'),
+          _SettingsAction(
+            label: 'Conta',
+            onTap: () => Modular.to.pushNamed(AppRoutes.profileEdit),
+          ),
           const _SettingsAction(label: 'Fale Conosco'),
-          const _SettingsAction(label: 'Sobre'),
+          _SettingsAction(
+            label: 'Sobre',
+            onTap: () => Modular.to.pushNamed(AppRoutes.aboutConfig),
+          ),
           _SettingsAction(label: 'Sair', onTap: onSignOut),
         ],
       ),
@@ -200,11 +211,7 @@ class _ProfileIdentity extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const CircleAvatar(
-          radius: 34,
-          backgroundColor: Color(0xFFD9D9D9),
-          child: Icon(Icons.person_outline, size: 36, color: Colors.white),
-        ),
+        AppAvatar(radius: 34, imageUrl: profile.profileImage),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
@@ -234,25 +241,6 @@ class _ProfileIdentity extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.label);
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      label,
-      style: GoogleFonts.manrope(
-        color: Colors.black,
-        fontSize: 16,
-        fontWeight: FontWeight.w800,
-        letterSpacing: 0,
-      ),
     );
   }
 }
@@ -377,42 +365,6 @@ class _SettingsAction extends StatelessWidget {
               letterSpacing: 0,
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileError extends StatelessWidget {
-  const _ProfileError({
-    required this.message,
-    required this.onRetry,
-    required this.onSignOut,
-  });
-
-  final String message;
-  final VoidCallback onRetry;
-  final VoidCallback onSignOut;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton(
-              onPressed: onRetry,
-              child: const Text('Tentar novamente'),
-            ),
-            TextButton(
-              onPressed: onSignOut,
-              child: const Text('Voltar ao login'),
-            ),
-          ],
         ),
       ),
     );

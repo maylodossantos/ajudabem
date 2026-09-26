@@ -2,8 +2,6 @@ import 'package:ajuda_bem/core/theme/app_theme.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/assisted_person.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/create_assisted_person_params.dart';
 import 'package:ajuda_bem/modules/registration/domain/repositories/assisted_person_repository.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/delete_assisted_person_usecase.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/get_assisted_people_usecase.dart';
 import 'package:ajuda_bem/modules/registration/presentation/pages/assisted_people_page.dart';
 import 'package:ajuda_bem/modules/registration/presentation/stores/assisted_people_store.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +10,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   testWidgets('renders registered people and their statuses', (tester) async {
     final repository = _FakeAssistedPersonRepository();
-    final store = AssistedPeopleStore(
-      GetAssistedPeopleUsecase(repository),
-      DeleteAssistedPersonUsecase(repository),
-    );
+    final store = AssistedPeopleStore(repository);
 
     await tester.pumpWidget(
       MaterialApp(
@@ -30,11 +25,12 @@ void main() {
     expect(find.text('Em análise'), findsOneWidget);
     expect(find.text('João'), findsOneWidget);
     expect(find.text('Atendimento iniciado'), findsOneWidget);
+    expect(find.text('Em triagem'), findsOneWidget);
     expect(
       find.byKey(const Key('assisted_people_bottom_navigation')),
       findsOneWidget,
     );
-    expect(find.byTooltip('Opções do cadastro'), findsNWidgets(2));
+    expect(find.byTooltip('Opções do cadastro'), findsNWidgets(3));
   });
 }
 
@@ -44,6 +40,7 @@ class _FakeAssistedPersonRepository implements AssistedPersonRepository {
     return const [
       AssistedPerson(id: 1, fullName: 'Maria', riskLevel: 'MEDIUM'),
       AssistedPerson(id: 2, fullName: 'João', riskLevel: 'HIGH'),
+      AssistedPerson(id: 3, fullName: 'Ana'),
     ];
   }
 

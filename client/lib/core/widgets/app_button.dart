@@ -7,15 +7,50 @@ class AppPrimaryButton extends StatelessWidget {
     required this.onPressed,
     super.key,
     this.icon,
+    this.isLoading = false,
+    this.color,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final Widget? icon;
 
+  /// Defaults to the theme's primary (brand) color.
+  final Color? color;
+
+  /// Replaces the content with just a spinner and blocks taps, keeping the
+  /// brand color instead of the gray disabled look.
+  final bool isLoading;
+
   @override
   Widget build(BuildContext context) {
-    final child = Text(
+    final primary = color ?? Theme.of(context).colorScheme.primary;
+
+    return SizedBox(
+      width: double.infinity,
+      height: 39,
+      child: FilledButton(
+        onPressed: isLoading ? null : onPressed,
+        style: FilledButton.styleFrom(
+          backgroundColor: primary,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: isLoading ? primary : null,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+        child: isLoading ? _spinner : _content(),
+      ),
+    );
+  }
+
+  static const _spinner = SizedBox(
+    width: 18,
+    height: 18,
+    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+  );
+
+  Widget _content() {
+    final text = Text(
       label,
       style: GoogleFonts.manrope(
         color: Colors.white,
@@ -25,25 +60,15 @@ class AppPrimaryButton extends StatelessWidget {
       ),
     );
 
-    return SizedBox(
-      width: double.infinity,
-      height: 39,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-        child: icon == null
-            ? child
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [icon!, const SizedBox(width: 8), child],
-              ),
-      ),
+    final icon = this.icon;
+    if (icon == null) {
+      return text;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [icon, const SizedBox(width: 8), text],
     );
   }
 }

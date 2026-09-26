@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:ajuda_bem/core/errors/app_exception.dart';
 import 'package:ajuda_bem/core/network/api_config.dart';
 import 'package:ajuda_bem/modules/registration/data/datasources/assisted_person_datasource_impl.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/create_assisted_person_params.dart';
@@ -32,6 +33,7 @@ void main() {
           jsonEncode([
             {'id': 10, 'full_name': 'Maria', 'riskLevel': 'MEDIUM'},
             {'id': 11, 'full_name': 'João', 'riskLevel': 'HIGH'},
+            {'id': 12, 'full_name': 'Ana', 'riskLevel': null},
           ]),
           200,
           headers: {'content-type': 'application/json; charset=utf-8'},
@@ -47,11 +49,12 @@ void main() {
     );
     expect(capturedRequest.method, 'GET');
     expect(capturedRequest.headers['Authorization'], 'Bearer jwt-token');
-    expect(result, hasLength(2));
-    expect(result.first.fullName, 'Maria');
-    expect(result.first.riskLevel, 'MEDIUM');
-    expect(result.last.fullName, 'João');
-    expect(result.last.riskLevel, 'HIGH');
+    expect(result, hasLength(3));
+    expect(result[0].fullName, 'Maria');
+    expect(result[0].riskLevel, 'MEDIUM');
+    expect(result[1].fullName, 'João');
+    expect(result[1].riskLevel, 'HIGH');
+    expect(result[2].riskLevel, isNull, reason: 'still pending AI triage');
   });
 
   test('posts the assisted person using the existing API contract', () async {
@@ -137,4 +140,24 @@ void main() {
     expect(capturedRequest.method, 'DELETE');
     expect(capturedRequest.headers['Authorization'], 'Bearer jwt-token');
   });
+
+  test(
+    'explains that only the author can delete, not that the session expired',
+    () async {
+      final datasource = AssistedPersonDatasourceImpl(
+        MockClient((_) async => http.Response('', 403)),
+      );
+
+      expect(
+        () => datasource.delete(10, 'jwt-token'),
+        throwsA(
+          isA<AppException>().having(
+            (error) => error.message,
+            'message',
+            'Só quem fez o cadastro pode alterá-lo.',
+          ),
+        ),
+      );
+    },
+  );
 }

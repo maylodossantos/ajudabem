@@ -5,9 +5,12 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
+import '../../../profile/presentation/stores/profile_store.dart';
 import '../stores/login_store.dart';
 
 class LoginPage extends StatelessWidget {
@@ -23,7 +26,10 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const AuthAppBar(),
-      bottomNavigationBar: _LoginBottomNavigation(
+      bottomNavigationBar: AppBottomNavigation(
+        key: const Key('login_bottom_navigation'),
+        currentItem: AppNavigationItem.profile,
+        onNews: () => Modular.to.navigate(AppRoutes.news),
         onRegister: () => _openRegistrationMenu(context, store),
       ),
       body: SafeArea(
@@ -49,14 +55,14 @@ class LoginPage extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Entre para ter acesso completo ao seu perfil,\n'
-                          'acompanhar atendimentos, ajudar pessoas e participar\n'
-                          'da comunidade.',
+                          'Entre para ter acesso completo ao seu perfil, '
+                          'acompanhar atendimentos, ajudar pessoas e '
+                          'participar da comunidade.',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.manrope(
                             color: _primaryText,
                             fontSize: 14,
-                            height: 1.25,
+                            height: 1.4,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0,
                           ),
@@ -97,20 +103,11 @@ class LoginPage extends StatelessWidget {
                         Observer(
                           builder: (_) => AppPrimaryButton(
                             key: const Key('login_submit_button'),
-                            label: store.isLoading ? 'Entrando...' : 'Entrar',
+                            label: 'Entrar',
                             onPressed: store.canSubmit
                                 ? () => _submit(context, store)
                                 : null,
-                            icon: store.isLoading
-                                ? const SizedBox(
-                                    width: 16,
-                                    height: 16,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : null,
+                            isLoading: store.isLoading,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -170,6 +167,13 @@ class LoginPage extends StatelessWidget {
   Future<void> _submit(BuildContext context, LoginStore store) async {
     final success = await store.submit();
 
+    final token = store.authToken;
+    if (success && token != null) {
+      // Loaded before leaving the login screen so the role-dependent
+      // bottom menu (admin "Publicar" tab) is right on the first frame.
+      await Modular.get<ProfileStore>().load(token);
+    }
+
     if (!context.mounted) {
       return;
     }
@@ -181,9 +185,7 @@ class LoginPage extends StatelessWidget {
 
     final message = store.errorMessage ?? 'Não foi possível entrar.';
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    showAppSnackBar(context, message);
   }
 
   void _openRegistrationMenu(BuildContext context, LoginStore store) {
@@ -192,120 +194,7 @@ class LoginPage extends StatelessWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(
-          content: Text('Faça login para acessar o menu de cadastro.'),
-        ),
-      );
-  }
-}
-
-class _LoginBottomNavigation extends StatelessWidget {
-  const _LoginBottomNavigation({required this.onRegister});
-
-  static const _unselectedColor = Color(0xFF494949);
-
-  final VoidCallback onRegister;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      key: const Key('login_bottom_navigation'),
-      decoration: const BoxDecoration(
-        color: Color(0xFFF3F3F3),
-        border: Border(top: BorderSide(color: Color(0xFFE2E2E2))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const _LoginNavigationItem(
-                iconAsset: 'assets/icons/navigation/news.svg',
-                label: 'Notícias',
-              ),
-              const SizedBox(width: 48),
-              const _LoginNavigationItem(
-                iconAsset: 'assets/icons/navigation/heart.svg',
-                label: 'Ajuda',
-              ),
-              const SizedBox(width: 48),
-              const _LoginNavigationItem(
-                iconAsset: 'assets/icons/navigation/profile.svg',
-                label: 'Perfil',
-                selected: true,
-              ),
-              const SizedBox(width: 48),
-              _LoginNavigationItem(
-                iconAsset: 'assets/icons/navigation/add.svg',
-                label: 'Cadastro',
-                onTap: onRegister,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoginNavigationItem extends StatelessWidget {
-  const _LoginNavigationItem({
-    required this.iconAsset,
-    required this.label,
-    this.selected = false,
-    this.onTap,
-  });
-
-  final String iconAsset;
-  final String label;
-  final bool selected;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = selected
-        ? Theme.of(context).colorScheme.primary
-        : _LoginBottomNavigation._unselectedColor;
-
-    return InkWell(
-      onTap: onTap ?? () {},
-      borderRadius: BorderRadius.circular(6),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              width: 26,
-              height: 26,
-              child: Center(
-                child: SvgPicture.asset(
-                  iconAsset,
-                  width: 22,
-                  height: 22,
-                  fit: BoxFit.contain,
-                ),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: GoogleFonts.manrope(
-                color: color,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                letterSpacing: 0,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    showAppSnackBar(context, 'Faça login para acessar o menu de cadastro.');
   }
 }
 

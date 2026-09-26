@@ -1,6 +1,6 @@
 package com.ajudabem.api.infra.security;
 
-import com.ajudabem.api.dto.ErrorResponseDTO;
+import com.ajudabem.api.dto.error.ErrorResponseDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,7 +12,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
@@ -25,11 +24,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
-        ErrorResponseDTO body = new ErrorResponseDTO(
-                "Invalid or missing token",
-                HttpStatus.UNAUTHORIZED.value(),
-                LocalDateTime.now()
-        );
+        ErrorResponseDTO body = ErrorResponseDTO.of(HttpStatus.UNAUTHORIZED, "Invalid or missing token");
 
         response.getWriter().write(objectMapper.writeValueAsString(body));
     }

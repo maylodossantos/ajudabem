@@ -1,12 +1,17 @@
 package com.ajudabem.api.infra;
 
-import com.ajudabem.api.dto.ErrorResponseDTO;
-import com.ajudabem.api.dto.ValidationErrorResponseDTO;
+import com.ajudabem.api.dto.error.ErrorResponseDTO;
+import com.ajudabem.api.dto.error.ValidationErrorResponseDTO;
 import com.ajudabem.api.exceptions.AssistedPersonNotFoundException;
+import com.ajudabem.api.exceptions.CpfAlreadyExistsException;
 import com.ajudabem.api.exceptions.EmailAlreadyExistsException;
+import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.exceptions.InvalidPasswordException;
+import com.ajudabem.api.exceptions.InvalidResetTokenException;
 import com.ajudabem.api.exceptions.InvalidTokenException;
+import com.ajudabem.api.exceptions.InvalidVerificationCodeException;
 import com.ajudabem.api.exceptions.NewsNotFoundException;
+import com.ajudabem.api.exceptions.PasswordMismatchException;
 import com.ajudabem.api.exceptions.UserAlreadyDeletedException;
 import com.ajudabem.api.exceptions.UserNotFoundException;
 import org.springframework.http.HttpHeaders;
@@ -20,81 +25,48 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class RestExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> userNotFoundHandler(UserNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.NOT_FOUND.value(),
-                        LocalDateTime.now()
-                ));
+    @ExceptionHandler({
+            UserNotFoundException.class,
+            AssistedPersonNotFoundException.class,
+            NewsNotFoundException.class
+    })
+    public ResponseEntity<ErrorResponseDTO> notFoundHandler(RuntimeException exception) {
+        return error(HttpStatus.NOT_FOUND, exception);
     }
 
-    @ExceptionHandler(InvalidPasswordException.class)
-    public ResponseEntity<ErrorResponseDTO> invalidPasswordHandler(InvalidPasswordException exception) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.UNAUTHORIZED.value(),
-                        LocalDateTime.now()
-                ));
+    @ExceptionHandler({
+            InvalidPasswordException.class,
+            InvalidTokenException.class,
+            InvalidVerificationCodeException.class,
+            InvalidResetTokenException.class
+    })
+    public ResponseEntity<ErrorResponseDTO> unauthorizedHandler(RuntimeException exception) {
+        return error(HttpStatus.UNAUTHORIZED, exception);
     }
 
-    @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<ErrorResponseDTO> invalidTokenHandler(InvalidTokenException exception) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.UNAUTHORIZED.value(),
-                        LocalDateTime.now()
-                ));
+    @ExceptionHandler(ForbiddenActionException.class)
+    public ResponseEntity<ErrorResponseDTO> forbiddenHandler(RuntimeException exception) {
+        return error(HttpStatus.FORBIDDEN, exception);
     }
 
-    @ExceptionHandler(EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponseDTO> emailAlreadyExistsHandler(EmailAlreadyExistsException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.CONFLICT.value(),
-                        LocalDateTime.now()
-                ));
+    @ExceptionHandler({
+            EmailAlreadyExistsException.class,
+            CpfAlreadyExistsException.class,
+            UserAlreadyDeletedException.class
+    })
+    public ResponseEntity<ErrorResponseDTO> conflictHandler(RuntimeException exception) {
+        return error(HttpStatus.CONFLICT, exception);
     }
 
-    @ExceptionHandler(UserAlreadyDeletedException.class)
-    public ResponseEntity<ErrorResponseDTO> userAlreadyDeletedHandler(UserAlreadyDeletedException exception) {
-        return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.CONFLICT.value(),
-                        LocalDateTime.now()
-                ));
-    }
-
-    @ExceptionHandler(AssistedPersonNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> assistedPersonNotFoundHandler(AssistedPersonNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.NOT_FOUND.value(),
-                        LocalDateTime.now()
-                ));
-    }
-
-    @ExceptionHandler(NewsNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> newsNotFoundHandler(NewsNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponseDTO(
-                        exception.getMessage(),
-                        HttpStatus.NOT_FOUND.value(),
-                        LocalDateTime.now()
-                ));
+    @ExceptionHandler(PasswordMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> badRequestHandler(RuntimeException exception) {
+        return error(HttpStatus.BAD_REQUEST, exception);
     }
 
     @Override
@@ -115,5 +87,9 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
                         "Erro de validação",
                         errors
                 ));
+    }
+
+    private ResponseEntity<ErrorResponseDTO> error(HttpStatus status, RuntimeException exception) {
+        return ResponseEntity.status(status).body(ErrorResponseDTO.of(status, exception.getMessage()));
     }
 }

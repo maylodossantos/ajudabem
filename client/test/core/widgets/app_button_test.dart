@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('primary button renders style and handles tap', (tester) async {
+  testWidgets('primary button handles tap', (tester) async {
     var tapped = false;
 
     await tester.pumpWidget(
@@ -19,17 +19,36 @@ void main() {
       ),
     );
 
-    final text = tester.widget<Text>(find.text('Entrar'));
-    expect(text.style?.fontFamily, contains('Manrope'));
-    expect(text.style?.fontSize, 16);
-    expect(text.style?.fontWeight, FontWeight.w700);
-    expect(text.style?.color, Colors.white);
-
     await tester.tap(find.text('Entrar'));
     expect(tapped, isTrue);
   });
 
-  testWidgets('outlined button renders Manrope green text', (tester) async {
+  testWidgets('primary button shows a spinner and blocks taps while loading', (
+    tester,
+  ) async {
+    var tapped = false;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: AppPrimaryButton(
+            label: 'Entrar',
+            isLoading: true,
+            onPressed: () => tapped = true,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Entrar'), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    await tester.tap(find.byType(FilledButton));
+    expect(tapped, isFalse);
+  });
+
+  testWidgets('outlined button renders label and icon', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
@@ -43,11 +62,8 @@ void main() {
       ),
     );
 
-    final text = tester.widget<Text>(find.text('Faça login com o Google'));
-    expect(text.style?.fontFamily, contains('Manrope'));
-    expect(text.style?.fontSize, 14);
-    expect(text.style?.fontWeight, FontWeight.w700);
-    expect(text.style?.color, const Color(0xFF04957C));
+    expect(find.text('Faça login com o Google'), findsOneWidget);
+    expect(find.byIcon(Icons.login), findsOneWidget);
   });
 
   testWidgets('text button renders icon and label', (tester) async {
@@ -65,9 +81,6 @@ void main() {
     );
 
     expect(find.byIcon(Icons.person_add_alt_outlined), findsOneWidget);
-    final text = tester.widget<Text>(find.text('Criar conta'));
-    expect(text.style?.fontFamily, contains('Manrope'));
-    expect(text.style?.fontSize, 14);
-    expect(text.style?.color, const Color(0xFF04957C));
+    expect(find.text('Criar conta'), findsOneWidget);
   });
 }

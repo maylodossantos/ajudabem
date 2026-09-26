@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../stores/recover_access_store.dart';
@@ -18,7 +21,7 @@ class RecoverAccessPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AuthAppBar(showBackButton: true, onBack: Modular.to.pop),
+      appBar: const AuthAppBar(showBackButton: true),
       body: SafeArea(
         child: Center(
           child: Column(
@@ -76,15 +79,38 @@ class RecoverAccessPage extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 56),
-                child: AppPrimaryButton(
-                  label: 'Enviar código',
-                  onPressed: () {},
+                child: Observer(
+                  builder: (_) => AppPrimaryButton(
+                    label: 'Enviar código',
+                    onPressed: store.canSubmitEmail
+                        ? () => _submit(context, store)
+                        : null,
+                    isLoading: store.isLoading,
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _submit(BuildContext context, RecoverAccessStore store) async {
+    final success = await store.sendCode();
+
+    if (!context.mounted) {
+      return;
+    }
+
+    if (success) {
+      Modular.to.navigate(AppRoutes.verifyCode);
+      return;
+    }
+
+    showAppSnackBar(
+      context,
+      store.errorMessage ?? 'Não foi possível enviar o código.',
     );
   }
 }

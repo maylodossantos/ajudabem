@@ -5,6 +5,9 @@ class UserProfile {
     required this.email,
     required this.phone,
     this.profileImage,
+    this.cpf,
+    this.birthDate,
+    this.role = 'USER',
   });
 
   final int id;
@@ -12,4 +15,11 @@ class UserProfile {
   final String email;
   final String phone;
   final String? profileImage;
+
+  /// Digits only; null for accounts created before it was required.
+  final String? cpf;
+  final DateTime? birthDate;
+  final String role;
+
+  bool get canPublishNews => role == 'ADMIN';
 }

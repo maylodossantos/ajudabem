@@ -44,7 +44,7 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget? _buildLeading(BuildContext context) {
     if (showBackButton) {
       return IconButton(
-        onPressed: onBack,
+        onPressed: onBack ?? () => Navigator.maybePop(context),
         icon: Icon(
           Icons.arrow_back,
           color: Theme.of(context).colorScheme.primary,

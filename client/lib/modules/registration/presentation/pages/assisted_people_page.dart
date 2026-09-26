@@ -4,7 +4,12 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_item_actions_menu.dart';
+import '../../../../core/widgets/app_main_navigation.dart';
+import '../../../../core/widgets/app_section_title.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/assisted_person.dart';
@@ -50,27 +55,15 @@ class _AssistedPeoplePageState extends State<AssistedPeoplePage> {
   }
 
   Future<void> _confirmDelete(AssistedPerson person) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Excluir cadastro?'),
-        content: Text(
+    final shouldDelete = await showAppConfirmDialog(
+      context,
+      title: 'Excluir cadastro?',
+      message:
           'O cadastro de ${person.fullName} será excluído permanentemente.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Excluir'),
-          ),
-        ],
-      ),
+      confirmLabel: 'Excluir',
     );
 
-    if (shouldDelete != true || !mounted) return;
+    if (!shouldDelete || !mounted) return;
 
     final token = _token;
     if (token == null) {
@@ -81,14 +74,11 @@ class _AssistedPeoplePageState extends State<AssistedPeoplePage> {
     final deleted = await _store.deletePerson(person.id, token);
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          deleted
-              ? 'Cadastro excluído com sucesso.'
-              : _store.errorMessage ?? 'Não foi possível excluir o cadastro.',
-        ),
-      ),
+    showAppSnackBar(
+      context,
+      deleted
+          ? 'Cadastro excluído com sucesso.'
+          : _store.errorMessage ?? 'Não foi possível excluir o cadastro.',
     );
   }
 
@@ -96,16 +86,13 @@ class _AssistedPeoplePageState extends State<AssistedPeoplePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AuthAppBar(showBackButton: true, onBack: () {
-        Modular.to.pushReplacementNamed(
-            "/profile/"
-        );
-      }),
-      bottomNavigationBar: AppBottomNavigation(
-        key: const Key('assisted_people_bottom_navigation'),
+      appBar: AuthAppBar(
+        showBackButton: true,
+        onBack: () => Modular.to.pushReplacementNamed(AppRoutes.profile),
+      ),
+      bottomNavigationBar: const AppMainNavigation(
+        key: Key('assisted_people_bottom_navigation'),
         currentItem: AppNavigationItem.profile,
-        onProfile: () => Modular.to.navigate(AppRoutes.profile),
-        onRegister: () => Modular.to.navigate(AppRoutes.registrationMenu),
       ),
       body: SafeArea(
         top: false,
@@ -118,64 +105,26 @@ class _AssistedPeoplePageState extends State<AssistedPeoplePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Pessoas cadastradas',
-                    style: GoogleFonts.manrope(
-                      color: const Color(0xFF232323),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0,
-                    ),
-                  ),
+                  const AppSectionTitle('Pessoas cadastradas'),
                   const SizedBox(height: 12),
                   Expanded(
                     child: Observer(
-                      builder: (_) {
-                        if (_store.isLoading && _store.people.isEmpty) {
-                          return const Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-
-                        if (_store.errorMessage != null &&
-                            _store.people.isEmpty) {
-                          return _ListError(
-                            message: _store.errorMessage!,
-                            onRetry: _load,
-                          );
-                        }
-
-                        if (_store.people.isEmpty) {
-                          return Center(
-                            child: Text(
-                              'Nenhuma pessoa cadastrada.',
-                              style: GoogleFonts.manrope(
-                                color: const Color(0xFF454545),
-                                fontSize: 14,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return RefreshIndicator(
-                          onRefresh: _load,
-                          child: ListView.separated(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: _store.people.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(height: 9),
-                            itemBuilder: (_, index) {
-                              final person = _store.people[index];
-                              return _PersonCard(
-                                person: person,
-                                isDeleting: _store.isDeleting(person.id),
-                                onEdit: () => _edit(person),
-                                onDelete: () => _confirmDelete(person),
-                              );
-                            },
+                      builder: (_) => AppAsyncList(
+                        items: _store.people,
+                        isLoading: _store.isLoading,
+                        errorMessage: _store.errorMessage,
+                        emptyMessage: 'Nenhuma pessoa cadastrada.',
+                        onRefresh: _load,
+                        spacing: 9,
+                        itemBuilder: (_, person) => Observer(
+                          builder: (_) => _PersonCard(
+                            person: person,
+                            isDeleting: _store.isDeleting(person.id),
+                            onEdit: () => _edit(person),
+                            onDelete: () => _confirmDelete(person),
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -230,7 +179,7 @@ class _PersonCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  _statusByRiskLevel[person.riskLevel] ?? 'Em análise',
+                  _statusByRiskLevel[person.riskLevel] ?? 'Em triagem',
                   style: GoogleFonts.manrope(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 14,
@@ -241,47 +190,12 @@ class _PersonCard extends StatelessWidget {
               ],
             ),
           ),
-          if (isDeleting)
-            const Padding(
-              padding: EdgeInsets.all(12),
-              child: SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            )
-          else
-            PopupMenuButton<_PersonAction>(
-              tooltip: 'Opções do cadastro',
-              onSelected: (action) {
-                if (action == _PersonAction.edit) {
-                  onEdit();
-                } else {
-                  onDelete();
-                }
-              },
-              itemBuilder: (_) => const [
-                PopupMenuItem(
-                  value: _PersonAction.edit,
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_outlined),
-                      SizedBox(width: 10),
-                      Text('Editar'),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: _PersonAction.delete,
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline),
-                      SizedBox(width: 10),
-                      Text('Excluir'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          AppItemActionsMenu(
+            tooltip: 'Opções do cadastro',
+            isBusy: isDeleting,
+            onEdit: onEdit,
+            onDelete: onDelete,
+          ),
         ],
       ),
     );
@@ -292,30 +206,4 @@ class _PersonCard extends StatelessWidget {
     'MEDIUM': 'Em análise',
     'HIGH': 'Atendimento iniciado',
   };
-}
-
-enum _PersonAction { edit, delete }
-
-class _ListError extends StatelessWidget {
-  const _ListError({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(message, textAlign: TextAlign.center),
-          const SizedBox(height: 12),
-          FilledButton(
-            onPressed: onRetry,
-            child: const Text('Tentar novamente'),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -5,7 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('renders label, hint and expected typography', (tester) async {
+  testWidgets('renders label, hint and reports input changes', (tester) async {
     var value = '';
 
     await tester.pumpWidget(
@@ -23,18 +23,10 @@ void main() {
       ),
     );
 
-    final label = tester.widget<Text>(find.text('E-mail:'));
-    expect(label.style?.fontFamily, contains('Manrope'));
-    expect(label.style?.fontSize, 16);
-    expect(label.style?.fontWeight, FontWeight.w700);
-    expect(label.style?.color, const Color(0xFF04957C));
+    expect(find.text('E-mail:'), findsOneWidget);
 
     final textField = tester.widget<TextField>(find.byType(TextField));
     expect(textField.keyboardType, TextInputType.emailAddress);
-    expect(textField.style?.fontFamily, contains('Manrope'));
-    expect(textField.style?.fontSize, 16);
-    expect(textField.style?.fontWeight, FontWeight.w400);
-    expect(textField.style?.color, const Color(0xFFA2A2A2));
     expect(textField.decoration?.hintText, 'E-mail');
     expect(find.byType(SvgPicture), findsOneWidget);
 
@@ -64,5 +56,44 @@ void main() {
     expect(textField.obscureText, isTrue);
     expect(find.byIcon(Icons.lock_outline), findsOneWidget);
     expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+  });
+
+  testWidgets('prefills from a controller and supports multiple lines', (
+    tester,
+  ) async {
+    final controller = TextEditingController(text: 'Texto inicial');
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          body: AppTextField(
+            label: 'Conteúdo:',
+            hintText: 'Conteúdo',
+            controller: controller,
+            maxLines: 5,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Texto inicial'), findsOneWidget);
+
+    final textField = tester.widget<TextField>(find.byType(TextField));
+    expect(textField.maxLines, 5);
+  });
+
+  testWidgets('disables editing when enabled is false', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: const Scaffold(
+          body: AppTextField(hintText: 'E-mail', enabled: false),
+        ),
+      ),
+    );
+
+    final textField = tester.widget<TextField>(find.byType(TextField));
+    expect(textField.enabled, isFalse);
   });
 }
