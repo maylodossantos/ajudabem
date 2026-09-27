@@ -1,8 +1,6 @@
 import 'package:ajuda_bem/modules/registration/domain/entities/assisted_person.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/create_assisted_person_params.dart';
 import 'package:ajuda_bem/modules/registration/domain/repositories/assisted_person_repository.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/create_assisted_person_usecase.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/update_assisted_person_usecase.dart';
 import 'package:ajuda_bem/modules/registration/presentation/stores/vulnerable_person_form_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -100,11 +98,8 @@ void main() {
 }
 
 VulnerablePersonFormStore _store([_FakeAssistedPersonRepository? repository]) {
-  final assistedPersonRepository =
-      repository ?? _FakeAssistedPersonRepository();
   return VulnerablePersonFormStore(
-    CreateAssistedPersonUsecase(assistedPersonRepository),
-    UpdateAssistedPersonUsecase(assistedPersonRepository),
+    repository ?? _FakeAssistedPersonRepository(),
   );
 }
 

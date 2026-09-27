@@ -2,7 +2,7 @@ class AssistedPerson {
   const AssistedPerson({
     required this.id,
     required this.fullName,
-    this.riskLevel = 'MEDIUM',
+    this.riskLevel,
     this.age = 0,
     this.gender = 'OTHER',
     this.tags = const [],
@@ -18,7 +18,9 @@ class AssistedPerson {
 
   final int id;
   final String fullName;
-  final String riskLevel;
+
+  /// Null while the backend's AI triage hasn't classified the person yet.
+  final String? riskLevel;
   final int age;
   final String gender;
   final List<String> tags;

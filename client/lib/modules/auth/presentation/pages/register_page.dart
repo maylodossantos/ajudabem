@@ -4,8 +4,12 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/formatters/cpf_input_formatter.dart';
+import '../../../../core/formatters/date_input_formatter.dart';
+import '../../../../core/formatters/phone_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../stores/register_store.dart';
@@ -19,7 +23,7 @@ class RegisterPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const AuthAppBar(),
+      appBar: const AuthAppBar(showBackButton: true),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -66,7 +70,28 @@ class RegisterPage extends StatelessWidget {
                           hintText: 'Telefone',
                           prefixIconAsset: 'assets/icons/register/phone.svg',
                           keyboardType: TextInputType.phone,
+                          inputFormatters: [PhoneInputFormatter()],
                           onChanged: store.setPhone,
+                        ),
+                        const SizedBox(height: 8),
+                        AppTextField(
+                          key: const Key('register_cpf_field'),
+                          label: 'CPF:',
+                          hintText: '000.000.000-00',
+                          prefixIcon: Icons.badge_outlined,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [CpfInputFormatter()],
+                          onChanged: store.setCpf,
+                        ),
+                        const SizedBox(height: 8),
+                        AppTextField(
+                          key: const Key('register_birth_date_field'),
+                          label: 'Data de nascimento:',
+                          hintText: 'dd/mm/aaaa',
+                          prefixIcon: Icons.calendar_today_outlined,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [DateInputFormatter()],
+                          onChanged: store.setBirthDate,
                         ),
                         const SizedBox(height: 8),
                         Observer(
@@ -114,7 +139,7 @@ class RegisterPage extends StatelessWidget {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 20),
                         Observer(
                           builder: (_) => _TermsCheckbox(
                             value: store.acceptedTerms,
@@ -130,20 +155,11 @@ class RegisterPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 54),
                     child: AppPrimaryButton(
                       key: const Key('register_submit_button'),
-                      label: store.isLoading ? 'Cadastrando...' : 'Cadastrar',
+                      label: 'Cadastrar',
                       onPressed: store.canSubmit
                           ? () => _submit(context, store)
                           : null,
-                      icon: store.isLoading
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : null,
+                      isLoading: store.isLoading,
                     ),
                   ),
                 ),
@@ -166,9 +182,7 @@ class RegisterPage extends StatelessWidget {
         ? 'Cadastro realizado com sucesso!'
         : store.errorMessage ?? 'Não foi possível realizar o cadastro.';
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    showAppSnackBar(context, message);
 
     if (success) {
       store.clear();
@@ -217,7 +231,9 @@ class _TermsCheckbox extends StatelessWidget {
                   const TextSpan(text: 'Declaro que li e concordo com os '),
                   TextSpan(
                     text: 'Termos de Uso',
-                    recognizer: TapGestureRecognizer()..onTap = () {},
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () =>
+                          Modular.to.pushNamed(AppRoutes.termsOfUse),
                   ),
                   const TextSpan(text: ' e a '),
                   TextSpan(

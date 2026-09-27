@@ -36,6 +36,7 @@ dependencies:
   flutter_svg: ^2.3.0
   google_fonts: ^8.1.0
   http: ^1.6.0
+  image_picker: ^1.2.0
   mobx: ^2.6.0
 
 dev_dependencies:
@@ -43,6 +44,7 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  cross_file: ^0.3.5
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -80,6 +82,7 @@ flutter:
     - assets/icons/register/password.svg
     - assets/icons/register/phone.svg
     - assets/icons/register/user.svg
+    - assets/icons/reset_password.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

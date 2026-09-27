@@ -1,32 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppSectionTitle extends StatelessWidget {
-  const AppSectionTitle(
-    this.title, {
-    super.key,
-    this.actionLabel,
-    this.onAction,
-  });
+  const AppSectionTitle(this.title, {super.key});
 
   final String title;
-  final String? actionLabel;
-  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-        ),
-        if (actionLabel != null)
-          TextButton(onPressed: onAction, child: Text(actionLabel!)),
-      ],
+    return Text(
+      title,
+      style: GoogleFonts.manrope(
+        color: Colors.black,
+        fontSize: 16,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 0,
+      ),
     );
   }
 }

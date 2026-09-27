@@ -6,4 +6,15 @@ abstract interface class AuthDatasource {
   Future<AuthSessionModel> register(RegisterUserParams params);
 
   Future<AuthSessionModel> signIn(SignInParams params);
+
+  Future<void> forgotPassword(String email);
+
+  Future<String> verifyCode(String email, String code);
+
+  Future<void> resetPassword({
+    required String email,
+    required String resetToken,
+    required String password,
+    required String confirmPassword,
+  });
 }

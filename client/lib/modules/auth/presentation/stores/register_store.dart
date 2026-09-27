@@ -1,6 +1,10 @@
 import 'package:mobx/mobx.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/formatters/cpf_input_formatter.dart';
+import '../../../../core/formatters/date_input_formatter.dart';
+import '../../../../core/formatters/masked_input_formatter.dart';
+import '../../../../core/formatters/phone_input_formatter.dart';
 import '../../domain/entities/register_user_params.dart';
 import '../../domain/usecases/register_user_usecase.dart';
 
@@ -21,6 +25,12 @@ abstract class RegisterStoreBase with Store {
 
   @observable
   String phone = '';
+
+  @observable
+  String cpf = '';
+
+  @observable
+  String birthDate = '';
 
   @observable
   String password = '';
@@ -50,10 +60,15 @@ abstract class RegisterStoreBase with Store {
       password == confirmPassword;
 
   @computed
+  DateTime? get parsedBirthDate => DateInputFormatter.parseBirthDate(birthDate);
+
+  @computed
   bool get canSubmit =>
       name.isNotEmpty &&
       email.isNotEmpty &&
       phone.isNotEmpty &&
+      CpfInputFormatter.isComplete(cpf) &&
+      parsedBirthDate != null &&
       passwordsMatch &&
       acceptedTerms &&
       !isLoading;
@@ -71,6 +86,16 @@ abstract class RegisterStoreBase with Store {
   @action
   void setPhone(String value) {
     phone = value;
+  }
+
+  @action
+  void setCpf(String value) {
+    cpf = value;
+  }
+
+  @action
+  void setBirthDate(String value) {
+    birthDate = value;
   }
 
   @action
@@ -112,8 +137,11 @@ abstract class RegisterStoreBase with Store {
         RegisterUserParams(
           name: name,
           email: email,
-          phone: phone,
+          phone: PhoneInputFormatter.digitsOnly(phone),
+          cpf: MaskedInputFormatter.digitsOnly(cpf),
+          birthDate: parsedBirthDate!,
           password: password,
+          acceptedTerms: acceptedTerms,
         ),
       );
       return true;
@@ -133,6 +161,8 @@ abstract class RegisterStoreBase with Store {
     name = '';
     email = '';
     phone = '';
+    cpf = '';
+    birthDate = '';
     password = '';
     confirmPassword = '';
     acceptedTerms = false;

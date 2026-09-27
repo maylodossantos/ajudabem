@@ -16,6 +16,14 @@ mixin _$RegisterStore on RegisterStoreBase, Store {
     () => super.passwordsMatch,
     name: 'RegisterStoreBase.passwordsMatch',
   )).value;
+  Computed<DateTime?>? _$parsedBirthDateComputed;
+
+  @override
+  DateTime? get parsedBirthDate =>
+      (_$parsedBirthDateComputed ??= Computed<DateTime?>(
+        () => super.parsedBirthDate,
+        name: 'RegisterStoreBase.parsedBirthDate',
+      )).value;
   Computed<bool>? _$canSubmitComputed;
 
   @override
@@ -75,6 +83,39 @@ mixin _$RegisterStore on RegisterStoreBase, Store {
   set phone(String value) {
     _$phoneAtom.reportWrite(value, super.phone, () {
       super.phone = value;
+    });
+  }
+
+  late final _$cpfAtom = Atom(name: 'RegisterStoreBase.cpf', context: context);
+
+  @override
+  String get cpf {
+    _$cpfAtom.reportRead();
+    return super.cpf;
+  }
+
+  @override
+  set cpf(String value) {
+    _$cpfAtom.reportWrite(value, super.cpf, () {
+      super.cpf = value;
+    });
+  }
+
+  late final _$birthDateAtom = Atom(
+    name: 'RegisterStoreBase.birthDate',
+    context: context,
+  );
+
+  @override
+  String get birthDate {
+    _$birthDateAtom.reportRead();
+    return super.birthDate;
+  }
+
+  @override
+  set birthDate(String value) {
+    _$birthDateAtom.reportWrite(value, super.birthDate, () {
+      super.birthDate = value;
     });
   }
 
@@ -260,6 +301,30 @@ mixin _$RegisterStore on RegisterStoreBase, Store {
   }
 
   @override
+  void setCpf(String value) {
+    final _$actionInfo = _$RegisterStoreBaseActionController.startAction(
+      name: 'RegisterStoreBase.setCpf',
+    );
+    try {
+      return super.setCpf(value);
+    } finally {
+      _$RegisterStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setBirthDate(String value) {
+    final _$actionInfo = _$RegisterStoreBaseActionController.startAction(
+      name: 'RegisterStoreBase.setBirthDate',
+    );
+    try {
+      return super.setBirthDate(value);
+    } finally {
+      _$RegisterStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   void setPassword(String value) {
     final _$actionInfo = _$RegisterStoreBaseActionController.startAction(
       name: 'RegisterStoreBase.setPassword',
@@ -337,6 +402,8 @@ mixin _$RegisterStore on RegisterStoreBase, Store {
 name: ${name},
 email: ${email},
 phone: ${phone},
+cpf: ${cpf},
+birthDate: ${birthDate},
 password: ${password},
 confirmPassword: ${confirmPassword},
 isPasswordObscured: ${isPasswordObscured},
@@ -345,6 +412,7 @@ acceptedTerms: ${acceptedTerms},
 isLoading: ${isLoading},
 errorMessage: ${errorMessage},
 passwordsMatch: ${passwordsMatch},
+parsedBirthDate: ${parsedBirthDate},
 canSubmit: ${canSubmit}
     ''';
   }

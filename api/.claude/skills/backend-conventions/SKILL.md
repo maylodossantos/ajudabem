@@ -11,17 +11,23 @@ For general architecture (layering, package layout, auth flow, persistence) see 
 
 ## 1. Delete = soft delete, always
 
-Every entity extends `domains/EntityBase.java`, which already has `deleted`, `deletedAt`, and a `softDelete()` helper. A delete endpoint never calls `repository.delete(...)`. It looks up the entity (throwing the resource's not-found exception if missing), calls `softDelete()`, and saves:
+Every entity extends `domains/EntityBase.java`, which already has `deleted`, `deletedAt`, and a `softDelete()` helper, and is annotated `@SQLRestriction("deleted = false")` so soft-deleted rows disappear from every query. A delete endpoint never calls `repository.delete(...)`. It looks up the entity through the service's private lookup helper (which throws the resource's not-found exception), calls `softDelete()`, and saves:
 
 ```java
 public void deleteNews(Long id) {
-    News news = repository.findById(id)
-            .orElseThrow(() -> new NewsNotFoundException("News is not exists"));
+    News news = findNews(id);
 
     news.softDelete();
     repository.save(news);
 }
+
+private News findNews(Long id) {
+    return repository.findById(id)
+            .orElseThrow(() -> new NewsNotFoundException("News not found"));
+}
 ```
+
+Each service has exactly one such helper per entity it looks up (`findNews`, `findAssistedPerson`, `findUserByEmail`) — reuse it instead of repeating `findById(...).orElseThrow(...)` in every method. A new entity must also get `@SQLRestriction("deleted = false")`.
 
 Watch out for the easy mistake here: calling `softDelete()` without `repository.save(...)` afterwards silently does nothing — the entity is only dirty in memory. This exact bug existed in `UserService.deleteMe()` before it was fixed; don't reintroduce it in a new service.
 
@@ -45,23 +51,24 @@ Name it after the specific failure (`EmailAlreadyExistsException`, `AssistedPers
 
 ## 3. Every new exception needs a handler in `RestExceptionHandler`
 
-`infra/RestExceptionHandler.java` (`@ControllerAdvice`) is the single place that turns exceptions into HTTP responses. Adding an exception class without adding a matching `@ExceptionHandler` there means it still 500s. The handler returns `ErrorResponseDTO(message, status, timestamp)` with the status that matches the failure's meaning:
+`infra/RestExceptionHandler.java` (`@ControllerAdvice`) is the single place that turns exceptions into HTTP responses. Adding an exception class without registering it there means it still 500s. Handlers are **grouped by HTTP status**: one method per status, listing every exception class that maps to it, all building the body through the shared `error(...)` helper / `ErrorResponseDTO.of(status, message)`. To add an exception, add its class to the list of the matching status — don't write a new copy-pasted method:
 
-| Situation | HTTP status |
-|---|---|
-| Resource doesn't exist (`findById` empty) | 404 `NOT_FOUND` |
-| Resource already exists / already in that state (duplicate email, already deleted) | 409 `CONFLICT` |
-| Auth failure (bad password, bad/expired token) | 401 `UNAUTHORIZED` |
+| Situation | HTTP status | Handler |
+|---|---|---|
+| Resource doesn't exist (`findById` empty) | 404 `NOT_FOUND` | `notFoundHandler` |
+| Resource already exists / already in that state (duplicate email, already deleted) | 409 `CONFLICT` | `conflictHandler` |
+| Auth failure (bad password, bad/expired token or code) | 401 `UNAUTHORIZED` | `unauthorizedHandler` |
+| Authenticated but not allowed (wrong role) | 403 `FORBIDDEN` | `forbiddenHandler` |
+| Invalid request outside Bean Validation (passwords don't match) | 400 `BAD_REQUEST` | `badRequestHandler` |
 
 ```java
-@ExceptionHandler(AssistedPersonNotFoundException.class)
-public ResponseEntity<ErrorResponseDTO> assistedPersonNotFoundHandler(AssistedPersonNotFoundException exception) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponseDTO(
-                    exception.getMessage(),
-                    HttpStatus.NOT_FOUND.value(),
-                    LocalDateTime.now()
-            ));
+@ExceptionHandler({
+        UserNotFoundException.class,
+        AssistedPersonNotFoundException.class,
+        NewsNotFoundException.class
+})
+public ResponseEntity<ErrorResponseDTO> notFoundHandler(RuntimeException exception) {
+    return error(HttpStatus.NOT_FOUND, exception);
 }
 ```
 
@@ -69,7 +76,7 @@ public ResponseEntity<ErrorResponseDTO> assistedPersonNotFoundHandler(AssistedPe
 
 These two message families serve different audiences, so they don't share a language:
 
-- **Exception messages** (`ErrorResponseDTO.message`, the string passed to `new XException(...)`) are internal/developer-facing and follow the rest of the codebase's English convention (identifiers, comments, log text) — e.g. `"Email is using"`, `"User not found"`, `"Assisted person is not exists"`.
+- **Exception messages** (`ErrorResponseDTO.message`, the string passed to `new XException(...)`) are internal/developer-facing and follow the rest of the codebase's English convention (identifiers, comments, log text) — e.g. `"Email is using"`, `"User not found"`, `"Assisted person not found"`. The Flutter app maps statuses to its own Portuguese messages where the English text would reach the user (e.g. login 404/401).
 - **Validation field messages** (the `errors` map described below) are shown directly to end users in the mobile app, so they're in Portuguese — e.g. `"Nome deve ter no máximo 100 caracteres"`.
 
 If you're unsure which bucket a message falls into, ask: does this string ever reach the app's UI as-is? If yes, Portuguese; if it's just for debugging/logs/API consumers, English.
@@ -112,28 +119,29 @@ This is already wired up once, centrally, in `RestExceptionHandler` (it override
 
 Update DTOs (the ones mapped with MapStruct's `@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)`, e.g. `UpdateUserRequestDTO`, `AssistedPersonRequestDTO` on `PUT`) treat a missing/null field as "don't change this field," not "clear it." If you add `@NotNull` or `@NotBlank` to a field on one of these DTOs, a legitimate partial update that omits that field will now fail validation instead of leaving it untouched. Use null-tolerant constraints like `@Size(max = ...)` there — Bean Validation constraints (other than `@NotNull`) pass on `null` by design, so this combination is exactly what you want. Reserve `@NotBlank`/`@NotNull` for create-only DTOs (`RegisterRequestDTO`, `AssistedPersonRequestDTO` on create) where every field is required.
 
-## 6. Auth: everything except login/register needs a token
+## 6. Auth: authenticated by default, roles checked in the service
 
-`SecurityConfig` only `permitAll()`s `POST /auth/login` and `POST /auth/register`; any other new endpoint is authenticated by default without extra annotations. A missing or invalid token returns a JSON 401 via `CustomAuthenticationEntryPoint` — you get this for free, no per-controller work needed.
+`SecurityConfig` `permitAll()`s only the auth flow (`POST /auth/login|register|forgot-password|verify-code|reset-password`), public reads of news (`GET /news`, `GET /news/**`) and Swagger; any other new endpoint is authenticated by default without extra annotations. A missing or invalid token returns a JSON 401 via `CustomAuthenticationEntryPoint` — you get this for free. Making a new endpoint public is a deliberate change to that list.
 
-Note: role checks (`ADMIN`/`USER`/`USER_ONG`) are **not enforced anywhere yet** — don't write an endpoint assuming `hasRole(...)` restricts access, because nothing currently does that. If a task genuinely needs role-gating, that's a separate, deliberate piece of work (flag it rather than assuming it already works).
+`SecurityFilter` grants `ROLE_<UserRole>` and uses the user's **email** as the principal (`CurrentUserService.get()` depends on that). Role rules live in the service, next to the logic they protect, and throw `ForbiddenActionException` (403) — see `NewsService.requirePublisherRole` (only `ADMIN` writes news). Don't rely on `SecurityConfig` for role gating.
 
 ## 7. Tests: write them for new code, never fake a pass for existing ones
 
-This project currently has almost no test coverage (`ApiApplicationTests` is just a context-load check), which makes it easy to break something silently while "fixing" something else — exactly the kind of regression tests exist to catch.
+Services have Mockito unit tests, plus a few `@SpringBootTest` + MockMvc integration tests. The unit tests mock `CurrentUserService`, so they can't see auth wiring — a real 404-on-every-request bug in `SecurityFilter` went unnoticed until an integration test was added.
 
-- **New service/controller logic** (a new endpoint, a new exception path, a new validation rule) should come with a unit test that exercises it — at minimum the happy path and the failure case that throws your new exception. Prefer a plain unit test on the service (mocking the repository) over a full `@SpringBootTest` unless you specifically need the Spring context or security filter chain wired up.
+- **New service/controller logic** (a new endpoint, a new exception path, a new validation rule) should come with a unit test that exercises it — at minimum the happy path and the failure case that throws your new exception. Prefer a plain unit test on the service (mocking the repository).
+- **Anything involving auth, roles or public/private access** also needs an integration test through the real JWT → `SecurityFilter` → controller chain (see `NewsAuthorizationIntegrationTest`, `CurrentUserResolutionTest`).
 - **When editing existing code**, run the existing suite (`./mvnw.cmd test`, or `./mvnw.cmd test -Dtest=ClassName#methodName` for one test) before calling the change done. If a test fails, that's signal the change affected real behavior — go find out why and fix the actual code or the test's expectation to match genuinely intended behavior. Never make a failing test pass by weakening or deleting its assertions, adding `@Disabled`, or loosening what it checks just to get green — that turns the test into a lie and defeats the point of having it. If a test's expectation is genuinely outdated because the requirement changed, say so explicitly rather than silently editing it away.
 
 ## Checklist for a new resource
 
 When adding a new resource end-to-end (entity, controller, service, DTOs):
 
-- [ ] Entity extends `EntityBase`
+- [ ] Entity extends `EntityBase` and has `@SQLRestriction("deleted = false")`
 - [ ] Request DTOs: `@NotBlank`/`@NotNull` + `@Size`/etc. for create; only null-tolerant constraints (`@Size`, no `@NotNull`/`@NotBlank`) for partial-update DTOs
 - [ ] Controller: `@Valid @RequestBody` on create/update; delete endpoint calls a service method, never the repository directly
-- [ ] Service: dedicated exception(s) for each failure case, thrown from `com.ajudabem.api.exceptions`; delete = `softDelete()` + `save(...)`
-- [ ] `RestExceptionHandler`: one `@ExceptionHandler` per new exception class, correct status code
+- [ ] Service: dedicated exception(s) for each failure case, thrown from `com.ajudabem.api.exceptions`; one private `findX(id)` lookup helper; delete = `softDelete()` + `save(...)`; role rules throw `ForbiddenActionException`
+- [ ] `RestExceptionHandler`: new exception class added to the handler list of its status code
 - [ ] Exception message text in English; validation constraint `message = "..."` in Portuguese
 - [ ] Unit test(s) covering the new logic (happy path + at least one failure case)
 - [ ] If this change touched existing code, ran `./mvnw.cmd test` and got a genuine pass — not an edited/disabled assertion

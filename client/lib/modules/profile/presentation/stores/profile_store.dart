@@ -2,16 +2,16 @@ import 'package:mobx/mobx.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/user_profile.dart';
-import '../../domain/usecases/get_current_user_usecase.dart';
+import '../../domain/repositories/profile_repository.dart';
 
 part 'profile_store.g.dart';
 
 class ProfileStore = ProfileStoreBase with _$ProfileStore;
 
 abstract class ProfileStoreBase with Store {
-  ProfileStoreBase(this._getCurrentUser);
+  ProfileStoreBase(this._repository);
 
-  final GetCurrentUserUsecase _getCurrentUser;
+  final ProfileRepository _repository;
 
   @observable
   UserProfile? profile;
@@ -32,11 +32,35 @@ abstract class ProfileStoreBase with Store {
     errorMessage = null;
 
     try {
-      profile = await _getCurrentUser(token);
+      profile = await _repository.getCurrentUser(token);
     } on AppException catch (error) {
       errorMessage = error.message;
     } catch (_) {
       errorMessage = 'Não foi possível carregar seu perfil.';
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  @action
+  void updateProfile(UserProfile updated) {
+    profile = updated;
+  }
+
+  @action
+  Future<bool> deleteAccount(String token) async {
+    isLoading = true;
+    errorMessage = null;
+
+    try {
+      await _repository.deleteAccount(token);
+      return true;
+    } on AppException catch (error) {
+      errorMessage = error.message;
+      return false;
+    } catch (_) {
+      errorMessage = 'Não foi possível excluir sua conta.';
+      return false;
     } finally {
       isLoading = false;
     }

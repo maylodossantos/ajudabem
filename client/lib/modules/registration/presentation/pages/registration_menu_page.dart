@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 
 class RegistrationMenuPage extends StatelessWidget {
@@ -14,10 +15,9 @@ class RegistrationMenuPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const AuthAppBar(showSearchButton: true),
-      bottomNavigationBar: AppBottomNavigation(
-        key: const Key('registration_menu_bottom_navigation'),
+      bottomNavigationBar: const AppMainNavigation(
+        key: Key('registration_menu_bottom_navigation'),
         currentItem: AppNavigationItem.register,
-        onProfile: () => Modular.to.navigate(AppRoutes.profile),
       ),
       body: SafeArea(
         top: false,

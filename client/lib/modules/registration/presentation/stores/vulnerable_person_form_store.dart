@@ -3,8 +3,7 @@ import 'package:mobx/mobx.dart';
 import '../../../../core/errors/app_exception.dart';
 import '../../domain/entities/assisted_person.dart';
 import '../../domain/entities/create_assisted_person_params.dart';
-import '../../domain/usecases/create_assisted_person_usecase.dart';
-import '../../domain/usecases/update_assisted_person_usecase.dart';
+import '../../domain/repositories/assisted_person_repository.dart';
 
 part 'vulnerable_person_form_store.g.dart';
 
@@ -12,13 +11,9 @@ class VulnerablePersonFormStore = VulnerablePersonFormStoreBase
     with _$VulnerablePersonFormStore;
 
 abstract class VulnerablePersonFormStoreBase with Store {
-  VulnerablePersonFormStoreBase(
-    this._createAssistedPerson,
-    this._updateAssistedPerson,
-  );
+  VulnerablePersonFormStoreBase(this._repository);
 
-  final CreateAssistedPersonUsecase _createAssistedPerson;
-  final UpdateAssistedPersonUsecase _updateAssistedPerson;
+  final AssistedPersonRepository _repository;
 
   @observable
   int? assistedPersonId;
@@ -162,9 +157,9 @@ abstract class VulnerablePersonFormStoreBase with Store {
       final params = _buildParams();
       final id = assistedPersonId;
       if (id == null) {
-        await _createAssistedPerson(params, token);
+        await _repository.create(params, token);
       } else {
-        await _updateAssistedPerson(id, params, token);
+        await _repository.update(id, params, token);
       }
       return true;
     } on AppException catch (error) {

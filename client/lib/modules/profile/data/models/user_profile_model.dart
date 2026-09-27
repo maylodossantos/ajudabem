@@ -7,6 +7,9 @@ class UserProfileModel {
     required this.email,
     required this.phone,
     this.profileImage,
+    this.cpf,
+    this.birthDate,
+    this.role = 'USER',
   });
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
@@ -16,6 +19,9 @@ class UserProfileModel {
       email: json['email'] as String? ?? '',
       phone: json['phone'] as String? ?? '',
       profileImage: json['profile_image'] as String?,
+      cpf: json['cpf'] as String?,
+      birthDate: DateTime.tryParse(json['birth_date'] as String? ?? ''),
+      role: json['role'] as String? ?? 'USER',
     );
   }
 
@@ -24,6 +30,9 @@ class UserProfileModel {
   final String email;
   final String phone;
   final String? profileImage;
+  final String? cpf;
+  final DateTime? birthDate;
+  final String role;
 
   UserProfile toEntity() {
     return UserProfile(
@@ -32,6 +41,9 @@ class UserProfileModel {
       email: email,
       phone: phone,
       profileImage: profileImage,
+      cpf: cpf,
+      birthDate: birthDate,
+      role: role,
     );
   }
 }

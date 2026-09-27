@@ -12,4 +12,29 @@ class ProfileRepositoryImpl implements ProfileRepository {
     final model = await _datasource.getCurrentUser(token);
     return model.toEntity();
   }
+
+  @override
+  Future<UserProfile> updateProfile(
+    String token, {
+    String? name,
+    String? phone,
+    String? profileImage,
+    String? cpf,
+    DateTime? birthDate,
+  }) async {
+    final model = await _datasource.updateProfile(
+      token,
+      name: name,
+      phone: phone,
+      profileImage: profileImage,
+      cpf: cpf,
+      birthDate: birthDate,
+    );
+    return model.toEntity();
+  }
+
+  @override
+  Future<void> deleteAccount(String token) {
+    return _datasource.deleteAccount(token);
+  }
 }

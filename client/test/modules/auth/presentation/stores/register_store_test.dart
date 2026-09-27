@@ -68,6 +68,20 @@ void main() {
       expect(store.canSubmit, isFalse);
     });
 
+    test('keeps submit disabled until the CPF is complete', () {
+      final store = _validStore()..setCpf('529.982.247-2');
+
+      expect(store.canSubmit, isFalse);
+    });
+
+    test('keeps submit disabled for an impossible or future birth date', () {
+      final store = _validStore()..setBirthDate('31/02/2000');
+      expect(store.canSubmit, isFalse);
+
+      store.setBirthDate('01/01/2999');
+      expect(store.canSubmit, isFalse);
+    });
+
     test('keeps submit disabled when terms are not accepted', () {
       final store = _validStore()..setAcceptedTerms(false);
 
@@ -128,8 +142,11 @@ void main() {
       expect(store.isLoading, isFalse);
       expect(repository.receivedParams?.name, 'Instituto Esperança');
       expect(repository.receivedParams?.email, 'contato@instituto.org');
-      expect(repository.receivedParams?.phone, '(11) 99999-9999');
+      expect(repository.receivedParams?.phone, '11999999999');
+      expect(repository.receivedParams?.cpf, '52998224725');
+      expect(repository.receivedParams?.birthDate, DateTime(2000, 5, 10));
       expect(repository.receivedParams?.password, '123456');
+      expect(repository.receivedParams?.acceptedTerms, isTrue);
     });
 
     test('exposes the registration error to the page', () async {
@@ -158,6 +175,8 @@ RegisterStore _validStore([_FakeAuthRepository? repository]) {
     ..setName('Instituto Esperança')
     ..setEmail('contato@instituto.org')
     ..setPhone('(11) 99999-9999')
+    ..setCpf('529.982.247-25')
+    ..setBirthDate('10/05/2000')
     ..setPassword('123456')
     ..setConfirmPassword('123456')
     ..setAcceptedTerms(true);
@@ -182,6 +201,26 @@ class _FakeAuthRepository implements AuthRepository {
 
   @override
   Future<AuthSession> signIn(SignInParams params) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> forgotPassword(String email) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> verifyCode(String email, String code) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> resetPassword({
+    required String email,
+    required String resetToken,
+    required String password,
+    required String confirmPassword,
+  }) {
     throw UnimplementedError();
   }
 }

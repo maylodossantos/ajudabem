@@ -2,8 +2,6 @@ import 'package:ajuda_bem/core/errors/app_exception.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/assisted_person.dart';
 import 'package:ajuda_bem/modules/registration/domain/entities/create_assisted_person_params.dart';
 import 'package:ajuda_bem/modules/registration/domain/repositories/assisted_person_repository.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/delete_assisted_person_usecase.dart';
-import 'package:ajuda_bem/modules/registration/domain/usecases/get_assisted_people_usecase.dart';
 import 'package:ajuda_bem/modules/registration/presentation/stores/assisted_people_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -23,12 +21,9 @@ void main() {
 
   test('exposes loading errors', () async {
     final store = AssistedPeopleStore(
-      GetAssistedPeopleUsecase(
-        _FakeAssistedPersonRepository(
-          error: const AppException('Não foi possível carregar os cadastros.'),
-        ),
+      _FakeAssistedPersonRepository(
+        error: const AppException('Não foi possível carregar os cadastros.'),
       ),
-      DeleteAssistedPersonUsecase(_FakeAssistedPersonRepository()),
     );
 
     await store.load('jwt-token');
@@ -51,10 +46,7 @@ void main() {
 }
 
 AssistedPeopleStore _store(_FakeAssistedPersonRepository repository) {
-  return AssistedPeopleStore(
-    GetAssistedPeopleUsecase(repository),
-    DeleteAssistedPersonUsecase(repository),
-  );
+  return AssistedPeopleStore(repository);
 }
 
 class _FakeAssistedPersonRepository implements AssistedPersonRepository {

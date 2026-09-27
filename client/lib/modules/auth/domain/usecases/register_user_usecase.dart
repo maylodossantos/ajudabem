@@ -12,7 +12,10 @@ class RegisterUserUsecase {
       name: params.name.trim(),
       email: params.email.trim().toLowerCase(),
       phone: params.phone.trim(),
+      cpf: params.cpf,
+      birthDate: params.birthDate,
       password: params.password,
+      acceptedTerms: params.acceptedTerms,
     );
 
     return _repository.register(normalizedParams);
