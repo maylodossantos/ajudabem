@@ -4,6 +4,8 @@ import 'package:ajuda_bem/modules/registration/domain/repositories/assisted_pers
 import 'package:ajuda_bem/modules/registration/presentation/stores/vulnerable_person_form_store.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../core/tags/seeded_tags.dart';
+
 void main() {
   test('updates personal information and address choices', () {
     final store = _store();
@@ -100,6 +102,7 @@ void main() {
 VulnerablePersonFormStore _store([_FakeAssistedPersonRepository? repository]) {
   return VulnerablePersonFormStore(
     repository ?? _FakeAssistedPersonRepository(),
+    seededTagsStore(),
   );
 }
 

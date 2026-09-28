@@ -42,8 +42,6 @@ abstract class ProfileEditStoreBase with Store {
   @observable
   UserProfile? savedProfile;
 
-  /// Both may stay blank (older accounts don't have them yet), but once
-  /// something is typed it has to be complete and valid.
   @computed
   bool get isCpfValid => cpf.isEmpty || CpfInputFormatter.isComplete(cpf);
 

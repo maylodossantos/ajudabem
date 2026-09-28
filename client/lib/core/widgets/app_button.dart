@@ -15,11 +15,8 @@ class AppPrimaryButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final Widget? icon;
 
-  /// Defaults to the theme's primary (brand) color.
   final Color? color;
 
-  /// Replaces the content with just a spinner and blocks taps, keeping the
-  /// brand color instead of the gray disabled look.
   final bool isLoading;
 
   @override
@@ -79,22 +76,24 @@ class AppOutlinedButton extends StatelessWidget {
     required this.onPressed,
     super.key,
     this.icon,
+    this.color,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final Widget? icon;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme.primary;
+    final color = this.color ?? Theme.of(context).colorScheme.primary;
     final child = Text(
       label,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       style: GoogleFonts.manrope(
         color: color,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: FontWeight.w700,
         letterSpacing: 0,
       ),
@@ -102,11 +101,11 @@ class AppOutlinedButton extends StatelessWidget {
 
     return SizedBox(
       width: double.infinity,
-      height: 36,
+      height: 39,
       child: OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: color),
+          side: BorderSide(color: color, width: 1.5),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
@@ -120,6 +119,40 @@ class AppOutlinedButton extends StatelessWidget {
                   Flexible(child: child),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+class AppTonalButton extends StatelessWidget {
+  const AppTonalButton({
+    required this.label,
+    required this.onPressed,
+    super.key,
+  });
+
+  final String label;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: const Color(0xFFE9E9E9),
+        foregroundColor: Theme.of(context).colorScheme.primary,
+        minimumSize: const Size(150, 46),
+        padding: const EdgeInsets.symmetric(horizontal: 28),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      child: Text(
+        label,
+        style: GoogleFonts.manrope(
+          color: Theme.of(context).colorScheme.primary,
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0,
+        ),
       ),
     );
   }

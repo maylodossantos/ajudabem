@@ -13,7 +13,6 @@ class AssistedPersonDatasourceImpl implements AssistedPersonDatasource {
 
   static const _sessionExpiredStatuses = {401};
 
-  /// The API answers 403 when the person was registered by someone else.
   static const _notAuthorMessages = {
     403: 'Só quem fez o cadastro pode alterá-lo.',
   };

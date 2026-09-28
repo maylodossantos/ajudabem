@@ -3,6 +3,9 @@ class AppException implements Exception {
 
   final String message;
 
+  static String messageOf(Object error, String fallback) =>
+      error is AppException ? error.message : fallback;
+
   @override
   String toString() => message;
 }

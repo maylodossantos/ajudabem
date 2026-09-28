@@ -11,8 +11,13 @@ import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_item_actions_menu.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_section_title.dart';
+import '../../../../core/widgets/app_text_tabs.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
+import '../../../initiatives/domain/entities/campaign.dart';
+import '../../../initiatives/presentation/stores/campaign_stores.dart';
+import '../../../initiatives/presentation/widgets/campaign_carousel.dart';
+import '../../../initiatives/presentation/widgets/initiative_cards.dart';
 import '../../../profile/presentation/stores/profile_store.dart';
 import '../../domain/entities/news_article.dart';
 import '../stores/news_store.dart';
@@ -23,9 +28,11 @@ class NewsListPage extends StatefulWidget {
     this.store,
     this.profileStore,
     this.authToken,
+    this.campaignsStore,
   });
 
   final NewsStore? store;
+  final CampaignsFeedStore? campaignsStore;
   final ProfileStore? profileStore;
   final String? authToken;
 
@@ -36,6 +43,8 @@ class NewsListPage extends StatefulWidget {
 class _NewsListPageState extends State<NewsListPage> {
   late final ProfileStore _profileStore;
   late final NewsStore _store;
+  late final CampaignsFeedStore? _campaigns;
+  bool _showCampaigns = false;
   String? _token;
 
   @override
@@ -45,10 +54,9 @@ class _NewsListPageState extends State<NewsListPage> {
         widget.store != null || widget.profileStore != null;
     _profileStore = widget.profileStore ?? Modular.get<ProfileStore>();
     _store = widget.store ?? Modular.get<NewsStore>();
-    // News is readable while signed out, so a null token is a real, valid
-    // state - not "not provided yet". Widget tests that inject fakes own the
-    // token directly (including passing null for "anonymous") instead of
-    // falling back to Modular, which they don't set up.
+    _campaigns = usingTestDoubles
+        ? widget.campaignsStore
+        : (widget.campaignsStore ?? Modular.tryGet<CampaignsFeedStore>());
     _token = usingTestDoubles
         ? widget.authToken
         : (widget.authToken ?? Modular.get<LoginStore>().authToken);
@@ -57,7 +65,7 @@ class _NewsListPageState extends State<NewsListPage> {
 
   Future<void> _load() async {
     final token = _token;
-    final loads = [_store.load(token)];
+    final loads = [_store.load(token), ?_campaigns?.load()];
     if (token != null && _profileStore.profile == null) {
       loads.add(_profileStore.load(token));
     }
@@ -66,6 +74,10 @@ class _NewsListPageState extends State<NewsListPage> {
 
   void _openDetail(NewsArticle article) {
     Modular.to.pushNamed(AppRoutes.newsDetail, arguments: article);
+  }
+
+  void _openCampaign(Campaign campaign) {
+    Modular.to.pushNamed(AppRoutes.campaignDetail, arguments: campaign.id);
   }
 
   void _openEdit(NewsArticle article) {
@@ -104,6 +116,7 @@ class _NewsListPageState extends State<NewsListPage> {
     return Observer(
       builder: (_) {
         final canPublish = _profileStore.profile?.canPublishNews ?? false;
+        final campaigns = _campaigns?.campaigns ?? const <Campaign>[];
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -124,29 +137,60 @@ class _NewsListPageState extends State<NewsListPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const AppSectionTitle('Notícias'),
+                      if (campaigns.isNotEmpty) ...[
+                        const AppSectionTitle('Campanhas em andamento'),
+                        const SizedBox(height: 12),
+                        CampaignCarousel(
+                          campaigns: campaigns.take(5).toList(),
+                          onOpen: _openCampaign,
+                        ),
+                        const SizedBox(height: 20),
+                        AppTextTabs<bool>(
+                          tabs: const [
+                            (false, 'Notícias'),
+                            (true, 'Campanhas'),
+                          ],
+                          selected: _showCampaigns,
+                          onSelected: (value) =>
+                              setState(() => _showCampaigns = value),
+                        ),
+                      ] else
+                        const AppSectionTitle('Notícias'),
                       const SizedBox(height: 12),
                       Expanded(
-                        child: Observer(
-                          builder: (_) => AppAsyncList(
-                            items: _store.articles,
-                            isLoading: _store.isLoading,
-                            errorMessage: _store.errorMessage,
-                            emptyMessage: 'Nenhuma notícia publicada ainda.',
-                            onRefresh: _load,
-                            itemBuilder: (_, article) => Observer(
-                              builder: (_) => _NewsCard(
-                                key: Key('news_card_${article.id}'),
-                                article: article,
-                                canManage: canPublish,
-                                isDeleting: _store.isDeleting(article.id),
-                                onTap: () => _openDetail(article),
-                                onEdit: () => _openEdit(article),
-                                onDelete: () => _confirmDelete(article),
+                        child: _showCampaigns && campaigns.isNotEmpty
+                            ? AppAsyncList<Campaign>(
+                                items: campaigns,
+                                isLoading: false,
+                                errorMessage: null,
+                                emptyMessage: 'Nenhuma campanha em andamento.',
+                                onRefresh: _load,
+                                itemBuilder: (_, campaign) => CampaignCard(
+                                  campaign: campaign,
+                                  onOpen: () => _openCampaign(campaign),
+                                ),
+                              )
+                            : Observer(
+                                builder: (_) => AppAsyncList(
+                                  items: _store.articles,
+                                  isLoading: _store.isLoading,
+                                  errorMessage: _store.errorMessage,
+                                  emptyMessage:
+                                      'Nenhuma notícia publicada ainda.',
+                                  onRefresh: _load,
+                                  itemBuilder: (_, article) => Observer(
+                                    builder: (_) => _NewsCard(
+                                      key: Key('news_card_${article.id}'),
+                                      article: article,
+                                      canManage: canPublish,
+                                      isDeleting: _store.isDeleting(article.id),
+                                      onTap: () => _openDetail(article),
+                                      onEdit: () => _openEdit(article),
+                                      onDelete: () => _confirmDelete(article),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        ),
                       ),
                     ],
                   ),

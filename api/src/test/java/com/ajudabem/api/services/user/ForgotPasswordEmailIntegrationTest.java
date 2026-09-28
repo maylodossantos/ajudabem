@@ -17,10 +17,6 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Real end-to-end test of UserService.forgotPassword's email side: a mocked
-// JavaMailSender (see UserServiceTest) only proves send() was called, not that
-// the message GreenMail's fake SMTP server actually receives contains a real,
-// well-formed email with the same code that got persisted on the user.
 @SpringBootTest
 class ForgotPasswordEmailIntegrationTest {
 

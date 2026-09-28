@@ -10,8 +10,6 @@ class NewsDatasourceImpl implements NewsDatasource {
 
   final ApiRequester _api;
 
-  // Reading is public; only writes need a (still valid) session. A 403 on a
-  // write is a permission error with its own backend message, not an expiry.
   static const _sessionExpiredStatuses = {401};
 
   @override

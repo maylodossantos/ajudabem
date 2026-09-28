@@ -1,7 +1,9 @@
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
+import '../initiatives/initiatives_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/auth_guard.dart';
 import 'data/datasources/news_datasource.dart';
 import 'data/datasources/news_datasource_impl.dart';
 import 'data/repositories/news_repository_impl.dart';
@@ -15,7 +17,7 @@ import 'presentation/stores/news_store.dart';
 
 class NewsModule extends Module {
   @override
-  List<Module> get imports => [CoreModule()];
+  List<Module> get imports => [CoreModule(), InitiativesModule()];
 
   @override
   void binds(Injector i) {
@@ -34,6 +36,7 @@ class NewsModule extends Module {
     );
     r.child(
       AppRoutes.newsForm,
+      guards: [AuthGuard()],
       child: (_) => NewsFormPage(
         initialArticle: Modular.args.data is NewsArticle
             ? Modular.args.data as NewsArticle

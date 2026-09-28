@@ -6,7 +6,6 @@ void showAppSnackBar(BuildContext context, String message) {
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
-/// Resolves to true only when the user explicitly confirms.
 Future<bool> showAppConfirmDialog(
   BuildContext context, {
   required String title,

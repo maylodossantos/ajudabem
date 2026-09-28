@@ -37,11 +37,6 @@ public class SecurityFilter extends OncePerRequestFilter {
             var authorities = Collections.singletonList(
                     new SimpleGrantedAuthority("ROLE_" + user.getRole().name())
             );
-            // The principal must be the email (not the User entity) so that
-            // Authentication#getName() - which CurrentUserService relies on to
-            // look the user back up - resolves to something findByEmail can use.
-            // A User is neither UserDetails nor Principal, so getName() would
-            // otherwise fall back to Object#toString() and never match.
             var authentication = new UsernamePasswordAuthenticationToken(login, null, authorities);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }

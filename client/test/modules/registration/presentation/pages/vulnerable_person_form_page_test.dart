@@ -7,15 +7,22 @@ import 'package:ajuda_bem/modules/registration/presentation/stores/vulnerable_pe
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../../core/tags/seeded_tags.dart';
+
 void main() {
   testWidgets('renders the vulnerability registration form', (tester) async {
     final repository = _FakeAssistedPersonRepository();
-    final store = VulnerablePersonFormStore(repository);
+    final tags = seededTagsStore();
+    final store = VulnerablePersonFormStore(repository, tags);
 
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
-        home: VulnerablePersonFormPage(store: store, authToken: 'jwt-token'),
+        home: VulnerablePersonFormPage(
+          store: store,
+          authToken: 'jwt-token',
+          tagsStore: tags,
+        ),
       ),
     );
     await tester.pumpAndSettle();

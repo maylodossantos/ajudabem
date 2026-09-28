@@ -179,7 +179,7 @@ class _PersonCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  _statusByRiskLevel[person.riskLevel] ?? 'Em triagem',
+                  person.statusLabel,
                   style: GoogleFonts.manrope(
                     color: Theme.of(context).colorScheme.primary,
                     fontSize: 14,
@@ -200,10 +200,4 @@ class _PersonCard extends StatelessWidget {
       ),
     );
   }
-
-  static const _statusByRiskLevel = {
-    'LOW': 'Informações recebidas.',
-    'MEDIUM': 'Em análise',
-    'HIGH': 'Atendimento iniciado',
-  };
 }

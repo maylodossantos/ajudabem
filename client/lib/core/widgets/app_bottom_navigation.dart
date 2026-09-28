@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-enum AppNavigationItem { news, help, profile, register, createNews }
+enum AppNavigationItem { news, help, profile, register, createNews, ong }
 
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
@@ -14,6 +14,8 @@ class AppBottomNavigation extends StatelessWidget {
     this.onRegister,
     this.showCreateNews = false,
     this.onCreateNews,
+    this.showOng = false,
+    this.onOng,
   });
 
   final AppNavigationItem currentItem;
@@ -22,10 +24,11 @@ class AppBottomNavigation extends StatelessWidget {
   final VoidCallback? onProfile;
   final VoidCallback? onRegister;
 
-  /// Only admins and ONGs can publish news, so this extra tab is opt-in per
-  /// page instead of always showing - pass the current user's role check.
   final bool showCreateNews;
   final VoidCallback? onCreateNews;
+
+  final bool showOng;
+  final VoidCallback? onOng;
 
   @override
   Widget build(BuildContext context) {
@@ -71,6 +74,13 @@ class AppBottomNavigation extends StatelessWidget {
                   label: 'Publicar',
                   selected: currentItem == AppNavigationItem.createNews,
                   onTap: onCreateNews,
+                ),
+              if (showOng)
+                _NavigationButton(
+                  icon: Icons.volunteer_activism_outlined,
+                  label: 'Ong',
+                  selected: currentItem == AppNavigationItem.ong,
+                  onTap: onOng,
                 ),
             ],
           ),

@@ -1,15 +1,26 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../errors/app_exception.dart';
 import 'api_config.dart';
 
 enum HttpMethod { get, post, put, delete }
 
-/// Single place that turns an API call into either a parsed result or an
-/// [AppException] with a user-facing message, so datasources only describe
-/// the endpoint and how to read its body.
+class ApiFile {
+  const ApiFile({
+    required this.fileName,
+    required this.bytes,
+    required this.contentType,
+  });
+
+  final String fileName;
+  final Uint8List bytes;
+  final String contentType;
+}
+
 class ApiRequester {
   const ApiRequester(this._client);
 
@@ -22,12 +33,6 @@ class ApiRequester {
   static const invalidResponseMessage =
       'Resposta inválida recebida do servidor.';
 
-  /// [errorMessage] is shown for any failure without a better message.
-  /// [statusMessages] gives specific statuses their own message; otherwise,
-  /// with [useServerMessage], a 4xx `message` from the backend wins: the
-  /// first Portuguese field error of a validation failure, or the backend's
-  /// (English) message looked up in [serverMessages] to show it translated.
-  /// Statuses in [sessionExpiredStatuses] mean the token is no longer valid.
   Future<T> request<T>(
     HttpMethod method,
     String path, {
@@ -35,16 +40,25 @@ class ApiRequester {
     required T Function(http.Response response) onSuccess,
     String? token,
     Object? body,
+    Map<String, ApiFile>? files,
     bool useServerMessage = true,
     Map<int, String> statusMessages = const {},
     Map<String, String> serverMessages = const {},
     Set<int> sessionExpiredStatuses = const {},
+    Map<int, T Function()> statusResults = const {},
   }) async {
     try {
-      final response = await _send(method, path, token: token, body: body);
+      final response = files == null
+          ? await _send(method, path, token: token, body: body)
+          : await _sendMultipart(method, path, token, body, files);
 
       if (sessionExpiredStatuses.contains(response.statusCode)) {
         throw const AppException(sessionExpiredMessage);
+      }
+
+      final statusResult = statusResults[response.statusCode];
+      if (statusResult != null) {
+        return statusResult();
       }
 
       final statusMessage = statusMessages[response.statusCode];
@@ -77,15 +91,10 @@ class ApiRequester {
     http.Response response, {
     String invalidMessage = invalidResponseMessage,
   }) {
-    try {
-      final json = jsonDecode(utf8.decode(response.bodyBytes));
-      if (json is Map<String, dynamic>) {
-        return json;
-      }
-    } on FormatException {
-      // Falls through to the invalid-response error below.
+    final json = _tryDecode(response);
+    if (json is Map<String, dynamic>) {
+      return json;
     }
-
     throw AppException(invalidMessage);
   }
 
@@ -119,31 +128,61 @@ class ApiRequester {
     };
   }
 
+  Future<http.Response> _sendMultipart(
+    HttpMethod method,
+    String path,
+    String? token,
+    Object? body,
+    Map<String, ApiFile> files,
+  ) async {
+    final request = http.MultipartRequest(
+      method.name.toUpperCase(),
+      Uri.parse('${ApiConfig.baseUrl}$path'),
+    )..headers.addAll({if (token != null) 'Authorization': 'Bearer $token'});
+
+    if (body != null) {
+      request.files.add(
+        http.MultipartFile.fromString(
+          'data',
+          jsonEncode(body),
+          contentType: MediaType('application', 'json'),
+        ),
+      );
+    }
+    for (final MapEntry(key: part, value: file) in files.entries) {
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          part,
+          file.bytes,
+          filename: file.fileName,
+          contentType: MediaType.parse(file.contentType),
+        ),
+      );
+    }
+
+    return http.Response.fromStream(await _client.send(request));
+  }
+
+  static Object? _tryDecode(http.Response response) {
+    try {
+      return jsonDecode(utf8.decode(response.bodyBytes));
+    } on FormatException {
+      return null;
+    }
+  }
+
   String? _serverMessage(http.Response response) {
-    if (response.statusCode >= 500) {
+    final json = response.statusCode >= 500 ? null : _tryDecode(response);
+    if (json is! Map<String, dynamic>) {
       return null;
     }
 
-    try {
-      final json = jsonDecode(utf8.decode(response.bodyBytes));
-      if (json is Map<String, dynamic>) {
-        final fieldErrors = json['errors'];
-        if (fieldErrors is Map<String, dynamic>) {
-          final first = fieldErrors.values.whereType<String>().firstOrNull;
-          if (first != null && first.isNotEmpty) {
-            return first;
-          }
-        }
-
-        final message = json['message'];
-        if (message is String && message.isNotEmpty) {
-          return message;
-        }
-      }
-    } on FormatException {
-      // Non-JSON error bodies fall back to the caller's message.
-    }
-
-    return null;
+    final errors = json['errors'];
+    final fieldError = errors is Map<String, dynamic>
+        ? errors.values.whereType<String>().firstOrNull
+        : null;
+    final message = json['message'];
+    if (fieldError != null && fieldError.isNotEmpty) return fieldError;
+    return message is String && message.isNotEmpty ? message : null;
   }
 }

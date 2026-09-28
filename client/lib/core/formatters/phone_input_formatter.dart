@@ -2,9 +2,6 @@ import 'package:flutter/services.dart';
 
 import 'masked_input_formatter.dart';
 
-/// Brazilian phone mask: (45) 99802-9132 for mobiles, (45) 3222-1234 for
-/// landlines. The backend stores digits only, so callers send
-/// [PhoneInputFormatter.digitsOnly] and display [PhoneInputFormatter.format].
 class PhoneInputFormatter extends TextInputFormatter {
   static const _maxDigits = 11;
 

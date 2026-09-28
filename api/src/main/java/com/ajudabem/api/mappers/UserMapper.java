@@ -16,7 +16,6 @@ public interface UserMapper {
 
     @Mapping(target = "profile_image", source = "profileImage")
     @Mapping(target = "birth_date", source = "birthDate")
-    // Normalized and checked for duplicates by UserService.
     @Mapping(target = "cpf", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateEntity(UpdateUserRequestDTO dto, @MappingTarget User user);

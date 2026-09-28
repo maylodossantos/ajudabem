@@ -14,14 +14,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Regression test for the soft-delete convention: EntityBase.softDelete() only flips a flag,
-// so every entity needs @SQLRestriction("deleted = false") or soft-deleted rows stay visible
-// forever through the normal repository methods (findAll/findById/findByEmail).
-//
-// flush()+clear() below forces a real round-trip to the DB: findById() on an entity still
-// managed in the same session returns it straight from Hibernate's identity map, skipping
-// SQL (and the restriction) entirely - a same-session artifact, not how separate HTTP
-// requests behave in production, but it would still make this test lie if left in place.
 @DataJpaTest
 class SoftDeleteFilteringTest {
 
@@ -97,7 +89,9 @@ class SoftDeleteFilteringTest {
     @Test
     void assistedPersonTagsAreLoadedThroughTheJoinTable() {
         User author = persistUser("author3@example.com");
-        Tag tag = tagRepository.save(new Tag(null, "Alimentação"));
+        Tag newTag = new Tag();
+        newTag.setName("Alimentação");
+        Tag tag = tagRepository.save(newTag);
 
         AssistedPerson person = new AssistedPerson();
         person.setAuthor(author);

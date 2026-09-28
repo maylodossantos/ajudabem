@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'ajuda_bem_logo.dart';
+import 'app_notification_bell.dart';
 
 class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
   const AuthAppBar({
@@ -28,14 +28,10 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false,
       leading: _buildLeading(context),
       title: const AjudaBemLogo(),
-      actions: [
+      actions: const [
         Padding(
-          padding: const EdgeInsets.only(right: 24),
-          child: SvgPicture.asset(
-            'assets/icons/notify_icon.svg',
-            width: 32,
-            height: 32,
-          ),
+          padding: EdgeInsets.only(right: 16),
+          child: AppNotificationBell(),
         ),
       ],
     );

@@ -1,6 +1,7 @@
 import 'package:mobx/mobx.dart';
 
 import '../../../../core/errors/app_exception.dart';
+import '../../../../core/tags/tags_store.dart';
 import '../../domain/entities/assisted_person.dart';
 import '../../domain/entities/create_assisted_person_params.dart';
 import '../../domain/repositories/assisted_person_repository.dart';
@@ -11,9 +12,10 @@ class VulnerablePersonFormStore = VulnerablePersonFormStoreBase
     with _$VulnerablePersonFormStore;
 
 abstract class VulnerablePersonFormStoreBase with Store {
-  VulnerablePersonFormStoreBase(this._repository);
+  VulnerablePersonFormStoreBase(this._repository, this._tags);
 
   final AssistedPersonRepository _repository;
+  final TagsStore _tags;
 
   @observable
   int? assistedPersonId;
@@ -186,23 +188,12 @@ abstract class VulnerablePersonFormStoreBase with Store {
     'OTHER': 'Outro',
   };
 
-  static const _tagIdByNeed = {
-    'Alimentação': 1,
-    'Moradia': 2,
-    'Saúde': 3,
-    'Apoio emocional': 4,
-    'Reabilitação': 5,
-  };
-
   CreateAssistedPersonParams _buildParams() {
     return CreateAssistedPersonParams(
       fullName: name.trim(),
       age: int.parse(age.trim()),
       gender: _genderByLabel[sex] ?? 'OTHER',
-      tagIds: selectedNeeds
-          .map((need) => _tagIdByNeed[need])
-          .whereType<int>()
-          .toList(),
+      tagIds: _tags.idsOf(selectedNeeds),
       notes: description.trim(),
       street: address.trim(),
       number: number.trim(),

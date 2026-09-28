@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 enum _ItemAction { edit, delete }
 
-/// Edit/delete overflow menu for a list card; shows a spinner while the item
-/// is being deleted so it can't be triggered twice.
 class AppItemActionsMenu extends StatelessWidget {
   const AppItemActionsMenu({
     required this.tooltip,

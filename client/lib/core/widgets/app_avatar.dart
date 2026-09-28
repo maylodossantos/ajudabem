@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Profile photo with the gray "person" placeholder when there's no photo.
 class AppAvatar extends StatelessWidget {
   const AppAvatar({required this.radius, super.key, this.imageUrl});
 

@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
-import '../../../../core/widgets/app_image_picker.dart';
+import '../../../../core/widgets/app_cover_image_picker.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
@@ -52,9 +52,6 @@ class _NewsFormPageState extends State<NewsFormPage> {
     _contentController.dispose();
     super.dispose();
   }
-
-  Future<void> _pickCoverImage() =>
-      pickAndUploadGalleryImage(context, _formStore.cover);
 
   Future<void> _submit() async {
     final token = _loginStore.authToken;
@@ -119,12 +116,9 @@ class _NewsFormPageState extends State<NewsFormPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Observer(
-                          builder: (_) => _CoverImagePicker(
-                            imageUrl: _formStore.cover.imageUrl,
-                            isUploading: _formStore.cover.isUploading,
-                            onTap: _pickCoverImage,
-                          ),
+                        AppCoverImagePicker(
+                          key: const Key('news_form_cover_image_picker'),
+                          store: _formStore.cover,
                         ),
                         const SizedBox(height: 16),
                         AppTextField(
@@ -168,71 +162,6 @@ class _NewsFormPageState extends State<NewsFormPage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CoverImagePicker extends StatelessWidget {
-  const _CoverImagePicker({
-    required this.imageUrl,
-    required this.isUploading,
-    required this.onTap,
-  });
-
-  final String? imageUrl;
-  final bool isUploading;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
-
-    return GestureDetector(
-      key: const Key('news_form_cover_image_picker'),
-      onTap: isUploading ? null : onTap,
-      child: AspectRatio(
-        aspectRatio: 16 / 9,
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFD9D9D9),
-            borderRadius: BorderRadius.circular(8),
-            image: hasImage
-                ? DecorationImage(
-                    image: NetworkImage(imageUrl!),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          alignment: Alignment.center,
-          child: isUploading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : hasImage
-              ? null
-              : Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.add_photo_alternate_outlined,
-                      size: 32,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Adicionar capa',
-                      style: GoogleFonts.manrope(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
         ),
       ),
     );

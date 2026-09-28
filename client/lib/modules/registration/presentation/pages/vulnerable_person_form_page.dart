@@ -4,8 +4,10 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/tags/tags_store.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_labeled_field.dart';
 import '../../../../core/widgets/app_section_title.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
@@ -18,16 +20,24 @@ class VulnerablePersonFormPage extends StatelessWidget {
     this.store,
     this.authToken,
     this.initialPerson,
+    this.tagsStore,
   });
 
   final VulnerablePersonFormStore? store;
   final String? authToken;
   final AssistedPerson? initialPerson;
+  final TagsStore? tagsStore;
 
   @override
   Widget build(BuildContext context) {
     final formStore = store ?? Modular.get<VulnerablePersonFormStore>();
     final token = authToken ?? Modular.get<LoginStore>().authToken;
+    final tags = tagsStore ?? Modular.get<TagsStore>();
+    if (token != null) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => tags.ensureLoaded(token),
+      );
+    }
     final person = initialPerson;
     if (person != null && !formStore.isEditing) {
       formStore.populate(person);
@@ -73,7 +83,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                     const SizedBox(height: 18),
                     const AppSectionTitle('Informações Gerais'),
                     const SizedBox(height: 10),
-                    _FormField(
+                    AppLabeledField(
                       label: 'Nome:',
                       initialValue: formStore.name,
                       onChanged: formStore.setName,
@@ -83,7 +93,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: _FormField(
+                          child: AppLabeledField(
                             label: 'Idade:',
                             initialValue: formStore.age,
                             keyboardType: TextInputType.number,
@@ -92,7 +102,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _SelectionField(
+                          child: AppLabeledDropdown<String>(
                             label: 'Sexo:',
                             value: formStore.sex,
                             options: const [
@@ -102,6 +112,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                               'Prefiro não informar',
                             ],
                             onChanged: formStore.setSex,
+                            labelOf: (option) => option,
                           ),
                         ),
                       ],
@@ -117,7 +128,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       onChanged: formStore.setHasFixedAddress,
                     ),
                     const SizedBox(height: 12),
-                    _FormField(
+                    AppLabeledField(
                       label: 'Endereço:',
                       initialValue: formStore.address,
                       onChanged: formStore.setAddress,
@@ -127,7 +138,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: _FormField(
+                          child: AppLabeledField(
                             label: 'Cidade:',
                             initialValue: formStore.city,
                             onChanged: formStore.setCity,
@@ -135,7 +146,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _SelectionField(
+                          child: AppLabeledDropdown<String>(
                             label: 'Estado:',
                             value: formStore.state,
                             options: const [
@@ -146,6 +157,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                               'Outro',
                             ],
                             onChanged: formStore.setState,
+                            labelOf: (option) => option,
                           ),
                         ),
                       ],
@@ -155,7 +167,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
-                          child: _FormField(
+                          child: AppLabeledField(
                             label: 'CEP:',
                             initialValue: formStore.zipCode,
                             keyboardType: TextInputType.number,
@@ -164,7 +176,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: _FormField(
+                          child: AppLabeledField(
                             label: 'Numero:',
                             initialValue: formStore.number,
                             keyboardType: TextInputType.number,
@@ -197,7 +209,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 7,
                       children: [
-                        for (final need in _needs)
+                        for (final need in tags.tags.map((tag) => tag.name))
                           _ToggleButton(
                             label: need,
                             selected: formStore.isNeedSelected(need),
@@ -214,14 +226,6 @@ class VulnerablePersonFormPage extends StatelessWidget {
       ),
     );
   }
-
-  static const _needs = [
-    'Alimentação',
-    'Moradia',
-    'Saúde',
-    'Apoio emocional',
-    'Reabilitação',
-  ];
 
   Future<void> _submit(
     BuildContext context,
@@ -268,13 +272,6 @@ abstract final class _FormTypography {
     color: const Color(0xFFBABABA),
     fontSize: 12,
     fontWeight: FontWeight.w500,
-    letterSpacing: 0,
-  );
-
-  static final label = GoogleFonts.manrope(
-    color: const Color(0xFF232323),
-    fontSize: 16,
-    fontWeight: FontWeight.w800,
     letterSpacing: 0,
   );
 
@@ -333,105 +330,6 @@ class _BinaryChoice extends StatelessWidget {
   }
 }
 
-class _FormField extends StatelessWidget {
-  const _FormField({
-    required this.label,
-    required this.onChanged,
-    this.initialValue = '',
-    this.keyboardType,
-  });
-
-  final String label;
-  final ValueChanged<String> onChanged;
-  final String initialValue;
-  final TextInputType? keyboardType;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: _FormTypography.label),
-        const SizedBox(height: 4),
-        Container(
-          key: ValueKey('form-field-$label'),
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.primary),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Center(
-            child: TextFormField(
-              initialValue: initialValue,
-              onChanged: onChanged,
-              keyboardType: keyboardType,
-              style: GoogleFonts.manrope(fontSize: 14),
-              decoration: const InputDecoration.collapsed(hintText: ''),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SelectionField extends StatelessWidget {
-  const _SelectionField({
-    required this.label,
-    required this.value,
-    required this.options,
-    required this.onChanged,
-  });
-
-  final String label;
-  final String value;
-  final List<String> options;
-  final ValueChanged<String> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: _FormTypography.label),
-        const SizedBox(height: 4),
-        Container(
-          height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            border: Border.all(color: Theme.of(context).colorScheme.primary),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButton<String>(
-              value: value,
-              isExpanded: true,
-              icon: Icon(
-                Icons.keyboard_arrow_down,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              style: GoogleFonts.manrope(
-                color: const Color(0xFF454545),
-                fontSize: 14,
-              ),
-              items: [
-                for (final option in options)
-                  DropdownMenuItem(value: option, child: Text(option)),
-              ],
-              onChanged: (selected) {
-                if (selected != null) {
-                  onChanged(selected);
-                }
-              },
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _MultilineField extends StatelessWidget {
   const _MultilineField({required this.initialValue, required this.onChanged});
 
@@ -469,7 +367,6 @@ class _ToggleButton extends StatelessWidget {
   final bool selected;
   final VoidCallback onPressed;
 
-  /// Fixed width for the Sim/Não pair; need chips size to their label.
   final double? width;
 
   @override

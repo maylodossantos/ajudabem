@@ -1,7 +1,5 @@
 import 'package:flutter/services.dart';
 
-/// Fixed-length digit mask, where each `#` in [mask] is a digit and every
-/// other character is inserted automatically (e.g. `###.###.###-##`).
 class MaskedInputFormatter extends TextInputFormatter {
   MaskedInputFormatter(this.mask) : _maxDigits = '#'.allMatches(mask).length;
 
@@ -10,7 +8,6 @@ class MaskedInputFormatter extends TextInputFormatter {
 
   static String digitsOnly(String value) => value.replaceAll(RegExp(r'\D'), '');
 
-  /// Applies the mask to whatever digits [value] has, stopping at the last one.
   String format(String value) {
     var digits = digitsOnly(value);
     if (digits.length > _maxDigits) {
