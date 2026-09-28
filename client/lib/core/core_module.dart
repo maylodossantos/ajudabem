@@ -12,22 +12,18 @@ import '../modules/profile/data/datasources/profile_datasource_impl.dart';
 import '../modules/profile/data/repositories/profile_repository_impl.dart';
 import '../modules/profile/domain/repositories/profile_repository.dart';
 import '../modules/profile/presentation/stores/profile_store.dart';
+import 'impact/impact_repository.dart';
+import 'impact/impact_store.dart';
+import 'notifications/notifications_repository.dart';
+import 'notifications/notifications_store.dart';
+import 'services/document_picker_service.dart';
+import 'services/external_link_service.dart';
+import 'services/file_download_service.dart';
 import 'services/image_upload_service.dart';
+import 'services/location_service.dart';
+import 'tags/tags_repository.dart';
+import 'tags/tags_store.dart';
 
-/// Bindings shared across feature modules: the HTTP client every datasource
-/// needs, the session (LoginStore) that every module reads for the current
-/// user's token, the current user's profile (ProfileStore - e.g. the News
-/// module reads `profile.canPublishNews` to gate the publish icon by role),
-/// and the image upload service (imgbb) that photo uploads go through.
-///
-/// This is imported (`imports: [CoreModule()]`) by every module that needs
-/// one of these, never mounted with `r.module()`. flutter_modular's
-/// per-module injector can only resolve a bind's constructor parameters
-/// against binds declared in the SAME module or a module it imports - never
-/// "upward" into whichever module mounted it, regardless of eager
-/// (`addSingleton`) vs lazy (`add`). A bind other modules need to consume has
-/// to live in something they import, declared via `exportedBinds` (`binds`
-/// only registers for the module that owns it).
 class CoreModule extends Module {
   @override
   void exportedBinds(Injector i) {
@@ -40,5 +36,15 @@ class CoreModule extends Module {
     i.addSingleton<ProfileRepository>(ProfileRepositoryImpl.new);
     i.addSingleton(ProfileStore.new);
     i.addSingleton<ImageUploadService>(ImgbbImageUploadService.new);
+    i.addSingleton<DocumentPickerService>(FilePickerDocumentService.new);
+    i.addSingleton<FileDownloadService>(FileSaverDownloadService.new);
+    i.addSingleton<LocationService>(GeolocatorLocationService.new);
+    i.addSingleton<ExternalLinkService>(UrlLauncherLinkService.new);
+    i.addSingleton(TagsRepository.new);
+    i.addSingleton(TagsStore.new);
+    i.addSingleton(ImpactRepository.new);
+    i.addSingleton(ImpactStore.new);
+    i.addSingleton(NotificationsRepository.new);
+    i.addSingleton(NotificationsStore.new);
   }
 }

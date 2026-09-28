@@ -28,16 +28,24 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  file_picker: ^13.1.0
+  file_saver: ^0.6.0
   flutter:
     sdk: flutter
 
+  flutter_map: ^8.3.2
   flutter_mobx: ^2.3.0
   flutter_modular: ^6.3.4
   flutter_svg: ^2.3.0
+  geolocator: ^14.0.1
   google_fonts: ^8.1.0
   http: ^1.6.0
+  http_parser: ^4.1.2
   image_picker: ^1.2.0
+  latlong2: ^0.10.1
   mobx: ^2.6.0
+  pdfx: ^2.11.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -74,6 +82,8 @@ flutter:
     - assets/icons/navigation/news.svg
     - assets/icons/navigation/profile.svg
     - assets/icons/notify_icon.svg
+    - assets/icons/ong/
+    - assets/illustrations/
     - assets/icons/profile/ong_validation.svg
     - assets/icons/profile/registered_people.svg
     - assets/icons/profile/volunteer.png

@@ -1,12 +1,8 @@
 import 'masked_input_formatter.dart';
 
-/// Brazilian date mask: 10/05/2000. The API exchanges dates as ISO
-/// `yyyy-MM-dd`, see [toIso].
 class DateInputFormatter extends MaskedInputFormatter {
   DateInputFormatter() : super('##/##/####');
 
-  /// The typed date, or null while it is incomplete or not a real day
-  /// (31/02/2000 would otherwise roll over into March).
   static DateTime? parse(String value) {
     final digits = MaskedInputFormatter.digitsOnly(value);
     if (digits.length != 8) return null;
@@ -21,7 +17,6 @@ class DateInputFormatter extends MaskedInputFormatter {
     return isRealDay ? date : null;
   }
 
-  /// A birth date is valid when it is a real day before today.
   static DateTime? parseBirthDate(String value) {
     final date = parse(value);
     if (date == null || !date.isBefore(_today())) return null;
@@ -33,9 +28,43 @@ class DateInputFormatter extends MaskedInputFormatter {
     return '${_twoDigits(date.day)}/${_twoDigits(date.month)}/${date.year}';
   }
 
+  static String displayWithTime(DateTime date) =>
+      '${display(date)} às ${_twoDigits(date.hour)}:${_twoDigits(date.minute)}';
+
   static String toIso(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${_twoDigits(date.month)}-'
       '${_twoDigits(date.day)}';
+
+  static const _months = [
+    'janeiro',
+    'fevereiro',
+    'março',
+    'abril',
+    'maio',
+    'junho',
+    'julho',
+    'agosto',
+    'setembro',
+    'outubro',
+    'novembro',
+    'dezembro',
+  ];
+
+  static const _weekdays = [
+    'Segunda-feira',
+    'Terça-feira',
+    'Quarta-feira',
+    'Quinta-feira',
+    'Sexta-feira',
+    'Sábado',
+    'Domingo',
+  ];
+
+  static String dayAndMonth(DateTime date) =>
+      '${date.day} de ${_months[date.month - 1]}';
+
+  static String longDate(DateTime date) =>
+      '${_weekdays[date.weekday - 1]}, ${dayAndMonth(date)}';
 
   static String _twoDigits(int value) => value.toString().padLeft(2, '0');
 

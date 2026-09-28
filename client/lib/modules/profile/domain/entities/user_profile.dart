@@ -16,10 +16,13 @@ class UserProfile {
   final String phone;
   final String? profileImage;
 
-  /// Digits only; null for accounts created before it was required.
   final String? cpf;
   final DateTime? birthDate;
   final String role;
 
-  bool get canPublishNews => role == 'ADMIN';
+  bool get isAdmin => role == 'ADMIN';
+
+  bool get isOng => role == 'USER_ONG';
+
+  bool get canPublishNews => isAdmin;
 }

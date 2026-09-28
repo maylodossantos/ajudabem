@@ -31,7 +31,15 @@ void main() {
         capturedRequest = request;
         return http.Response(
           jsonEncode([
-            {'id': 10, 'full_name': 'Maria', 'riskLevel': 'MEDIUM'},
+            {
+              'id': 10,
+              'full_name': 'Maria',
+              'riskLevel': 'MEDIUM',
+              'careStatus': 'IN_CARE',
+              'tags': [
+                {'id': 1, 'name': 'Alimentação'},
+              ],
+            },
             {'id': 11, 'full_name': 'João', 'riskLevel': 'HIGH'},
             {'id': 12, 'full_name': 'Ana', 'riskLevel': null},
           ]),
@@ -52,6 +60,9 @@ void main() {
     expect(result, hasLength(3));
     expect(result[0].fullName, 'Maria');
     expect(result[0].riskLevel, 'MEDIUM');
+    expect(result[0].tags, ['Alimentação']);
+    expect(result[0].careStatus, 'IN_CARE');
+    expect(result[1].careStatus, 'NOMINATED');
     expect(result[1].fullName, 'João');
     expect(result[1].riskLevel, 'HIGH');
     expect(result[2].riskLevel, isNull, reason: 'still pending AI triage');

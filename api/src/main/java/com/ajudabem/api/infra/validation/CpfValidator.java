@@ -19,18 +19,13 @@ public class CpfValidator implements ConstraintValidator<ValidCpf, String> {
             return false;
         }
 
-        String digits = digitsOnly(value);
-        if (digits.chars().distinct().count() == 1) {
+        String digits = Digits.only(value);
+        if (Digits.allSame(digits)) {
             return false;
         }
 
         return checkDigit(digits, 9) == digits.charAt(9) - '0'
                 && checkDigit(digits, 10) == digits.charAt(10) - '0';
-    }
-
-    /** How CPFs are stored: just the 11 digits. */
-    public static String digitsOnly(String value) {
-        return value.replaceAll("\\D", "");
     }
 
     private static int checkDigit(String digits, int length) {

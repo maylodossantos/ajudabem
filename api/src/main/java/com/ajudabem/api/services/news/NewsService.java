@@ -1,16 +1,14 @@
 package com.ajudabem.api.services.news;
 
-
 import com.ajudabem.api.domains.news.News;
 import com.ajudabem.api.domains.user.User;
-import com.ajudabem.api.domains.user.UserRole;
 import com.ajudabem.api.dto.news.NewsRequestDTO;
 import com.ajudabem.api.dto.news.NewsResponseDTO;
-import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.exceptions.NewsNotFoundException;
 import com.ajudabem.api.mappers.NewsMapper;
 import com.ajudabem.api.repositories.NewsRepository;
 import com.ajudabem.api.services.user.CurrentUserService;
+import com.ajudabem.api.services.user.Roles;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -72,9 +70,7 @@ public class NewsService {
     }
 
     private void requirePublisherRole(User user) {
-        if (user.getRole() != UserRole.ADMIN) {
-            throw new ForbiddenActionException("Only admins can publish news");
-        }
+        Roles.requireAdmin(user, "Only admins can publish news");
     }
 
     private News findNews(Long id) {

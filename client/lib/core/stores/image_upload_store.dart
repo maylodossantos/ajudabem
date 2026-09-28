@@ -6,8 +6,6 @@ import '../services/image_upload_service.dart';
 
 part 'image_upload_store.g.dart';
 
-/// State of one uploadable photo (profile photo, news cover...). Form stores
-/// own an instance instead of each re-implementing the upload flow.
 class ImageUploadStore = ImageUploadStoreBase with _$ImageUploadStore;
 
 abstract class ImageUploadStoreBase with Store {

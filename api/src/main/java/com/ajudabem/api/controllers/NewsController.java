@@ -54,5 +54,4 @@ public class NewsController {
         return  ResponseEntity.ok(newsService.getNews(id));
     }
 
-
 }

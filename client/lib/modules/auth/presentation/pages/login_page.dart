@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -26,11 +27,9 @@ class LoginPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: const AuthAppBar(),
-      bottomNavigationBar: AppBottomNavigation(
-        key: const Key('login_bottom_navigation'),
+      bottomNavigationBar: const AppMainNavigation(
+        key: Key('login_bottom_navigation'),
         currentItem: AppNavigationItem.profile,
-        onNews: () => Modular.to.navigate(AppRoutes.news),
-        onRegister: () => _openRegistrationMenu(context, store),
       ),
       body: SafeArea(
         child: Center(
@@ -169,8 +168,6 @@ class LoginPage extends StatelessWidget {
 
     final token = store.authToken;
     if (success && token != null) {
-      // Loaded before leaving the login screen so the role-dependent
-      // bottom menu (admin "Publicar" tab) is right on the first frame.
       await Modular.get<ProfileStore>().load(token);
     }
 
@@ -186,15 +183,6 @@ class LoginPage extends StatelessWidget {
     final message = store.errorMessage ?? 'Não foi possível entrar.';
 
     showAppSnackBar(context, message);
-  }
-
-  void _openRegistrationMenu(BuildContext context, LoginStore store) {
-    if (store.isAuthenticated) {
-      Modular.to.navigate(AppRoutes.registrationMenu);
-      return;
-    }
-
-    showAppSnackBar(context, 'Faça login para acessar o menu de cadastro.');
   }
 }
 

@@ -42,4 +42,28 @@ void main() {
     await tester.tap(find.text('Publicar'));
     expect(tapped, isTrue);
   });
+
+  testWidgets('shows the Ong tab only for validated NGOs', (tester) async {
+    var tapped = false;
+
+    Future<void> pump({required bool showOng}) => tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Scaffold(
+          bottomNavigationBar: AppBottomNavigation(
+            currentItem: AppNavigationItem.ong,
+            showOng: showOng,
+            onOng: () => tapped = true,
+          ),
+        ),
+      ),
+    );
+
+    await pump(showOng: false);
+    expect(find.text('Ong'), findsNothing);
+
+    await pump(showOng: true);
+    await tester.tap(find.text('Ong'));
+    expect(tapped, isTrue);
+  });
 }

@@ -3,6 +3,7 @@ class AssistedPerson {
     required this.id,
     required this.fullName,
     this.riskLevel,
+    this.careStatus = 'NOMINATED',
     this.age = 0,
     this.gender = 'OTHER',
     this.tags = const [],
@@ -19,8 +20,8 @@ class AssistedPerson {
   final int id;
   final String fullName;
 
-  /// Null while the backend's AI triage hasn't classified the person yet.
   final String? riskLevel;
+  final String careStatus;
   final int age;
   final String gender;
   final List<String> tags;
@@ -32,4 +33,11 @@ class AssistedPerson {
   final String state;
   final String zipCode;
   final String country;
+
+  String get statusLabel => switch (careStatus) {
+    'IN_CARE' => 'Atendimento iniciado',
+    'FINISHED' => 'Atendimento finalizado',
+    _ when riskLevel == null => 'Em triagem',
+    _ => 'Informações recebidas.',
+  };
 }

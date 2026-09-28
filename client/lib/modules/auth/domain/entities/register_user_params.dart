@@ -13,7 +13,6 @@ class RegisterUserParams {
   final String email;
   final String phone;
 
-  /// Digits only.
   final String cpf;
   final DateTime birthDate;
   final String password;

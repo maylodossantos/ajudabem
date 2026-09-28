@@ -1,0 +1,5 @@
+ALTER TABLE tags
+    ADD COLUMN deleted     BOOLEAN NOT NULL DEFAULT FALSE,
+    ADD COLUMN created_at  TIMESTAMP(6),
+    ADD COLUMN updated_at  TIMESTAMP(6),
+    ADD COLUMN deleted_at  TIMESTAMP(6);

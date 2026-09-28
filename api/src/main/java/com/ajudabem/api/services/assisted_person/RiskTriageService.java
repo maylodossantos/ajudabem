@@ -21,13 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * Classifies how urgently an assisted person needs help with a local LLM
- * (Ollama). People are saved with no risk level ("pending") and a scheduled
- * job triages them, so registering never waits on the model and anyone missed
- * while Ollama was off is picked up once it's back. Only the details needed to
- * judge urgency are sent (never name or address).
- */
 @Slf4j
 @Service
 public class RiskTriageService {
@@ -121,7 +114,6 @@ public class RiskTriageService {
         }
     }
 
-    /** Case text sent to the model - deliberately without name or address. */
     static String describe(AssistedPerson person) {
         List<Tag> tags = person.getTags() == null ? List.of() : person.getTags();
         String needs = tags.isEmpty()
@@ -150,7 +142,6 @@ public class RiskTriageService {
                         .version(HttpClient.Version.HTTP_1_1)
                         .connectTimeout(Duration.ofSeconds(2))
                         .build());
-        // Generous: on a CPU-only machine the first call also loads the model into memory.
         requestFactory.setReadTimeout(Duration.ofMinutes(2));
 
         return RestClient.builder().baseUrl(baseUrl).requestFactory(requestFactory).build();

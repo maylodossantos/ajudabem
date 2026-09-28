@@ -4,44 +4,62 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../modules/profile/presentation/stores/profile_store.dart';
 import '../routes/app_routes.dart';
+import '../routes/auth_guard.dart';
 import 'app_bottom_navigation.dart';
+import 'app_feedback.dart';
 
-/// Bottom navigation for signed-in screens: wires every tab to its route and
-/// shows the admin-only "Publicar" tab from the shared ProfileStore, so the
-/// menu is identical on every screen instead of each page re-wiring it.
 class AppMainNavigation extends StatelessWidget {
   const AppMainNavigation({
     required this.currentItem,
     super.key,
     this.profileStore,
+    this.isSignedIn,
   });
 
   final AppNavigationItem currentItem;
 
-  /// Widget tests inject this; the app resolves it from CoreModule.
   final ProfileStore? profileStore;
+
+  final bool? isSignedIn;
 
   @override
   Widget build(BuildContext context) {
     final store = profileStore ?? Modular.tryGet<ProfileStore>();
     if (store == null) {
-      return _navigation(canPublishNews: false);
+      return _navigation(context, canPublishNews: false, isOng: false);
     }
 
     return Observer(
-      builder: (_) =>
-          _navigation(canPublishNews: store.profile?.canPublishNews ?? false),
+      builder: (_) => _navigation(
+        context,
+        canPublishNews: store.profile?.canPublishNews ?? false,
+        isOng: store.profile?.isOng ?? false,
+      ),
     );
   }
 
-  Widget _navigation({required bool canPublishNews}) {
+  Widget _navigation(
+    BuildContext context, {
+    required bool canPublishNews,
+    required bool isOng,
+  }) {
+    final signedIn = isSignedIn ?? AuthGuard.isSignedIn;
+
     return AppBottomNavigation(
       currentItem: currentItem,
       onNews: () => _go(AppRoutes.news),
-      onProfile: () => _go(AppRoutes.profile),
-      onRegister: () => _go(AppRoutes.registrationMenu),
+      onHelp: () => _go(AppRoutes.helpPoints),
+      onProfile: () => _go(signedIn ? AppRoutes.profile : AppRoutes.auth),
+      onRegister: signedIn
+          ? () => _go(AppRoutes.registrationMenu)
+          : () => showAppSnackBar(
+              context,
+              'Faça login para acessar o menu de cadastro.',
+            ),
       showCreateNews: canPublishNews,
       onCreateNews: () => Modular.to.pushNamed(AppRoutes.newsForm),
+      showOng: isOng,
+      onOng: () => _go(AppRoutes.ong),
     );
   }
 

@@ -3,8 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'app_error_view.dart';
 
-/// List screen body with the loading, error, empty and pull-to-refresh states.
-/// Callers wrap it in an Observer since the inputs come from a store.
 class AppAsyncList<T> extends StatelessWidget {
   const AppAsyncList({
     required this.items,
@@ -15,6 +13,9 @@ class AppAsyncList<T> extends StatelessWidget {
     required this.itemBuilder,
     super.key,
     this.spacing = 12,
+    this.columns = 1,
+    this.gridItemHeight,
+    this.padding,
   });
 
   final List<T> items;
@@ -24,6 +25,10 @@ class AppAsyncList<T> extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Widget Function(BuildContext context, T item) itemBuilder;
   final double spacing;
+
+  final int columns;
+  final double? gridItemHeight;
+  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +56,28 @@ class AppAsyncList<T> extends StatelessWidget {
 
     return RefreshIndicator(
       onRefresh: onRefresh,
-      child: ListView.separated(
-        physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: items.length,
-        separatorBuilder: (_, _) => SizedBox(height: spacing),
-        itemBuilder: (context, index) => itemBuilder(context, items[index]),
-      ),
+      child: columns > 1
+          ? GridView.builder(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: padding,
+              itemCount: items.length,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: spacing,
+                crossAxisSpacing: spacing,
+                mainAxisExtent: gridItemHeight,
+              ),
+              itemBuilder: (context, index) =>
+                  itemBuilder(context, items[index]),
+            )
+          : ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: padding,
+              itemCount: items.length,
+              separatorBuilder: (_, _) => SizedBox(height: spacing),
+              itemBuilder: (context, index) =>
+                  itemBuilder(context, items[index]),
+            ),
     );
   }
 }

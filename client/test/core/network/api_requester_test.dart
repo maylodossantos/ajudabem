@@ -88,6 +88,48 @@ void main() {
     expect(call(api), throwsMessage(ApiRequester.connectionErrorMessage));
   });
 
+  test('turns an expected status into a result instead of an error', () async {
+    final api = requesterReturning(http.Response('', 404));
+
+    final result = await api.request<String?>(
+      HttpMethod.get,
+      '/thing',
+      errorMessage: 'Falhou.',
+      statusResults: {404: () => null},
+      onSuccess: (_) => 'found',
+    );
+
+    expect(result, isNull);
+  });
+
+  test('prefers the first field error and translates known messages', () {
+    final validation = requesterReturning(
+      http.Response(
+        jsonEncode({
+          'message': 'Erro de validação',
+          'errors': {'cnpj': 'CNPJ inválido'},
+        }),
+        400,
+        headers: {'content-type': 'application/json; charset=utf-8'},
+      ),
+    );
+    expect(call(validation), throwsMessage('CNPJ inválido'));
+
+    final conflict = requesterReturning(
+      http.Response(jsonEncode({'message': 'CNPJ is using'}), 409),
+    );
+    expect(
+      conflict.request(
+        HttpMethod.get,
+        '/thing',
+        errorMessage: 'Falhou.',
+        serverMessages: const {'CNPJ is using': 'CNPJ já cadastrado.'},
+        onSuccess: (_) {},
+      ),
+      throwsMessage('CNPJ já cadastrado.'),
+    );
+  });
+
   test('maps an unparseable success body to the invalid response message', () {
     final api = requesterReturning(http.Response('not json', 200));
 

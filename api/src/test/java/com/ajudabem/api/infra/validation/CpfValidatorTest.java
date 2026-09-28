@@ -18,12 +18,12 @@ class CpfValidatorTest {
 
     @ParameterizedTest
     @ValueSource(strings = {
-            "529.982.247-26",   // wrong last check digit
-            "529.982.247-15",   // wrong first check digit
-            "111.111.111-11",   // repeated digits pass the math but are not real CPFs
-            "5299822472",       // too short
-            "529982247250",     // too long
-            "529-982-247.25",   // mangled mask
+            "529.982.247-26",
+            "529.982.247-15",
+            "111.111.111-11",
+            "5299822472",
+            "529982247250",
+            "529-982-247.25",
             "abc.def.ghi-jk",
             ""
     })
@@ -38,6 +38,6 @@ class CpfValidatorTest {
 
     @Test
     void digitsOnly_shouldStripTheMask() {
-        assertThat(CpfValidator.digitsOnly("529.982.247-25")).isEqualTo("52998224725");
+        assertThat(Digits.only("529.982.247-25")).isEqualTo("52998224725");
     }
 }

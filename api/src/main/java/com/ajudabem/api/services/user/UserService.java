@@ -22,7 +22,7 @@ import com.ajudabem.api.exceptions.UserNotFoundException;
 import com.ajudabem.api.mappers.UserMapper;
 import com.ajudabem.api.repositories.UserRepository;
 import com.ajudabem.api.infra.security.TokenService;
-import com.ajudabem.api.infra.validation.CpfValidator;
+import com.ajudabem.api.infra.validation.Digits;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +66,7 @@ public class UserService {
             throw new EmailAlreadyExistsException("Email is using");
         }
 
-        String cpf = CpfValidator.digitsOnly(dto.cpf());
+        String cpf = Digits.only(dto.cpf());
         requireCpfAvailable(cpf, null);
 
         User newUser = new User();
@@ -116,7 +116,7 @@ public class UserService {
         mapper.updateEntity(dto, user);
 
         if (dto.cpf() != null) {
-            String cpf = CpfValidator.digitsOnly(dto.cpf());
+            String cpf = Digits.only(dto.cpf());
             requireCpfAvailable(cpf, user.getId());
             user.setCpf(cpf);
         }
@@ -185,12 +185,7 @@ public class UserService {
 
         User user = findUserByEmail(dto.email());
 
-        boolean codeIsValid = user.getResetPasswordCode() != null
-                && user.getResetPasswordCode().equals(dto.code())
-                && user.getResetPasswordCodeExpiresAt() != null
-                && user.getResetPasswordCodeExpiresAt().isAfter(LocalDateTime.now());
-
-        if (!codeIsValid) {
+        if (!matchesUnexpired(dto.code(), user.getResetPasswordCode(), user.getResetPasswordCodeExpiresAt())) {
             throw new InvalidVerificationCodeException("Invalid or expired verification code");
         }
 
@@ -209,12 +204,7 @@ public class UserService {
 
         User user = findUserByEmail(dto.email());
 
-        boolean tokenIsValid = user.getResetPasswordToken() != null
-                && user.getResetPasswordToken().equals(dto.resetToken())
-                && user.getResetPasswordTokenExpiresAt() != null
-                && user.getResetPasswordTokenExpiresAt().isAfter(LocalDateTime.now());
-
-        if (!tokenIsValid) {
+        if (!matchesUnexpired(dto.resetToken(), user.getResetPasswordToken(), user.getResetPasswordTokenExpiresAt())) {
             throw new InvalidResetTokenException("Invalid or expired reset token");
         }
 
@@ -226,6 +216,10 @@ public class UserService {
         user.setResetPasswordToken(null);
         user.setResetPasswordTokenExpiresAt(null);
         repository.save(user);
+    }
+
+    private static boolean matchesUnexpired(String given, String stored, LocalDateTime expiresAt) {
+        return given != null && given.equals(stored) && expiresAt != null && expiresAt.isAfter(LocalDateTime.now());
     }
 
     private String generateVerificationCode() {
@@ -248,7 +242,6 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
 
-    /** {@code ownerId} is the user allowed to already have it (on update), or null. */
     private void requireCpfAvailable(String cpf, Long ownerId) {
         repository.findByCpf(cpf)
                 .filter(existing -> !existing.getId().equals(ownerId))

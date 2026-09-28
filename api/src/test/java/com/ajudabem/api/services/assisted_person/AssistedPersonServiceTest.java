@@ -11,6 +11,8 @@ import com.ajudabem.api.mappers.AssistedPersonMapper;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.TagRepository;
 import com.ajudabem.api.services.user.CurrentUserService;
+import com.ajudabem.api.services.help_point.GeocodingService;
+import com.ajudabem.api.services.notification.NotificationService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +41,12 @@ class AssistedPersonServiceTest {
 
     @Mock
     private AssistedPersonMapper mapper;
+
+    @Mock
+    private GeocodingService geocodingService;
+
+    @Mock
+    private NotificationService notificationService;
 
     @InjectMocks
     private AssistedPersonService assistedPersonService;

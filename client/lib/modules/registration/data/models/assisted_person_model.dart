@@ -5,6 +5,7 @@ class AssistedPersonModel {
     required this.id,
     required this.fullName,
     this.riskLevel,
+    this.careStatus = 'NOMINATED',
     required this.age,
     required this.gender,
     required this.tags,
@@ -23,9 +24,16 @@ class AssistedPersonModel {
       id: (json['id'] as num?)?.toInt() ?? 0,
       fullName: json['full_name'] as String? ?? '',
       riskLevel: json['riskLevel'] as String?,
+      careStatus: json['careStatus'] as String? ?? 'NOMINATED',
       age: (json['age'] as num?)?.toInt() ?? 0,
       gender: json['gender'] as String? ?? 'OTHER',
-      tags: (json['tags'] as List<dynamic>? ?? []).whereType<String>().toList(),
+      tags: [
+        for (final tag in json['tags'] as List<dynamic>? ?? const [])
+          if (tag is Map<String, dynamic>)
+            tag['name'] as String? ?? ''
+          else if (tag is String)
+            tag,
+      ],
       notes: json['notes'] as String? ?? '',
       street: json['street'] as String? ?? '',
       number: json['number'] as String? ?? '',
@@ -40,6 +48,7 @@ class AssistedPersonModel {
   final int id;
   final String fullName;
   final String? riskLevel;
+  final String careStatus;
   final int age;
   final String gender;
   final List<String> tags;
@@ -57,6 +66,7 @@ class AssistedPersonModel {
       id: id,
       fullName: fullName,
       riskLevel: riskLevel,
+      careStatus: careStatus,
       age: age,
       gender: gender,
       tags: tags,

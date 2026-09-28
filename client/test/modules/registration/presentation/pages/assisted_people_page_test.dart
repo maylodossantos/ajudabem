@@ -22,15 +22,16 @@ void main() {
 
     expect(find.text('Pessoas cadastradas'), findsOneWidget);
     expect(find.text('Maria'), findsOneWidget);
-    expect(find.text('Em análise'), findsOneWidget);
+    expect(find.text('Informações recebidas.'), findsOneWidget);
     expect(find.text('João'), findsOneWidget);
     expect(find.text('Atendimento iniciado'), findsOneWidget);
     expect(find.text('Em triagem'), findsOneWidget);
+    expect(find.text('Atendimento finalizado'), findsOneWidget);
     expect(
       find.byKey(const Key('assisted_people_bottom_navigation')),
       findsOneWidget,
     );
-    expect(find.byTooltip('Opções do cadastro'), findsNWidgets(3));
+    expect(find.byTooltip('Opções do cadastro'), findsNWidgets(4));
   });
 }
 
@@ -39,8 +40,19 @@ class _FakeAssistedPersonRepository implements AssistedPersonRepository {
   Future<List<AssistedPerson>> getAll(String token) async {
     return const [
       AssistedPerson(id: 1, fullName: 'Maria', riskLevel: 'MEDIUM'),
-      AssistedPerson(id: 2, fullName: 'João', riskLevel: 'HIGH'),
+      AssistedPerson(
+        id: 2,
+        fullName: 'João',
+        riskLevel: 'HIGH',
+        careStatus: 'IN_CARE',
+      ),
       AssistedPerson(id: 3, fullName: 'Ana'),
+      AssistedPerson(
+        id: 4,
+        fullName: 'Pedro',
+        riskLevel: 'LOW',
+        careStatus: 'FINISHED',
+      ),
     ];
   }
 
