@@ -16,7 +16,8 @@ $env:JAVA_HOME = "C:\Users\Maylo\.jdks\ms-17.0.20.1"
 - Start local Postgres: `docker compose up -d db` (required before `spring-boot:run`; not required for `test`, see Persistence below)
 - Start local fake SMTP (MailDev, for the forgot-password email): `docker compose up -d maildev` — web inbox at `http://localhost:1080`, SMTP at `localhost:1025` (both are `UserService`'s dev-time defaults, see application.properties)
 - Addresses (help points, assisted people, organizations) are turned into coordinates with OpenStreetMap Nominatim (`GEOCODING_URL`, default `https://nominatim.openstreetmap.org`, free, no key; `GeocodingService`). A failed lookup just leaves the point without coordinates.
-- Local LLM for the risk triage of assisted people (optional): install Ollama and run `ollama pull qwen2.5:3b` once; the API calls it at `http://localhost:11434` (`OLLAMA_URL`/`OLLAMA_MODEL`). People are saved with `riskLevel = null` (pending) and a scheduled job (`RiskTriageService.triagePending`, every `TRIAGE_INTERVAL_MS`) classifies them; without Ollama they simply stay pending.
+- Start everything the API talks to at once: `docker compose up -d` (Postgres, MailDev and Ollama; the one-shot `ollama-pull` service downloads `OLLAMA_MODEL` into the `ajudabem-ollama-data` volume on the first run, so later starts are instant).
+- Local LLM for the risk triage of assisted people (optional): the `ollama` compose service (or a local Ollama install with `ollama pull qwen2.5:3b`); the API calls it at `http://localhost:11434` (`OLLAMA_URL`/`OLLAMA_MODEL`). People are saved with `riskLevel = null` (pending) and a scheduled job (`RiskTriageService.triagePending`, every `TRIAGE_INTERVAL_MS`) classifies them; without Ollama they simply stay pending.
 - Build: `./mvnw.cmd compile`
 - Run: `./mvnw.cmd spring-boot:run`
 - Test: `./mvnw.cmd test`
