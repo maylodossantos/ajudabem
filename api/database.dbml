@@ -1,0 +1,468 @@
+Project ajudabem {
+  database_type: 'PostgreSQL'
+  Note: 'Schema gerado a partir das migrations Flyway V1..V14 (api/src/main/resources/db/migration)'
+}
+
+Enum user_role {
+  "0" [note: 'ADMIN']
+  "1" [note: 'USER']
+  "2" [note: 'USER_ONG']
+}
+
+Enum gender {
+  "0" [note: 'MALE']
+  "1" [note: 'FEMALE']
+  "2" [note: 'OTHER']
+}
+
+Enum risk_level_ordinal {
+  "0" [note: 'HIGH']
+  "1" [note: 'MEDIUM']
+  "2" [note: 'LOW']
+}
+
+Enum risk_level {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+Enum care_status {
+  NOMINATED
+  IN_CARE
+  FINISHED
+}
+
+Enum care_record_status {
+  STARTED
+  IN_PROGRESS
+  FINISHED
+}
+
+Enum finish_reason {
+  HELPED
+  PARTIALLY_HELPED
+  AWAITING_RETURN
+  UNSUCCESSFUL_ATTEMPT
+  COULD_NOT_HELP
+  NOT_FOUND
+  REFERRED_ELSEWHERE
+}
+
+Enum organization_status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+Enum rejection_reason {
+  ILLEGIBLE_DOCUMENTS
+  INVALID_DOCUMENTS
+  DATA_MISMATCH
+  IRREGULAR_CNPJ
+  OTHER
+}
+
+Enum organization_document_type {
+  CNPJ_PROOF
+  BYLAWS
+  BOARD_ELECTION_MINUTES
+  RESPONSIBLE_ID
+}
+
+Enum help_point_organization_type {
+  NGO
+  CHURCH
+  MUNICIPAL_SHELTER
+  SOCIAL_PROJECT
+  VOLUNTEER_INITIATIVE
+  PUBLIC_HEALTH
+}
+
+Enum help_point_source {
+  MANUAL
+  CNES
+}
+
+Enum assistance_type {
+  SHELTER
+  OVERNIGHT
+  RECEPTION
+  FOOD
+  CLOTHING
+  MEDICAL
+  PSYCHOLOGICAL
+}
+
+Enum day_of_week {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+Enum campaign_category {
+  FOOD
+  CLOTHING
+  HYGIENE
+  HEALTH
+  HOUSING
+  EDUCATION
+  ANIMALS
+  OTHER
+}
+
+Enum initiative_status {
+  ACTIVE
+  FINISHED
+}
+
+Enum application_status {
+  PENDING
+  ACCEPTED
+}
+
+Enum notification_type {
+  CASE_NOMINATED
+  CASE_ASSUMED
+  CASE_FINISHED
+  CAMPAIGN_CREATED
+  ACTION_CREATED
+  VOLUNTEER_APPLIED
+  APPLICATION_ACCEPTED
+  ORGANIZATION_APPROVED
+  ORGANIZATION_REJECTED
+}
+
+TableGroup usuarios {
+  users
+  notifications
+}
+
+TableGroup ongs {
+  organizations
+  organization_documents
+  organization_document_files
+}
+
+TableGroup atendimento {
+  assisted_people
+  assisted_person_tags
+  tags
+  care_records
+  risk_triage_logs
+}
+
+TableGroup iniciativas {
+  campaigns
+  volunteer_actions
+  volunteer_applications
+}
+
+TableGroup pontos_de_ajuda {
+  help_points
+  help_point_services
+  help_point_opening_hours
+}
+
+Table users {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  name varchar(255)
+  email varchar(255)
+  password varchar(255)
+  phone varchar(255)
+  profile_image varchar(255)
+  cpf varchar(11) [note: 'Único entre usuários ativos (deleted = false)']
+  role user_role [note: 'SMALLINT ordinal']
+  birth_date date
+  last_login_at timestamp
+  terms_accepted_at timestamp
+  reset_password_code varchar(255)
+  reset_password_code_expires_at timestamp
+  reset_password_token varchar(255)
+  reset_password_token_expires_at timestamp
+
+  indexes {
+    cpf [unique, name: 'uk_users_cpf_active', note: 'WHERE deleted = false']
+  }
+}
+
+Table news {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  author_user_id bigint [not null, ref: > users.id]
+  title varchar(255)
+  subtitle varchar(255)
+  content varchar(10000)
+  cover_image varchar(500)
+  city varchar(100)
+  state varchar(2)
+}
+
+Table tags {
+  id bigint [pk]
+  deleted boolean [not null, default: false]
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  name varchar(255)
+}
+
+Table assisted_people {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  created_user_id bigint [not null, ref: > users.id]
+  organization_id bigint [ref: > organizations.id, note: 'ONG que assumiu o caso']
+  full_name varchar(255)
+  age integer
+  gender gender [note: 'SMALLINT ordinal']
+  risk_level risk_level_ordinal [note: 'SMALLINT ordinal']
+  notes varchar(255)
+  street varchar(255)
+  number varchar(255)
+  neighborhood varchar(255)
+  city varchar(255)
+  state varchar(255)
+  zip_code varchar(255)
+  country varchar(255)
+  latitude double
+  longitude double
+  care_status care_status [not null, default: 'NOMINATED']
+  care_started_at timestamp
+  care_updated_at timestamp
+  finish_reason finish_reason
+}
+
+Table assisted_person_tags {
+  assisted_person_id bigint [not null, ref: > assisted_people.id]
+  tag_id bigint [not null, ref: > tags.id]
+
+  indexes {
+    (assisted_person_id, tag_id) [pk]
+  }
+}
+
+Table care_records {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  assisted_person_id bigint [not null, ref: > assisted_people.id]
+  author_user_id bigint [not null, ref: > users.id]
+  number integer [not null]
+  status care_record_status [not null]
+  occurred_at timestamp [not null]
+  situation varchar(2000)
+  action_taken varchar(2000)
+  referral varchar(2000)
+  next_step varchar(2000)
+  summary varchar(2000)
+  note varchar(2000)
+  finish_reason finish_reason
+}
+
+Table risk_triage_logs {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  assisted_person_id bigint [not null, ref: > assisted_people.id]
+  risk_level risk_level [not null]
+  justification varchar(2000)
+  model varchar(100) [not null]
+  input varchar(4000) [not null]
+  duration_ms bigint [not null]
+
+  indexes {
+    (assisted_person_id, created_at) [name: 'idx_risk_triage_logs_person']
+  }
+}
+
+Table organizations {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  owner_user_id bigint [not null, ref: > users.id]
+  corporate_name varchar(150)
+  trade_name varchar(150)
+  cnpj varchar(14)
+  activity_area varchar(100)
+  street varchar(255)
+  number varchar(20)
+  neighborhood varchar(100)
+  city varchar(100)
+  state varchar(2)
+  zip_code varchar(8)
+  latitude double
+  longitude double
+  website varchar(255)
+  instagram varchar(100)
+  status organization_status [not null]
+  submitted_at timestamp
+  reviewed_at timestamp
+  reviewed_by_user_id bigint [ref: > users.id]
+  rejection_reason rejection_reason
+  rejection_note varchar(1000)
+
+  indexes {
+    owner_user_id [unique, name: 'uk_organizations_owner_active', note: 'WHERE deleted = false']
+    cnpj [unique, name: 'uk_organizations_cnpj_active', note: 'WHERE deleted = false']
+  }
+}
+
+Table organization_documents {
+  organization_id bigint [not null, ref: > organizations.id]
+  type organization_document_type [not null]
+  file_name varchar(255) [not null]
+  content_type varchar(100) [not null]
+  size_bytes bigint [not null]
+  sent_at timestamp
+
+  indexes {
+    (organization_id, type) [pk]
+  }
+}
+
+Table organization_document_files {
+  organization_id bigint [not null, ref: > organizations.id]
+  type organization_document_type [not null]
+  content bytea [not null, note: 'PDF confidencial, servido só via API para admin/dono']
+
+  indexes {
+    (organization_id, type) [pk]
+  }
+}
+
+Table help_points {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  name varchar(150) [not null]
+  description varchar(1000)
+  cover_image varchar(500)
+  organization_type help_point_organization_type [not null]
+  street varchar(255)
+  number varchar(20)
+  neighborhood varchar(100)
+  city varchar(100)
+  state varchar(2)
+  zip_code varchar(8)
+  latitude double
+  longitude double
+  phone varchar(20)
+  whatsapp varchar(20)
+  email varchar(255)
+  responsible varchar(255)
+  schedule_note varchar(255)
+  notes varchar(1000)
+  source help_point_source [not null]
+  external_id varchar(50) [note: 'Código CNES quando source = CNES']
+}
+
+Table help_point_services {
+  help_point_id bigint [not null, ref: > help_points.id]
+  service assistance_type [not null]
+
+  indexes {
+    (help_point_id, service) [pk]
+  }
+}
+
+Table help_point_opening_hours {
+  help_point_id bigint [not null, ref: > help_points.id]
+  day_of_week day_of_week [not null]
+  opens_at time [not null]
+  closes_at time [not null, note: '<= opens_at fecha no dia seguinte; = opens_at aberto 24h']
+}
+
+Table campaigns {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  organization_id bigint [not null, ref: > organizations.id]
+  title varchar(150) [not null]
+  subtitle varchar(300)
+  description varchar(5000) [not null]
+  donation_info varchar(2000)
+  category campaign_category [not null]
+  goal_amount numeric(12,2)
+  deadline date
+  cover_image varchar(500)
+  status initiative_status [not null]
+  finished_at timestamp
+}
+
+Table volunteer_actions {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  organization_id bigint [not null, ref: > organizations.id]
+  title varchar(150) [not null]
+  action_date date [not null]
+  start_time time [not null]
+  end_time time [not null]
+  volunteers_needed integer [not null]
+  street varchar(255) [not null]
+  number varchar(20)
+  city varchar(100) [not null]
+  state varchar(2) [not null]
+  zip_code varchar(8)
+  description varchar(2000) [not null]
+  tasks varchar(2000)
+  requirements varchar(2000)
+  notes varchar(2000)
+  status initiative_status [not null]
+  finished_at timestamp
+}
+
+Table volunteer_applications {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  action_id bigint [not null, ref: > volunteer_actions.id]
+  volunteer_user_id bigint [not null, ref: > users.id]
+  status application_status [not null]
+}
+
+Table notifications {
+  id bigint [pk]
+  deleted boolean
+  created_at timestamp
+  updated_at timestamp
+  deleted_at timestamp
+  recipient_user_id bigint [not null, ref: > users.id]
+  type notification_type [not null]
+  title varchar(150) [not null]
+  message varchar(500) [not null]
+  target_id bigint [note: 'Id polimórfico (caso, campanha, ação, organização) conforme type']
+  read_at timestamp
+
+  indexes {
+    (recipient_user_id, created_at) [name: 'idx_notifications_recipient']
+  }
+}

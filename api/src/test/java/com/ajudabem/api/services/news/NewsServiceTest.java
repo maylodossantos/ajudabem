@@ -39,7 +39,7 @@ class NewsServiceTest {
     private NewsService newsService;
 
     private NewsRequestDTO requestDTO() {
-        return new NewsRequestDTO("Title", "Subtitle", "Content", "cover.png");
+        return new NewsRequestDTO("Title", "Subtitle", "Content", "cover.png", "Cascavel", "PR");
     }
 
     private User userWithRole(UserRole role) {
@@ -139,7 +139,7 @@ class NewsServiceTest {
         NewsResponseDTO response1 = mock(NewsResponseDTO.class);
         NewsResponseDTO response2 = mock(NewsResponseDTO.class);
 
-        when(repository.findAll()).thenReturn(List.of(news1, news2));
+        when(repository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(news1, news2));
         when(mapper.toResponse(news1)).thenReturn(response1);
         when(mapper.toResponse(news2)).thenReturn(response2);
 

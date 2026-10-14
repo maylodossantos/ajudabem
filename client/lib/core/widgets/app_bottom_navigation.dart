@@ -70,14 +70,14 @@ class AppBottomNavigation extends StatelessWidget {
               ),
               if (showCreateNews)
                 _NavigationButton(
-                  icon: Icons.campaign_outlined,
+                  iconAsset: 'assets/icons/navigation/publish.svg',
                   label: 'Publicar',
                   selected: currentItem == AppNavigationItem.createNews,
                   onTap: onCreateNews,
                 ),
               if (showOng)
                 _NavigationButton(
-                  icon: Icons.volunteer_activism_outlined,
+                  iconAsset: 'assets/icons/navigation/ong.svg',
                   label: 'Ong',
                   selected: currentItem == AppNavigationItem.ong,
                   onTap: onOng,
@@ -92,15 +92,13 @@ class AppBottomNavigation extends StatelessWidget {
 
 class _NavigationButton extends StatelessWidget {
   const _NavigationButton({
+    required this.iconAsset,
     required this.label,
     required this.selected,
-    this.iconAsset,
-    this.icon,
     this.onTap,
   });
 
-  final String? iconAsset;
-  final IconData? icon;
+  final String iconAsset;
   final String label;
   final bool selected;
   final VoidCallback? onTap;
@@ -121,14 +119,12 @@ class _NavigationButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              icon != null
-                  ? Icon(icon, size: 22, color: color)
-                  : SvgPicture.asset(
-                      iconAsset!,
-                      width: 22,
-                      height: 22,
-                      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
-                    ),
+              SvgPicture.asset(
+                iconAsset,
+                width: 22,
+                height: 22,
+                colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+              ),
               const SizedBox(height: 4),
               Text(
                 label,

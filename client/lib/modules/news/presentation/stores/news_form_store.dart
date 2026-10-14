@@ -31,6 +31,12 @@ abstract class NewsFormStoreBase with Store {
   String content = '';
 
   @observable
+  String city = '';
+
+  @observable
+  String state = 'PR';
+
+  @observable
   bool isLoading = false;
 
   @observable
@@ -52,6 +58,8 @@ abstract class NewsFormStoreBase with Store {
     title = article.title;
     subtitle = article.subtitle;
     content = article.content;
+    city = article.city;
+    state = article.state.isEmpty ? 'PR' : article.state;
     cover.setImageUrl(article.coverImage);
   }
 
@@ -63,6 +71,12 @@ abstract class NewsFormStoreBase with Store {
 
   @action
   void setContent(String value) => content = value;
+
+  @action
+  void setCity(String value) => city = value;
+
+  @action
+  void setState(String value) => state = value;
 
   @action
   Future<bool> submit(String token) async {
@@ -79,6 +93,8 @@ abstract class NewsFormStoreBase with Store {
         subtitle: subtitle.trim(),
         content: content.trim(),
         coverImage: cover.imageUrl,
+        city: city,
+        state: state,
       );
 
       final id = articleId;

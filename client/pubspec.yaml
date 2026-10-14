@@ -80,7 +80,9 @@ flutter:
     - assets/icons/navigation/add.svg
     - assets/icons/navigation/heart.svg
     - assets/icons/navigation/news.svg
+    - assets/icons/navigation/ong.svg
     - assets/icons/navigation/profile.svg
+    - assets/icons/navigation/publish.svg
     - assets/icons/notify_icon.svg
     - assets/icons/ong/
     - assets/illustrations/
@@ -93,6 +95,7 @@ flutter:
     - assets/icons/register/phone.svg
     - assets/icons/register/user.svg
     - assets/icons/reset_password.svg
+    - assets/icons/search.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

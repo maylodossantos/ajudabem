@@ -1,8 +1,9 @@
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
-import '../initiatives/initiatives_module.dart';
+import '../initiatives/initiatives_data_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/tab_transition.dart';
 import '../../core/routes/auth_guard.dart';
 import 'data/datasources/news_datasource.dart';
 import 'data/datasources/news_datasource_impl.dart';
@@ -17,7 +18,7 @@ import 'presentation/stores/news_store.dart';
 
 class NewsModule extends Module {
   @override
-  List<Module> get imports => [CoreModule(), InitiativesModule()];
+  List<Module> get imports => [CoreModule(), InitiativesDataModule()];
 
   @override
   void binds(Injector i) {
@@ -29,7 +30,12 @@ class NewsModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child(AppRoutes.news, child: (_) => const NewsListPage());
+    r.child(
+      AppRoutes.news,
+      transition: TransitionType.custom,
+      customTransition: TabTransition.slide,
+      child: (_) => const NewsListPage(),
+    );
     r.child(
       AppRoutes.newsDetail,
       child: (_) => NewsDetailPage(article: Modular.args.data as NewsArticle),

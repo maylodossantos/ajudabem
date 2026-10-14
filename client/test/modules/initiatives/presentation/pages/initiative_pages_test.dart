@@ -237,8 +237,13 @@ void main() {
       ),
     );
 
-    expect(find.text('Como ajudar'), findsOneWidget);
-    expect(find.text('Meta: R\$ 1.000,00'), findsOneWidget);
+    expect(find.text('ONG Esperança'), findsOneWidget);
+    expect(find.text('100 cestas'), findsOneWidget);
+    expect(
+      find.textContaining('Você pode contribuir de diferentes formas'),
+      findsOneWidget,
+    );
+    expect(find.textContaining('Meta: R\$ 1.000,00'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('campaign_finish')));
     await tester.pumpAndSettle();

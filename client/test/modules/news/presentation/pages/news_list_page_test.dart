@@ -1,4 +1,5 @@
 import 'package:ajuda_bem/core/theme/app_theme.dart';
+import 'package:ajuda_bem/modules/initiatives/presentation/stores/campaign_stores.dart';
 import 'package:ajuda_bem/modules/news/domain/entities/news_article.dart';
 import 'package:ajuda_bem/modules/news/domain/entities/news_form_params.dart';
 import 'package:ajuda_bem/modules/news/domain/repositories/news_repository.dart';
@@ -9,6 +10,8 @@ import 'package:ajuda_bem/modules/profile/domain/repositories/profile_repository
 import 'package:ajuda_bem/modules/profile/presentation/stores/profile_store.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../initiatives/initiative_test_doubles.dart';
 
 void main() {
   testWidgets(
@@ -30,7 +33,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Campanha do inverno'), findsOneWidget);
-      expect(find.text('Por ONG Esperança'), findsOneWidget);
+      expect(find.text('Cascavel, PR'), findsOneWidget);
       expect(find.text('Publicar'), findsNothing);
       expect(find.byTooltip('Opções da notícia'), findsNothing);
     },
@@ -99,6 +102,78 @@ void main() {
     expect(store.errorMessage, isNull);
     expect(find.text('Publicar'), findsNothing);
   });
+
+  testWidgets('switches between news and campaigns on the same page', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: NewsListPage(
+          store: NewsStore(_FakeNewsRepository()),
+          profileStore: ProfileStore(_FakeProfileRepository(role: 'USER')),
+          campaignsStore: CampaignsFeedStore(
+            FakeCampaignRepository(
+              campaigns: [campaignWith(id: 1, title: 'Inverno Solidário')],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Campanhas em andamento'), findsOneWidget);
+    expect(find.text('Campanha do inverno'), findsOneWidget);
+    expect(find.byKey(const Key('campaign_open_1')), findsNothing);
+
+    await tester.tap(find.byKey(const Key('tab_Campanhas')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Campanha do inverno'), findsNothing);
+    expect(find.byKey(const Key('campaign_open_1')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('tab_Notícias')));
+    await tester.pumpAndSettle();
+    expect(find.text('Campanha do inverno'), findsOneWidget);
+  });
+
+  testWidgets('the search icon filters the news on the page', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: NewsListPage(
+          store: NewsStore(_FakeNewsRepository()),
+          profileStore: ProfileStore(_FakeProfileRepository(role: 'USER')),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byTooltip('Pesquisar').first);
+    await tester.pumpAndSettle();
+    final field = find.descendant(
+      of: find.byKey(const Key('news_search_field')),
+      matching: find.byType(TextField),
+    );
+
+    await tester.enterText(field, 'enchente');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+    expect(find.text('Nenhuma notícia encontrada.'), findsOneWidget);
+
+    await tester.enterText(field, 'inverno');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+    expect(find.text('Campanha do inverno'), findsOneWidget);
+  });
 }
 
 class _FakeNewsRepository implements NewsRepository {
@@ -112,6 +187,8 @@ class _FakeNewsRepository implements NewsRepository {
         content: 'Texto completo.',
         coverImage: null,
         authorName: 'ONG Esperança',
+        city: 'Cascavel',
+        state: 'PR',
       ),
     ];
   }

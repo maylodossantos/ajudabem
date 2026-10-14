@@ -63,6 +63,20 @@ class DateInputFormatter extends MaskedInputFormatter {
   static String dayAndMonth(DateTime date) =>
       '${date.day} de ${_months[date.month - 1]}';
 
+  static String relative(DateTime date, DateTime now) {
+    final day = DateTime(date.year, date.month, date.day);
+    final today = DateTime(now.year, now.month, now.day);
+    final days = today.difference(day).inDays;
+    if (days <= 0) return 'hoje';
+    if (days == 1) return 'ontem';
+    if (days < 7) return 'há $days dias';
+    return '${date.day} de ${_months[date.month - 1].substring(0, 3)}.';
+  }
+
+  static String stamp(DateTime date) =>
+      '${date.day} de ${_months[date.month - 1].substring(0, 3)}. '
+      '${date.year}, ${_twoDigits(date.hour)}:${_twoDigits(date.minute)}';
+
   static String longDate(DateTime date) =>
       '${_weekdays[date.weekday - 1]}, ${dayAndMonth(date)}';
 

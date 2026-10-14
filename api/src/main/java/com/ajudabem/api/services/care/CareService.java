@@ -10,6 +10,7 @@ import com.ajudabem.api.domains.user.UserRole;
 import com.ajudabem.api.dto.care.CareCaseDetailResponseDTO;
 import com.ajudabem.api.dto.care.CareCaseResponseDTO;
 import com.ajudabem.api.dto.care.CareRecordRequestDTO;
+import com.ajudabem.api.dto.care.RiskTriageResponseDTO;
 import com.ajudabem.api.exceptions.AssistedPersonNotFoundException;
 import com.ajudabem.api.exceptions.CaseAlreadyAssumedException;
 import com.ajudabem.api.exceptions.CaseClosedException;
@@ -17,6 +18,7 @@ import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.mappers.CareMapper;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.CareRecordRepository;
+import com.ajudabem.api.repositories.RiskTriageLogRepository;
 import com.ajudabem.api.repositories.TagRepository;
 import com.ajudabem.api.domains.notification.NotificationType;
 import com.ajudabem.api.services.notification.NotificationService;
@@ -35,6 +37,7 @@ public class CareService {
 
     private final AssistedPersonRepository personRepository;
     private final CareRecordRepository recordRepository;
+    private final RiskTriageLogRepository triageLogRepository;
     private final OrganizationAccessService organizationAccess;
     private final NotificationService notificationService;
     private final TagRepository tagRepository;
@@ -154,7 +157,12 @@ public class CareService {
                 toCase(person, origin),
                 recordRepository.findAllByAssistedPersonOrderByNumberAsc(person).stream()
                         .map(mapper::toRecord)
-                        .toList());
+                        .toList(),
+                person.getRiskLevel() == null ? null : triageLogRepository
+                        .findFirstByAssistedPersonOrderByCreatedAtDesc(person)
+                        .map(entry -> new RiskTriageResponseDTO(entry.getRiskLevel(), entry.getJustification(),
+                                entry.getModel(), entry.getCreatedAt()))
+                        .orElse(null));
     }
 
     private CareCaseResponseDTO toCase(AssistedPerson person, Organization origin) {

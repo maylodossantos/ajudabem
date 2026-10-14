@@ -47,7 +47,7 @@ public class NewsService {
     }
 
     public List<NewsResponseDTO> getAll() {
-        List<News> newsList = repository.findAll();
+        List<News> newsList = repository.findAllByOrderByCreatedAtDesc();
 
         return newsList.stream()
                 .map(mapper::toResponse)

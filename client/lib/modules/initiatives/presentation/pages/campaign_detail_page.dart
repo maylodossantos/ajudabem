@@ -1,19 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/formatters/date_input_formatter.dart';
 import '../../../../core/formatters/money_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
+import '../../../../core/widgets/app_cover_detail.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
-import '../../../../core/widgets/app_status_pill.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/campaign.dart';
 import '../stores/campaign_stores.dart';
+
+String textOf(Campaign campaign) {
+  final goal = campaign.goalAmount;
+  final deadline = campaign.deadline;
+  final left = campaign.deadlineLabel(DateTime.now()).replaceAll('.', '');
+  return [
+    campaign.description.trim(),
+    if (campaign.donationInfo.trim().isNotEmpty)
+      'Você pode contribuir de diferentes formas:\n\n'
+          '${campaign.donationInfo.trim()}',
+    [
+      if (goal != null) 'Meta: R\$ ${MoneyInputFormatter.display(goal)}',
+      if (deadline != null)
+        'Prazo: ${DateInputFormatter.display(deadline)} '
+            '(${left.toLowerCase()})',
+    ].join('\n'),
+  ].where((part) => part.isNotEmpty).join('\n\n');
+}
 
 class CampaignDetailPage extends StatefulWidget {
   const CampaignDetailPage({
@@ -101,132 +118,16 @@ class _CampaignDetailPageState extends State<CampaignDetailPage> {
                         onRetry: () => _store.load(widget.args.id),
                       )
                     : const Center(child: CircularProgressIndicator()))
-              : _CampaignBody(campaign: campaign),
+              : AppCoverDetail(
+                  imageUrl: campaign.coverImage,
+                  caption: campaign.organizationName,
+                  title: campaign.title,
+                  subtitle: campaign.subtitle,
+                  body: textOf(campaign),
+                  placeholderIcon: Icons.campaign_outlined,
+                ),
         );
       },
-    );
-  }
-}
-
-class _CampaignBody extends StatelessWidget {
-  const _CampaignBody({required this.campaign});
-
-  final Campaign campaign;
-
-  @override
-  Widget build(BuildContext context) {
-    final body = GoogleFonts.manrope(
-      color: const Color(0xFF232323),
-      fontSize: 15,
-      height: 1.45,
-      letterSpacing: 0,
-    );
-    final cover = campaign.coverImage;
-    final goal = campaign.goalAmount;
-    final deadline = campaign.deadline;
-
-    return SingleChildScrollView(
-      child: Stack(
-        children: [
-          Container(
-            height: 240,
-            width: double.infinity,
-            color: const Color(0xFFA2A2A2),
-            child: cover == null || cover.isEmpty
-                ? const Icon(
-                    Icons.campaign_outlined,
-                    size: 64,
-                    color: Colors.white,
-                  )
-                : Image.network(
-                    cover,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
-                  ),
-          ),
-          Container(
-            margin: const EdgeInsets.fromLTRB(20, 170, 20, 20),
-            padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  campaign.organizationName,
-                  style: GoogleFonts.manrope(
-                    color: const Color(0xFF454545),
-                    fontSize: 12,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  campaign.title,
-                  style: GoogleFonts.manrope(
-                    color: const Color(0xFF232323),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    AppStatusPill(
-                      label: campaign.category.label,
-                      color: Theme.of(context).colorScheme.primary,
-                      background: const Color(0xFFCFF2EC),
-                    ),
-                    AppStatusPill(
-                      label: campaign.deadlineLabel(DateTime.now()),
-                      color: const Color(0xFF454545),
-                      background: const Color(0xFFEBEBEB),
-                    ),
-                  ],
-                ),
-                if (campaign.subtitle.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    campaign.subtitle,
-                    style: body.copyWith(color: const Color(0xFFA2A2A2)),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Text(campaign.description, style: body),
-                if (goal != null || deadline != null) ...[
-                  const SizedBox(height: 16),
-                  if (goal != null)
-                    Text(
-                      'Meta: R\$ ${MoneyInputFormatter.display(goal)}',
-                      style: body.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  if (deadline != null)
-                    Text(
-                      'Prazo: ${DateInputFormatter.display(deadline)}',
-                      style: body.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                ],
-                if (campaign.donationInfo.isNotEmpty) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    'Como ajudar',
-                    style: body.copyWith(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  SelectableText(campaign.donationInfo, style: body),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

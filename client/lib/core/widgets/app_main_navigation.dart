@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../modules/profile/presentation/stores/profile_store.dart';
 import '../routes/app_routes.dart';
 import '../routes/auth_guard.dart';
+import '../routes/tab_transition.dart';
 import 'app_bottom_navigation.dart';
 import 'app_feedback.dart';
 
@@ -45,26 +46,37 @@ class AppMainNavigation extends StatelessWidget {
   }) {
     final signedIn = isSignedIn ?? AuthGuard.isSignedIn;
 
-    return AppBottomNavigation(
-      currentItem: currentItem,
-      onNews: () => _go(AppRoutes.news),
-      onHelp: () => _go(AppRoutes.helpPoints),
-      onProfile: () => _go(signedIn ? AppRoutes.profile : AppRoutes.auth),
-      onRegister: signedIn
-          ? () => _go(AppRoutes.registrationMenu)
-          : () => showAppSnackBar(
-              context,
-              'Faça login para acessar o menu de cadastro.',
-            ),
-      showCreateNews: canPublishNews,
-      onCreateNews: () => Modular.to.pushNamed(AppRoutes.newsForm),
-      showOng: isOng,
-      onOng: () => _go(AppRoutes.ong),
+    return Hero(
+      tag: 'app-main-navigation',
+      child: Material(
+        type: MaterialType.transparency,
+        child: AppBottomNavigation(
+          currentItem: currentItem,
+          onNews: () => _go(AppRoutes.news, AppNavigationItem.news),
+          onHelp: () => _go(AppRoutes.helpPoints, AppNavigationItem.help),
+          onProfile: () => _go(
+            signedIn ? AppRoutes.profile : AppRoutes.auth,
+            AppNavigationItem.profile,
+          ),
+          onRegister: signedIn
+              ? () =>
+                    _go(AppRoutes.registrationMenu, AppNavigationItem.register)
+              : () => showAppSnackBar(
+                  context,
+                  'Faça login para acessar o menu de cadastro.',
+                ),
+          showCreateNews: canPublishNews,
+          onCreateNews: () => Modular.to.pushNamed(AppRoutes.newsForm),
+          showOng: isOng,
+          onOng: () => _go(AppRoutes.ong, AppNavigationItem.ong),
+        ),
+      ),
     );
   }
 
-  void _go(String route) {
+  void _go(String route, AppNavigationItem target) {
     if (Modular.to.path != route) {
+      TabTransition.moving(currentItem.index, target.index);
       Modular.to.navigate(route);
     }
   }

@@ -3,10 +3,12 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/constants/brazilian_states.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_cover_image_picker.dart';
+import '../../../../core/widgets/app_labeled_field.dart';
 import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
@@ -28,6 +30,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
   late final TextEditingController _titleController;
   late final TextEditingController _subtitleController;
   late final TextEditingController _contentController;
+  late final TextEditingController _cityController;
 
   @override
   void initState() {
@@ -43,6 +46,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
     _titleController = TextEditingController(text: _formStore.title);
     _subtitleController = TextEditingController(text: _formStore.subtitle);
     _contentController = TextEditingController(text: _formStore.content);
+    _cityController = TextEditingController(text: _formStore.city);
   }
 
   @override
@@ -50,6 +54,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
     _titleController.dispose();
     _subtitleController.dispose();
     _contentController.dispose();
+    _cityController.dispose();
     super.dispose();
   }
 
@@ -59,10 +64,6 @@ class _NewsFormPageState extends State<NewsFormPage> {
       Modular.to.navigate(AppRoutes.auth);
       return;
     }
-
-    _formStore.setTitle(_titleController.text);
-    _formStore.setSubtitle(_subtitleController.text);
-    _formStore.setContent(_contentController.text);
 
     final wasEditing = _formStore.isEditing;
     final success = await _formStore.submit(token);
@@ -126,6 +127,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
                           label: 'Título:',
                           hintText: 'Título da notícia',
                           controller: _titleController,
+                          onChanged: _formStore.setTitle,
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
@@ -133,6 +135,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
                           label: 'Subtítulo:',
                           hintText: 'Subtítulo (opcional)',
                           controller: _subtitleController,
+                          onChanged: _formStore.setSubtitle,
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
@@ -140,7 +143,37 @@ class _NewsFormPageState extends State<NewsFormPage> {
                           label: 'Conteúdo:',
                           hintText: 'Escreva o conteúdo da notícia',
                           controller: _contentController,
+                          onChanged: _formStore.setContent,
                           maxLines: 8,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: AppTextField(
+                                key: const Key('news_form_city_field'),
+                                label: 'Cidade:',
+                                hintText: 'Ex.: Cascavel',
+                                controller: _cityController,
+                                onChanged: _formStore.setCity,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: Observer(
+                                builder: (_) => AppLabeledDropdown<String>(
+                                  label: 'Estado:',
+                                  value: _formStore.state,
+                                  options: BrazilianStates.codes,
+                                  labelOf: (code) => code,
+                                  onChanged: _formStore.setState,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),

@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/tab_transition.dart';
 import '../../core/routes/auth_guard.dart';
 import 'data/datasources/assisted_person_datasource.dart';
 import 'data/datasources/assisted_person_datasource_impl.dart';
@@ -30,6 +31,8 @@ class RegistrationModule extends Module {
   void routes(RouteManager r) {
     r.child(
       AppRoutes.registrationMenu,
+      transition: TransitionType.custom,
+      customTransition: TabTransition.slide,
       guards: [AuthGuard()],
       child: (_) => const RegistrationMenuPage(),
     );

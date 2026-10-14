@@ -12,7 +12,15 @@ public record NewsRequestDTO(
         String subtitle,
 
         @NotBlank(message = "Conteúdo é obrigatório")
+        @Size(max = 10000, message = "Conteúdo deve ter no máximo 10000 caracteres")
         String content,
 
-        String cover_image
+        @Size(max = 500, message = "Imagem inválida")
+        String cover_image,
+
+        @Size(max = 100, message = "Cidade deve ter no máximo 100 caracteres")
+        String city,
+
+        @Size(max = 2, message = "Use a sigla do estado")
+        String state
 ) { }

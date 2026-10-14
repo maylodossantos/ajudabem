@@ -68,7 +68,7 @@ class AppLabeledField extends StatelessWidget {
               initialValue: initialValue,
               onChanged: onChanged,
               maxLines: maxLines,
-              minLines: maxLines == 1 ? 1 : 3,
+              minLines: maxLines < 3 ? maxLines : 3,
               keyboardType: maxLines == 1
                   ? keyboardType
                   : TextInputType.multiline,

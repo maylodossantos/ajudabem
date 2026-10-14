@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/tab_transition.dart';
 import '../../core/routes/auth_guard.dart';
 import 'data/datasources/help_point_datasource.dart';
 import 'data/datasources/help_point_datasource_impl.dart';
@@ -30,7 +31,12 @@ class HelpPointsModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child(AppRoutes.helpPoints, child: (_) => const HelpPointsPage());
+    r.child(
+      AppRoutes.helpPoints,
+      transition: TransitionType.custom,
+      customTransition: TabTransition.slide,
+      child: (_) => const HelpPointsPage(),
+    );
     r.child(
       AppRoutes.helpPointDetail,
       child: (_) => HelpPointDetailPage(point: Modular.args.data as HelpPoint),

@@ -29,5 +29,7 @@ public class News extends EntityBase {
     private String subtitle;
     private String content;
     private String cover_image;
+    private String city;
+    private String state;
 
 }
