@@ -139,9 +139,9 @@ class _ProfileContent extends StatelessWidget {
                     Expanded(
                       child: _UtilityItem(
                         key: const Key('admin_news_option'),
-                        icon: Icons.assignment_ind_outlined,
+                        iconAsset: 'assets/icons/profile/registered_people.svg',
                         label: 'Notícias',
-                        onTap: () => Modular.to.navigate(AppRoutes.news),
+                        onTap: () => Modular.to.pushNamed(AppRoutes.newsManage),
                       ),
                     ),
                     const SizedBox(width: 9),

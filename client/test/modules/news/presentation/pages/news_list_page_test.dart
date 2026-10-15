@@ -62,7 +62,7 @@ void main() {
   });
 
   testWidgets(
-    'shows the publish tab and per-article manage menu for an admin',
+    'shows the per-article manage menu without a publish tab for an admin',
     (tester) async {
       final store = NewsStore(_FakeNewsRepository());
       final profileStore = ProfileStore(_FakeProfileRepository(role: 'ADMIN'));
@@ -79,7 +79,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Publicar'), findsOneWidget);
+      expect(find.text('Publicar'), findsNothing);
       expect(find.byTooltip('Opções da notícia'), findsOneWidget);
     },
   );

@@ -104,8 +104,12 @@ class _NewsListPageState extends State<NewsListPage> {
     Modular.to.pushNamed(AppRoutes.campaignDetail, arguments: campaign.id);
   }
 
-  void _openEdit(NewsArticle article) {
-    Modular.to.pushNamed(AppRoutes.newsForm, arguments: article);
+  Future<void> _openEdit(NewsArticle article) async {
+    final saved = await Modular.to.pushNamed<NewsArticle>(
+      AppRoutes.newsForm,
+      arguments: article,
+    );
+    if (saved != null && mounted) await _load();
   }
 
   Future<void> _confirmDelete(NewsArticle article) async {

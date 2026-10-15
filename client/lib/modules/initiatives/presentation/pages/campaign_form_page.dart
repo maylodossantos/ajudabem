@@ -85,6 +85,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
                 AppLabeledField(
                   key: const Key('campaign_title'),
                   label: 'Título:',
+                  required: true,
                   initialValue: _store.title,
                   onChanged: _store.setTitle,
                 ),
@@ -112,6 +113,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
                 AppLabeledField(
                   key: const Key('campaign_description'),
                   label: 'Descrição:',
+                  required: true,
                   hintText: 'Descreva o objetivo e como ela será realizada.',
                   initialValue: _store.description,
                   maxLines: 6,

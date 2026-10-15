@@ -106,6 +106,7 @@ class _RejectDialogState extends State<_RejectDialog> {
           AppLabeledDropdown<RejectionReason>(
             key: const Key('ong_reject_reason_field'),
             label: 'Motivo:',
+            required: true,
             hintText: 'Selecione o motivo',
             value: reason,
             options: RejectionReason.values,
@@ -113,7 +114,7 @@ class _RejectDialogState extends State<_RejectDialog> {
             onChanged: (value) => setState(() => _reason = value),
           ),
           const SizedBox(height: 14),
-          Text('Observação (opcional)', style: AppFieldStyles.label),
+          const AppFieldLabel('Observação:'),
           const SizedBox(height: 4),
           TextField(
             key: const Key('ong_reject_note_field'),

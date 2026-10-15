@@ -15,7 +15,9 @@ import '../../../profile/presentation/stores/profile_store.dart';
 import '../stores/login_store.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.showSocialLogin = false});
+
+  final bool showSocialLogin;
 
   static const _primaryText = Color(0xFF232323);
   static const _facebookBlue = Color(0xFF1877F2);
@@ -109,28 +111,30 @@ class LoginPage extends StatelessWidget {
                             isLoading: store.isLoading,
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        const _OrDivider(),
-                        const SizedBox(height: 12),
-                        AppOutlinedButton(
-                          label: 'Faça login com o Google',
-                          onPressed: () {},
-                          icon: SvgPicture.asset(
-                            'assets/icons/google_icon.svg',
-                            width: 14,
-                            height: 14,
+                        if (showSocialLogin) ...[
+                          const SizedBox(height: 12),
+                          const _OrDivider(),
+                          const SizedBox(height: 12),
+                          AppOutlinedButton(
+                            label: 'Faça login com o Google',
+                            onPressed: () {},
+                            icon: SvgPicture.asset(
+                              'assets/icons/google_icon.svg',
+                              width: 14,
+                              height: 14,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 10),
-                        AppOutlinedButton(
-                          label: 'Faça login com o Facebook',
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.facebook,
-                            size: 17,
-                            color: _facebookBlue,
+                          const SizedBox(height: 10),
+                          AppOutlinedButton(
+                            label: 'Faça login com o Facebook',
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.facebook,
+                              size: 17,
+                              color: _facebookBlue,
+                            ),
                           ),
-                        ),
+                        ],
                         const SizedBox(height: 12),
                         Wrap(
                           alignment: WrapAlignment.center,

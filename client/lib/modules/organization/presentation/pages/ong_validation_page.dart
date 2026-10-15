@@ -105,11 +105,7 @@ class _OngValidationPageState extends State<OngValidationPage> {
     return switch (organization.status) {
       OrganizationStatus.pending => AppStatusView(
         key: const Key('ong_validation_pending'),
-        illustration: Icon(
-          Icons.hourglass_top_rounded,
-          size: 140,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        illustration: Image.asset('assets/illustrations/ong_pending.png'),
         title: 'Solicitação em análise',
         message:
             'Recebemos os dados da ${organization.tradeName}. Assim que a '

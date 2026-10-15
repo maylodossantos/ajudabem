@@ -66,11 +66,13 @@ class AppBottomActions extends StatelessWidget {
     super.key,
     this.primaryKey,
     this.secondaryKey,
+    this.secondaryColor,
     this.isLoading = false,
   });
 
   final String secondaryLabel;
   final VoidCallback? onSecondary;
+  final Color? secondaryColor;
   final String primaryLabel;
   final VoidCallback? onPrimary;
   final Key? primaryKey;
@@ -86,6 +88,7 @@ class AppBottomActions extends StatelessWidget {
             key: secondaryKey,
             label: secondaryLabel,
             onPressed: onSecondary,
+            color: secondaryColor,
           ),
         ),
         const SizedBox(width: 16),

@@ -13,6 +13,8 @@ import 'domain/repositories/news_repository.dart';
 import 'presentation/pages/news_detail_page.dart';
 import 'presentation/pages/news_form_page.dart';
 import 'presentation/pages/news_list_page.dart';
+import 'presentation/pages/news_manage_detail_page.dart';
+import 'presentation/pages/news_manage_page.dart';
 import 'presentation/stores/news_form_store.dart';
 import 'presentation/stores/news_store.dart';
 
@@ -30,6 +32,7 @@ class NewsModule extends Module {
 
   @override
   void routes(RouteManager r) {
+    r.redirect('/', to: AppRoutes.news);
     r.child(
       AppRoutes.news,
       transition: TransitionType.custom,
@@ -39,6 +42,17 @@ class NewsModule extends Module {
     r.child(
       AppRoutes.newsDetail,
       child: (_) => NewsDetailPage(article: Modular.args.data as NewsArticle),
+    );
+    r.child(
+      AppRoutes.newsManage,
+      guards: [AuthGuard()],
+      child: (_) => const NewsManagePage(),
+    );
+    r.child(
+      AppRoutes.newsManageDetail,
+      guards: [AuthGuard()],
+      child: (_) =>
+          NewsManageDetailPage(article: Modular.args.data as NewsArticle),
     );
     r.child(
       AppRoutes.newsForm,

@@ -18,6 +18,8 @@ abstract class NewsFormStoreBase with Store {
   final NewsRepository _repository;
   final ImageUploadStore cover;
 
+  NewsArticle? savedArticle;
+
   @observable
   int? articleId;
 
@@ -98,11 +100,9 @@ abstract class NewsFormStoreBase with Store {
       );
 
       final id = articleId;
-      if (id == null) {
-        await _repository.create(params, token);
-      } else {
-        await _repository.update(id, params, token);
-      }
+      savedArticle = id == null
+          ? await _repository.create(params, token)
+          : await _repository.update(id, params, token);
       return true;
     } on AppException catch (error) {
       errorMessage = error.message;

@@ -3,10 +3,10 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../../../core/constants/brazilian_states.dart';
-import '../../../../core/formatters/cep_input_formatter.dart';
 import '../../../../core/formatters/cnpj_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_cep_field.dart';
 import '../../../../core/widgets/app_checkbox_tile.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_file_upload_tile.dart';
@@ -124,23 +124,30 @@ class _DataStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Observer(builder: (_) => _fields());
+  }
+
+  Widget _fields() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppLabeledField(
           label: 'Razão Social:',
+          required: true,
           initialValue: store.corporateName,
           onChanged: store.setCorporateName,
         ),
         _gap,
         AppLabeledField(
           label: 'Nome Fantasia:',
+          required: true,
           initialValue: store.tradeName,
           onChanged: store.setTradeName,
         ),
         _gap,
         AppLabeledField(
           label: 'CNPJ:',
+          required: true,
           hintText: '00.000.000/0000-00',
           initialValue: store.cnpj,
           keyboardType: TextInputType.number,
@@ -150,6 +157,7 @@ class _DataStep extends StatelessWidget {
         _gap,
         AppLabeledDropdown<String>(
           label: 'Área de atuação:',
+          required: true,
           hintText: 'Selecione',
           value: store.activityArea,
           options: ActivityAreas.all,
@@ -157,8 +165,36 @@ class _DataStep extends StatelessWidget {
           onChanged: store.setActivityArea,
         ),
         _gap,
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: AppCepField(
+                key: const Key('ong_form_cep_field'),
+                initialValue: store.zipCode,
+                onChanged: store.setZipCode,
+                required: true,
+                onStreet: store.setStreet,
+                onNeighborhood: store.setNeighborhood,
+                onCity: store.setCity,
+                onState: store.setState,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: AppLabeledField(
+                label: 'Número:',
+                required: true,
+                initialValue: store.number,
+                onChanged: store.setNumber,
+              ),
+            ),
+          ],
+        ),
+        _gap,
         AppLabeledField(
           label: 'Endereço:',
+          required: true,
           initialValue: store.street,
           onChanged: store.setStreet,
         ),
@@ -175,6 +211,7 @@ class _DataStep extends StatelessWidget {
             Expanded(
               child: AppLabeledField(
                 label: 'Cidade:',
+                required: true,
                 initialValue: store.city,
                 onChanged: store.setCity,
               ),
@@ -183,6 +220,7 @@ class _DataStep extends StatelessWidget {
             Expanded(
               child: AppLabeledDropdown<String>(
                 label: 'Estado:',
+                required: true,
                 hintText: 'UF',
                 value: store.state,
                 options: BrazilianStates.codes,
@@ -193,33 +231,8 @@ class _DataStep extends StatelessWidget {
           ],
         ),
         _gap,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AppLabeledField(
-                label: 'CEP:',
-                hintText: '00000-000',
-                initialValue: store.zipCode,
-                keyboardType: TextInputType.number,
-                inputFormatters: [CepInputFormatter()],
-                onChanged: store.setZipCode,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppLabeledField(
-                label: 'Número:',
-                initialValue: store.number,
-                onChanged: store.setNumber,
-              ),
-            ),
-          ],
-        ),
-        _gap,
         AppLabeledField(
           label: 'Site:',
-          hintText: 'Opcional',
           initialValue: store.website,
           keyboardType: TextInputType.url,
           onChanged: store.setWebsite,
@@ -227,7 +240,6 @@ class _DataStep extends StatelessWidget {
         _gap,
         AppLabeledField(
           label: 'Instagram:',
-          hintText: 'Opcional',
           initialValue: store.instagram,
           onChanged: store.setInstagram,
         ),
@@ -250,6 +262,10 @@ class _DocumentsStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Observer(builder: (_) => _fields());
+  }
+
+  Widget _fields() {
     const bold = TextStyle(fontWeight: FontWeight.w800);
 
     return Column(

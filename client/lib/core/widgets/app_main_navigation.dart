@@ -27,23 +27,16 @@ class AppMainNavigation extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = profileStore ?? Modular.tryGet<ProfileStore>();
     if (store == null) {
-      return _navigation(context, canPublishNews: false, isOng: false);
+      return _navigation(context, isOng: false);
     }
 
     return Observer(
-      builder: (_) => _navigation(
-        context,
-        canPublishNews: store.profile?.canPublishNews ?? false,
-        isOng: store.profile?.isOng ?? false,
-      ),
+      builder: (_) =>
+          _navigation(context, isOng: store.profile?.isOng ?? false),
     );
   }
 
-  Widget _navigation(
-    BuildContext context, {
-    required bool canPublishNews,
-    required bool isOng,
-  }) {
+  Widget _navigation(BuildContext context, {required bool isOng}) {
     final signedIn = isSignedIn ?? AuthGuard.isSignedIn;
 
     return Hero(
@@ -65,8 +58,6 @@ class AppMainNavigation extends StatelessWidget {
                   context,
                   'Faça login para acessar o menu de cadastro.',
                 ),
-          showCreateNews: canPublishNews,
-          onCreateNews: () => Modular.to.pushNamed(AppRoutes.newsForm),
           showOng: isOng,
           onOng: () => _go(AppRoutes.ong, AppNavigationItem.ong),
         ),

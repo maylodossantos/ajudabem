@@ -4,10 +4,10 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/brazilian_states.dart';
-import '../../../../core/formatters/cep_input_formatter.dart';
 import '../../../../core/formatters/phone_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_cep_field.dart';
 import '../../../../core/widgets/app_choice_chip.dart';
 import '../../../../core/widgets/app_cover_image_picker.dart';
 import '../../../../core/widgets/app_feedback.dart';
@@ -99,12 +99,14 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                   AppLabeledField(
                     key: const Key('help_point_form_name'),
                     label: 'Nome:',
+                    required: true,
                     initialValue: _store.name,
                     onChanged: _store.setName,
                   ),
                   _gap,
                   AppLabeledDropdown<HelpPointOrganizationType>(
                     label: 'Tipo de organização:',
+                    required: true,
                     hintText: 'Selecione',
                     value: _store.organizationType,
                     options: HelpPointOrganizationType.values,
@@ -112,7 +114,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                     onChanged: _store.setOrganizationType,
                   ),
                   _gap,
-                  Text('O que oferece:', style: AppFieldStyles.label),
+                  const AppFieldLabel('O que oferece:', required: true),
                   const SizedBox(height: 8),
                   AppChoiceChipGroup<AssistanceType>(
                     options: AssistanceType.values,
@@ -130,8 +132,19 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                   const SizedBox(height: 20),
                   const AppSectionTitle('Endereço'),
                   const SizedBox(height: 8),
+                  AppCepField(
+                    key: const Key('help_point_form_cep'),
+                    initialValue: _store.zipCode,
+                    onChanged: _store.setZipCode,
+                    onStreet: _store.setStreet,
+                    onNeighborhood: _store.setNeighborhood,
+                    onCity: _store.setCity,
+                    onState: _store.setState,
+                  ),
+                  _gap,
                   AppLabeledField(
                     label: 'Rua:',
+                    required: true,
                     initialValue: _store.street,
                     onChanged: _store.setStreet,
                   ),
@@ -164,6 +177,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                       Expanded(
                         child: AppLabeledField(
                           label: 'Cidade:',
+                          required: true,
                           initialValue: _store.city,
                           onChanged: _store.setCity,
                         ),
@@ -172,6 +186,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                       Expanded(
                         child: AppLabeledDropdown<String>(
                           label: 'Estado:',
+                          required: true,
                           hintText: 'UF',
                           value: _store.state,
                           options: BrazilianStates.codes,
@@ -180,15 +195,6 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                         ),
                       ),
                     ],
-                  ),
-                  _gap,
-                  AppLabeledField(
-                    label: 'CEP:',
-                    hintText: '00000-000',
-                    initialValue: _store.zipCode,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [CepInputFormatter()],
-                    onChanged: _store.setZipCode,
                   ),
                   const SizedBox(height: 20),
                   const AppSectionTitle('Contato'),
