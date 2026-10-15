@@ -128,7 +128,7 @@ class _OngValidationPageState extends State<OngValidationPage> {
           message:
               'Revise os documentos indicados e envie uma nova solicitação de '
               'validação.',
-          footer: _RejectionReasonCard(organization: organization),
+          footer: _RejectionReason(organization: organization),
           actionLabel: 'Validar ONG',
           onAction: () => _openForm(organization),
         ),
@@ -139,9 +139,8 @@ class _OngValidationPageState extends State<OngValidationPage> {
         message: 'Aguarde para solicitar uma nova validação.',
         footer: Column(
           children: [
+            _RejectionReason(organization: organization),
             _WaitingTime(days: organization.daysUntilResubmit(now)),
-            const SizedBox(height: 16),
-            _RejectionReasonCard(organization: organization),
           ],
         ),
       ),
@@ -164,21 +163,22 @@ class _WaitingTime extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         SizedBox.square(
-          dimension: 56,
+          dimension: 24,
           child: CircularProgressIndicator(
             value: 1 - (days / _totalDays).clamp(0, 1),
-            strokeWidth: 28,
+            strokeWidth: 3,
+            strokeCap: StrokeCap.round,
             color: primary,
-            backgroundColor: const Color(0xFFE9E9E9),
+            backgroundColor: const Color(0xFFE2E2E2),
           ),
         ),
-        const SizedBox(width: 14),
+        const SizedBox(width: 10),
         Text(
           days == 1 ? '1 dia' : '$days dias',
           style: GoogleFonts.manrope(
             color: primary,
-            fontSize: 16,
-            fontWeight: FontWeight.w800,
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
             letterSpacing: 0,
           ),
         ),
@@ -187,8 +187,8 @@ class _WaitingTime extends StatelessWidget {
   }
 }
 
-class _RejectionReasonCard extends StatelessWidget {
-  const _RejectionReasonCard({required this.organization});
+class _RejectionReason extends StatelessWidget {
+  const _RejectionReason({required this.organization});
 
   final Organization organization;
 
@@ -202,20 +202,14 @@ class _RejectionReasonCard extends StatelessWidget {
 
     final textStyle = GoogleFonts.manrope(
       color: const Color(0xFF454545),
-      fontSize: 13,
-      height: 1.35,
+      fontSize: 14,
+      height: 1.4,
       letterSpacing: 0,
     );
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (reason != null)
             Text.rich(
@@ -223,16 +217,17 @@ class _RejectionReasonCard extends StatelessWidget {
                 children: [
                   const TextSpan(
                     text: 'Motivo: ',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w700),
                   ),
                   TextSpan(text: reason.label),
                 ],
               ),
+              textAlign: TextAlign.center,
               style: textStyle,
             ),
           if (note != null && note.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(note, style: textStyle),
+            const SizedBox(height: 2),
+            Text(note, textAlign: TextAlign.center, style: textStyle),
           ],
         ],
       ),

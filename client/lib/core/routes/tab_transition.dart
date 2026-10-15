@@ -8,6 +8,29 @@ abstract final class TabTransition {
 
   static void moving(int from, int to) => _direction = to >= from ? 1 : -1;
 
+  static CustomTransition get rise => CustomTransition(
+    transitionDuration: const Duration(milliseconds: 260),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
+
+      return FadeTransition(
+        opacity: curved,
+        child: SlideTransition(
+          position: Tween(
+            begin: const Offset(0, 0.04),
+            end: Offset.zero,
+          ).animate(curved),
+          child: child,
+        ),
+      );
+    },
+  );
+
   static CustomTransition get slide => CustomTransition(
     transitionDuration: duration,
     reverseTransitionDuration: duration,

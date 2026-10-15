@@ -45,6 +45,7 @@ dependencies:
   latlong2: ^0.10.1
   mobx: ^2.6.0
   pdfx: ^2.11.0
+  printing: ^5.15.1
   url_launcher: ^6.3.2
 
 dev_dependencies:
@@ -87,7 +88,7 @@ flutter:
     - assets/illustrations/
     - assets/icons/profile/ong_validation.svg
     - assets/icons/profile/registered_people.svg
-    - assets/icons/profile/volunteer.png
+    - assets/icons/profile/volunteer.svg
     - assets/icons/recover_access.png
     - assets/icons/register/email.svg
     - assets/icons/register/password.svg

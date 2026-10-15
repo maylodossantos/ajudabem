@@ -18,6 +18,17 @@ class AppNotificationBell extends StatefulWidget {
 class _AppNotificationBellState extends State<AppNotificationBell> {
   final NotificationsStore? _store = Modular.tryGet<NotificationsStore>();
   final String? _token = Modular.tryGet<LoginStore>()?.authToken;
+  bool _opening = false;
+
+  Future<void> _open() async {
+    if (_opening || Modular.to.path == AppRoutes.notifications) return;
+    _opening = true;
+    try {
+      await Modular.to.pushNamed(AppRoutes.notifications);
+    } finally {
+      _opening = false;
+    }
+  }
 
   @override
   void initState() {
@@ -39,7 +50,7 @@ class _AppNotificationBellState extends State<AppNotificationBell> {
     return IconButton(
       key: const Key('notification_bell'),
       tooltip: 'Notificações',
-      onPressed: () => Modular.to.pushNamed(AppRoutes.notifications),
+      onPressed: _open,
       icon: Observer(
         builder: (_) {
           final unread = store.unread;

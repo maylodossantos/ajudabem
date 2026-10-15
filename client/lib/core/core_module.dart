@@ -18,6 +18,7 @@ import 'notifications/notifications_repository.dart';
 import 'notifications/notifications_store.dart';
 import 'services/cep_service.dart';
 import 'services/document_picker_service.dart';
+import 'services/document_print_service.dart';
 import 'services/external_link_service.dart';
 import 'services/file_download_service.dart';
 import 'services/image_upload_service.dart';
@@ -40,6 +41,7 @@ class CoreModule extends Module {
     i.addSingleton<CepService>(HttpCepService.new);
     i.addSingleton<DocumentPickerService>(FilePickerDocumentService.new);
     i.addSingleton<FileDownloadService>(FileSaverDownloadService.new);
+    i.addSingleton<DocumentPrintService>(PrintingDocumentService.new);
     i.addSingleton<LocationService>(GeolocatorLocationService.new);
     i.addSingleton<ExternalLinkService>(UrlLauncherLinkService.new);
     i.addSingleton(TagsRepository.new);

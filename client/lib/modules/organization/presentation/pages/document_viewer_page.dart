@@ -7,6 +7,7 @@ import 'package:pdfx/pdfx.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/services/document_print_service.dart';
 import '../../../../core/services/file_download_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_error_view.dart';
@@ -40,6 +41,7 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
   Uint8List? _bytes;
   PdfControllerPinch? _controller;
   String? _error;
+  Size _viewport = Size.zero;
 
   static const _minScale = 1.0;
   static const _maxScale = 5.0;
@@ -87,10 +89,45 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
 
   void _zoom(double factor) {
     final controller = _controller;
-    if (controller == null) return;
-    final current = controller.value.getMaxScaleOnAxis();
-    final next = (current * factor).clamp(_minScale, _maxScale);
-    controller.value = Matrix4.identity()..scaleByDouble(next, next, next, 1);
+    if (controller == null || _viewport.isEmpty) return;
+
+    final current = controller.value;
+    final scale = current.getMaxScaleOnAxis();
+    final next = (scale * factor).clamp(_minScale, _maxScale);
+    if ((next - scale).abs() < 0.001) return;
+
+    final center = _viewport.center(Offset.zero);
+    final ratio = next / scale;
+    final destination = Matrix4.identity()
+      ..translateByDouble(center.dx, center.dy, 0, 1)
+      ..scaleByDouble(ratio, ratio, 1, 1)
+      ..translateByDouble(-center.dx, -center.dy, 0, 1)
+      ..multiply(current);
+
+    if (next <= _minScale) {
+      final translation = destination.getTranslation();
+      destination.setTranslationRaw(0, translation.y, 0);
+    }
+
+    controller.goTo(
+      destination: destination,
+      duration: const Duration(milliseconds: 220),
+    );
+  }
+
+  Future<void> _print() async {
+    final bytes = _bytes;
+    if (bytes == null) return;
+    try {
+      await Modular.get<DocumentPrintService>().printPdf(
+        widget.args.document.fileName,
+        bytes,
+      );
+    } catch (_) {
+      if (mounted) {
+        showAppSnackBar(context, 'Não foi possível imprimir o documento.');
+      }
+    }
   }
 
   Future<void> _download() async {
@@ -142,22 +179,27 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                   ? AppErrorView(message: error, onRetry: _load)
                   : controller == null
                   ? const Center(child: CircularProgressIndicator())
-                  : Stack(
-                      children: [
-                        PdfViewPinch(
-                          controller: controller,
-                          minScale: _minScale,
-                          maxScale: _maxScale,
-                        ),
-                        Positioned(
-                          top: 12,
-                          left: 0,
-                          right: 0,
-                          child: Center(
-                            child: _PageCounter(controller: controller),
-                          ),
-                        ),
-                      ],
+                  : LayoutBuilder(
+                      builder: (_, constraints) {
+                        _viewport = constraints.biggest;
+                        return Stack(
+                          children: [
+                            PdfViewPinch(
+                              controller: controller,
+                              minScale: _minScale,
+                              maxScale: _maxScale,
+                            ),
+                            Positioned(
+                              top: 12,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: _PageCounter(controller: controller),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
             ),
             ColoredBox(
@@ -170,14 +212,16 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                 child: Row(
                   children: [
                     AppSquareIconButton(
+                      key: const Key('document_zoom_in_button'),
                       icon: Icons.zoom_in,
                       color: const Color(0xFF232323),
                       background: const Color(0xFFE8E8E8),
                       tooltip: 'Aproximar',
                       onPressed: controller == null ? null : () => _zoom(1.5),
                     ),
-                    const SizedBox(width: 24),
+                    const SizedBox(width: 8),
                     AppSquareIconButton(
+                      key: const Key('document_zoom_out_button'),
                       icon: Icons.zoom_out,
                       color: const Color(0xFF232323),
                       background: const Color(0xFFE8E8E8),
@@ -187,6 +231,15 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                           : () => _zoom(1 / 1.5),
                     ),
                     const Spacer(),
+                    AppSquareIconButton(
+                      key: const Key('document_print_button'),
+                      icon: Icons.print_outlined,
+                      tooltip: 'Imprimir',
+                      color: const Color(0xFF232323),
+                      background: const Color(0xFFE8E8E8),
+                      onPressed: _bytes == null ? null : _print,
+                    ),
+                    const SizedBox(width: 8),
                     AppSquareIconButton(
                       key: const Key('document_download_button'),
                       icon: Icons.download,
