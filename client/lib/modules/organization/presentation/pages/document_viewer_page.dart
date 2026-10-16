@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pdfx/pdfx.dart';
 
 import '../../../../core/errors/app_exception.dart';
 import '../../../../core/routes/app_routes.dart';
@@ -12,6 +11,7 @@ import '../../../../core/services/file_download_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_pdf_viewer.dart';
 import '../../../../core/widgets/app_square_icon_button.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
@@ -39,23 +39,13 @@ class DocumentViewerPage extends StatefulWidget {
 
 class _DocumentViewerPageState extends State<DocumentViewerPage> {
   Uint8List? _bytes;
-  PdfControllerPinch? _controller;
+  final _viewer = AppPdfViewerController();
   String? _error;
-  Size _viewport = Size.zero;
-
-  static const _minScale = 1.0;
-  static const _maxScale = 5.0;
 
   @override
   void initState() {
     super.initState();
     _load();
-  }
-
-  @override
-  void dispose() {
-    _controller?.dispose();
-    super.dispose();
   }
 
   Future<void> _load() async {
@@ -74,10 +64,7 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
             token,
           );
       if (!mounted) return;
-      setState(() {
-        _bytes = bytes;
-        _controller = PdfControllerPinch(document: PdfDocument.openData(bytes));
-      });
+      setState(() => _bytes = bytes);
     } on AppException catch (error) {
       if (mounted) setState(() => _error = error.message);
     } catch (_) {
@@ -85,34 +72,6 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
         setState(() => _error = 'Não foi possível abrir o documento.');
       }
     }
-  }
-
-  void _zoom(double factor) {
-    final controller = _controller;
-    if (controller == null || _viewport.isEmpty) return;
-
-    final current = controller.value;
-    final scale = current.getMaxScaleOnAxis();
-    final next = (scale * factor).clamp(_minScale, _maxScale);
-    if ((next - scale).abs() < 0.001) return;
-
-    final center = _viewport.center(Offset.zero);
-    final ratio = next / scale;
-    final destination = Matrix4.identity()
-      ..translateByDouble(center.dx, center.dy, 0, 1)
-      ..scaleByDouble(ratio, ratio, 1, 1)
-      ..translateByDouble(-center.dx, -center.dy, 0, 1)
-      ..multiply(current);
-
-    if (next <= _minScale) {
-      final translation = destination.getTranslation();
-      destination.setTranslationRaw(0, translation.y, 0);
-    }
-
-    controller.goTo(
-      destination: destination,
-      duration: const Duration(milliseconds: 220),
-    );
   }
 
   Future<void> _print() async {
@@ -148,7 +107,7 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = _controller;
+    final bytes = _bytes;
     final error = _error;
 
     return Scaffold(
@@ -177,30 +136,9 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
             Expanded(
               child: error != null
                   ? AppErrorView(message: error, onRetry: _load)
-                  : controller == null
+                  : bytes == null
                   ? const Center(child: CircularProgressIndicator())
-                  : LayoutBuilder(
-                      builder: (_, constraints) {
-                        _viewport = constraints.biggest;
-                        return Stack(
-                          children: [
-                            PdfViewPinch(
-                              controller: controller,
-                              minScale: _minScale,
-                              maxScale: _maxScale,
-                            ),
-                            Positioned(
-                              top: 12,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: _PageCounter(controller: controller),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+                  : AppPdfViewer(bytes: bytes, controller: _viewer),
             ),
             ColoredBox(
               color: const Color(0xFFFAFAFA),
@@ -217,7 +155,9 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                       color: const Color(0xFF232323),
                       background: const Color(0xFFE8E8E8),
                       tooltip: 'Aproximar',
-                      onPressed: controller == null ? null : () => _zoom(1.5),
+                      onPressed: bytes == null
+                          ? null
+                          : () => _viewer.zoomBy(1.5),
                     ),
                     const SizedBox(width: 8),
                     AppSquareIconButton(
@@ -226,9 +166,9 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                       color: const Color(0xFF232323),
                       background: const Color(0xFFE8E8E8),
                       tooltip: 'Afastar',
-                      onPressed: controller == null
+                      onPressed: bytes == null
                           ? null
-                          : () => _zoom(1 / 1.5),
+                          : () => _viewer.zoomBy(1 / 1.5),
                     ),
                     const Spacer(),
                     AppSquareIconButton(
@@ -253,30 +193,6 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _PageCounter extends StatelessWidget {
-  const _PageCounter({required this.controller});
-
-  final PdfControllerPinch controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<int>(
-      valueListenable: controller.pageListenable,
-      builder: (_, page, _) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFAFAFA),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          '$page/${controller.pagesCount ?? 1}',
-          style: GoogleFonts.manrope(fontSize: 15),
         ),
       ),
     );

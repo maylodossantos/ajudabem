@@ -93,7 +93,7 @@ class _AppCepFieldState extends State<AppCepField> {
         AppLabeledField(
           label: widget.label,
           required: widget.required,
-          hintText: '00000-000',
+          hintText: 'Ex.: 85801-000',
           initialValue: widget.initialValue,
           keyboardType: TextInputType.number,
           inputFormatters: [CepInputFormatter()],

@@ -57,10 +57,9 @@ class AppCardActions extends StatelessWidget {
                     const SizedBox(width: 6),
                   ],
                   Flexible(
-                    child: Text(
-                      secondaryLabel,
-                      overflow: TextOverflow.ellipsis,
-                      style: style(primary),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(secondaryLabel, style: style(primary)),
                     ),
                   ),
                 ],
@@ -89,10 +88,9 @@ class AppCardActions extends StatelessWidget {
                         color: Colors.white,
                       ),
                     )
-                  : Text(
-                      primaryLabel,
-                      overflow: TextOverflow.ellipsis,
-                      style: style(Colors.white),
+                  : FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(primaryLabel, style: style(Colors.white)),
                     ),
             ),
           ),

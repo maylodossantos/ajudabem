@@ -88,7 +88,6 @@ flutter:
     - assets/illustrations/
     - assets/icons/profile/ong_validation.svg
     - assets/icons/profile/registered_people.svg
-    - assets/icons/profile/volunteer.svg
     - assets/icons/recover_access.png
     - assets/icons/register/email.svg
     - assets/icons/register/password.svg

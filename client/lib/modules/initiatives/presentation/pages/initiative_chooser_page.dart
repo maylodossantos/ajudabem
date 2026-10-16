@@ -92,19 +92,27 @@ class _Option extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
+        hoverColor: primary.withValues(alpha: 0.04),
+        splashColor: primary.withValues(alpha: 0.08),
+        highlightColor: primary.withValues(alpha: 0.06),
         child: SizedBox(
-          height: 150,
+          height: 118,
           child: Row(
             children: [
               Container(
-                width: 130,
-                color: const Color(0xFFCFF2EC),
-                padding: const EdgeInsets.all(14),
+                width: 112,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFD6F3EE),
+                  borderRadius: BorderRadius.horizontal(
+                    right: Radius.circular(12),
+                  ),
+                ),
+                padding: const EdgeInsets.all(10),
                 child: Image.asset(illustration, fit: BoxFit.contain),
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 4, 10),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +121,7 @@ class _Option extends StatelessWidget {
                         title,
                         style: GoogleFonts.manrope(
                           color: primary,
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
@@ -121,15 +129,20 @@ class _Option extends StatelessWidget {
                       const SizedBox(height: 6),
                       Text(
                         description,
-                        style: GoogleFonts.manrope(fontSize: 14, height: 1.3),
+                        style: GoogleFonts.manrope(
+                          color: const Color(0xFF232323),
+                          fontSize: 13,
+                          height: 1.35,
+                          letterSpacing: 0,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Icon(Icons.chevron_right, color: primary),
+                padding: const EdgeInsets.only(right: 10),
+                child: Icon(Icons.chevron_right, color: primary, size: 22),
               ),
             ],
           ),

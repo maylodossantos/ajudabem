@@ -174,7 +174,7 @@ class _ProfileContent extends StatelessWidget {
                     Expanded(
                       child: _UtilityItem(
                         key: const Key('volunteer_option'),
-                        iconAsset: 'assets/icons/profile/volunteer.svg',
+                        icon: Icons.volunteer_activism_outlined,
                         label: 'Voluntário',
                         onTap: () =>
                             Modular.to.pushNamed(AppRoutes.volunteerActions),

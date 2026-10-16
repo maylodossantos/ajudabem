@@ -187,7 +187,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                         child: AppLabeledDropdown<String>(
                           label: 'Estado:',
                           required: true,
-                          hintText: 'UF',
+                          hintText: 'Selecione',
                           value: _store.state,
                           options: BrazilianStates.codes,
                           labelOf: BrazilianStates.nameOf,

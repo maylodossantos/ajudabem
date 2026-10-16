@@ -148,7 +148,7 @@ class _DataStep extends StatelessWidget {
         AppLabeledField(
           label: 'CNPJ:',
           required: true,
-          hintText: '00.000.000/0000-00',
+          hintText: 'Ex.: 12.345.678/0001-90',
           initialValue: store.cnpj,
           keyboardType: TextInputType.number,
           inputFormatters: [CnpjInputFormatter()],
@@ -221,7 +221,7 @@ class _DataStep extends StatelessWidget {
               child: AppLabeledDropdown<String>(
                 label: 'Estado:',
                 required: true,
-                hintText: 'UF',
+                hintText: 'Selecione',
                 value: store.state,
                 options: BrazilianStates.codes,
                 labelOf: BrazilianStates.nameOf,

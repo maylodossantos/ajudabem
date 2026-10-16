@@ -161,7 +161,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         AppTextField(
                           key: const Key('profile_edit_cpf_field'),
                           label: 'CPF:',
-                          hintText: '000.000.000-00',
+                          hintText: 'Ex.: 123.456.789-00',
                           controller: _cpfController,
                           prefixIcon: Icons.badge_outlined,
                           keyboardType: TextInputType.number,
@@ -172,7 +172,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         AppTextField(
                           key: const Key('profile_edit_birth_date_field'),
                           label: 'Data de nascimento:',
-                          hintText: 'dd/mm/aaaa',
+                          hintText: 'Ex.: 15/03/1990',
                           controller: _birthDateController,
                           prefixIcon: Icons.calendar_today_outlined,
                           keyboardType: TextInputType.number,
