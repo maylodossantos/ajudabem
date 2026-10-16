@@ -143,7 +143,15 @@ class ApiCareRepository implements CareRepository {
   }
 
   static CareCaseDetail detailFromJson(Map<String, dynamic> json) {
+    final triage = json['triage'];
     return CareCaseDetail(
+      triage: triage is Map<String, dynamic>
+          ? RiskTriage(
+              justification: triage['justification'] as String? ?? '',
+              model: triage['model'] as String? ?? '',
+              triagedAt: _date(triage['createdAt']),
+            )
+          : null,
       person: caseFromJson(json['person'] as Map<String, dynamic>? ?? const {}),
       records: [
         for (final record

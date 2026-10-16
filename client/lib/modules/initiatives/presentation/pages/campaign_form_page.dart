@@ -85,6 +85,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
                 AppLabeledField(
                   key: const Key('campaign_title'),
                   label: 'Título:',
+                  required: true,
                   initialValue: _store.title,
                   onChanged: _store.setTitle,
                 ),
@@ -112,6 +113,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
                 AppLabeledField(
                   key: const Key('campaign_description'),
                   label: 'Descrição:',
+                  required: true,
                   hintText: 'Descreva o objetivo e como ela será realizada.',
                   initialValue: _store.description,
                   maxLines: 6,
@@ -131,7 +133,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
                 AppLabeledField(
                   key: const Key('campaign_goal'),
                   label: 'Meta financeira (R\$):',
-                  hintText: '1.000,00',
+                  hintText: 'Ex.: 1.500,00',
                   initialValue: _store.goal,
                   keyboardType: TextInputType.number,
                   inputFormatters: [MoneyInputFormatter()],
@@ -141,7 +143,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               AppLabeledField(
                 key: const Key('campaign_deadline'),
                 label: 'Prazo da campanha:',
-                hintText: 'dd/mm/aaaa',
+                hintText: 'Ex.: 30/12/2026',
                 initialValue: _store.deadline,
                 keyboardType: TextInputType.number,
                 inputFormatters: [DateInputFormatter()],

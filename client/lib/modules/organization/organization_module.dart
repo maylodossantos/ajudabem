@@ -2,8 +2,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/tab_transition.dart';
 import '../../core/routes/auth_guard.dart';
-import '../care/care_module.dart';
+import '../care/care_data_module.dart';
 import 'data/datasources/organization_datasource.dart';
 import 'data/datasources/organization_datasource_impl.dart';
 import 'data/repositories/organization_repository_impl.dart';
@@ -22,7 +23,7 @@ import 'presentation/stores/organization_validation_store.dart';
 
 class OrganizationModule extends Module {
   @override
-  List<Module> get imports => [CoreModule(), CareModule()];
+  List<Module> get imports => [CoreModule(), CareDataModule()];
 
   @override
   void binds(Injector i) {
@@ -38,6 +39,8 @@ class OrganizationModule extends Module {
   void routes(RouteManager r) {
     r.child(
       AppRoutes.ong,
+      transition: TransitionType.custom,
+      customTransition: TabTransition.slide,
       guards: [AuthGuard()],
       child: (_) => const OngHomePage(),
     );

@@ -96,6 +96,42 @@ mixin _$NewsFormStore on NewsFormStoreBase, Store {
     });
   }
 
+  late final _$cityAtom = Atom(
+    name: 'NewsFormStoreBase.city',
+    context: context,
+  );
+
+  @override
+  String get city {
+    _$cityAtom.reportRead();
+    return super.city;
+  }
+
+  @override
+  set city(String value) {
+    _$cityAtom.reportWrite(value, super.city, () {
+      super.city = value;
+    });
+  }
+
+  late final _$stateAtom = Atom(
+    name: 'NewsFormStoreBase.state',
+    context: context,
+  );
+
+  @override
+  String get state {
+    _$stateAtom.reportRead();
+    return super.state;
+  }
+
+  @override
+  set state(String value) {
+    _$stateAtom.reportWrite(value, super.state, () {
+      super.state = value;
+    });
+  }
+
   late final _$isLoadingAtom = Atom(
     name: 'NewsFormStoreBase.isLoading',
     context: context,
@@ -196,12 +232,38 @@ mixin _$NewsFormStore on NewsFormStoreBase, Store {
   }
 
   @override
+  void setCity(String value) {
+    final _$actionInfo = _$NewsFormStoreBaseActionController.startAction(
+      name: 'NewsFormStoreBase.setCity',
+    );
+    try {
+      return super.setCity(value);
+    } finally {
+      _$NewsFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void setState(String value) {
+    final _$actionInfo = _$NewsFormStoreBaseActionController.startAction(
+      name: 'NewsFormStoreBase.setState',
+    );
+    try {
+      return super.setState(value);
+    } finally {
+      _$NewsFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 articleId: ${articleId},
 title: ${title},
 subtitle: ${subtitle},
 content: ${content},
+city: ${city},
+state: ${state},
 isLoading: ${isLoading},
 errorMessage: ${errorMessage},
 isEditing: ${isEditing},

@@ -130,6 +130,10 @@ class _CareCasePageState extends State<CareCasePage> {
                           const SizedBox(height: 14),
                         ],
                         _PersonInfo(person: person),
+                        if (detail.triage case final triage?) ...[
+                          const SizedBox(height: 14),
+                          _TriageCard(urgency: person.urgency, triage: triage),
+                        ],
                         const SizedBox(height: 14),
                         AppInfoCard(
                           title: 'Necessidades',
@@ -305,6 +309,43 @@ class _RecordTile extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TriageCard extends StatelessWidget {
+  const _TriageCard({required this.urgency, required this.triage});
+
+  final Urgency urgency;
+  final RiskTriage triage;
+
+  @override
+  Widget build(BuildContext context) {
+    final triagedAt = triage.triagedAt;
+    final source = [
+      'Classificado por IA (${triage.model})',
+      if (triagedAt != null) DateInputFormatter.displayWithTime(triagedAt),
+    ].join(' em ');
+
+    return AppInfoCard(
+      title: 'Por que urgência ${urgency.label.toLowerCase()}?',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            triage.justification,
+            style: GoogleFonts.manrope(fontSize: 14, height: 1.4),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            source,
+            style: GoogleFonts.manrope(
+              color: const Color(0xFFA2A2A2),
+              fontSize: 12,
+            ),
+          ),
+        ],
       ),
     );
   }

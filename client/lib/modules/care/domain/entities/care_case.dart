@@ -186,11 +186,28 @@ class CareRecord {
       summary ?? actionTaken ?? situation ?? nextStep ?? status.label;
 }
 
+class RiskTriage {
+  const RiskTriage({
+    required this.justification,
+    required this.model,
+    this.triagedAt,
+  });
+
+  final String justification;
+  final String model;
+  final DateTime? triagedAt;
+}
+
 class CareCaseDetail {
-  const CareCaseDetail({required this.person, required this.records});
+  const CareCaseDetail({
+    required this.person,
+    required this.records,
+    this.triage,
+  });
 
   final CareCase person;
   final List<CareRecord> records;
+  final RiskTriage? triage;
 
   List<String> get referrals => [
     for (final record in records)

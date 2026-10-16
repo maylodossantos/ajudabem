@@ -139,9 +139,9 @@ class _ProfileContent extends StatelessWidget {
                     Expanded(
                       child: _UtilityItem(
                         key: const Key('admin_news_option'),
-                        icon: Icons.assignment_ind_outlined,
+                        iconAsset: 'assets/icons/profile/registered_people.svg',
                         label: 'Notícias',
-                        onTap: () => Modular.to.navigate(AppRoutes.news),
+                        onTap: () => Modular.to.pushNamed(AppRoutes.newsManage),
                       ),
                     ),
                     const SizedBox(width: 9),
@@ -174,8 +174,7 @@ class _ProfileContent extends StatelessWidget {
                     Expanded(
                       child: _UtilityItem(
                         key: const Key('volunteer_option'),
-                        iconAsset: 'assets/icons/profile/volunteer.png',
-                        isRaster: true,
+                        icon: Icons.volunteer_activism_outlined,
                         label: 'Voluntário',
                         onTap: () =>
                             Modular.to.pushNamed(AppRoutes.volunteerActions),
@@ -316,14 +315,12 @@ class _UtilityItem extends StatelessWidget {
     super.key,
     this.iconAsset,
     this.icon,
-    this.isRaster = false,
     this.onTap,
   }) : assert(iconAsset != null || icon != null);
 
   final String? iconAsset;
   final IconData? icon;
   final String label;
-  final bool isRaster;
   final VoidCallback? onTap;
 
   @override
@@ -342,8 +339,6 @@ class _UtilityItem extends StatelessWidget {
             alignment: Alignment.center,
             child: icon != null
                 ? Icon(icon, color: Colors.white, size: 44)
-                : isRaster
-                ? Image.asset(iconAsset!, width: 48, height: 48)
                 : SvgPicture.asset(iconAsset!, width: 43, height: 43),
           ),
           const SizedBox(height: 5),

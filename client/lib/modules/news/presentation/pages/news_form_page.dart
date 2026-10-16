@@ -1,68 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/constants/brazilian_states.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_cover_image_picker.dart';
-import '../../../../core/widgets/app_text_field.dart';
+import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_form_parts.dart';
+import '../../../../core/widgets/app_labeled_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/news_article.dart';
 import '../stores/news_form_store.dart';
 
 class NewsFormPage extends StatefulWidget {
-  const NewsFormPage({super.key, this.initialArticle});
+  const NewsFormPage({super.key, this.initialArticle, this.store, this.token});
 
   final NewsArticle? initialArticle;
+  final NewsFormStore? store;
+  final String? token;
 
   @override
   State<NewsFormPage> createState() => _NewsFormPageState();
 }
 
 class _NewsFormPageState extends State<NewsFormPage> {
-  late final LoginStore _loginStore;
+  static const contentMaxLength = 10000;
+
   late final NewsFormStore _formStore;
-  late final TextEditingController _titleController;
-  late final TextEditingController _subtitleController;
-  late final TextEditingController _contentController;
 
   @override
   void initState() {
     super.initState();
-    _loginStore = Modular.get<LoginStore>();
-    _formStore = Modular.get<NewsFormStore>();
+    _formStore = widget.store ?? Modular.get<NewsFormStore>();
 
     final article = widget.initialArticle;
     if (article != null) {
       _formStore.populate(article);
     }
-
-    _titleController = TextEditingController(text: _formStore.title);
-    _subtitleController = TextEditingController(text: _formStore.subtitle);
-    _contentController = TextEditingController(text: _formStore.content);
-  }
-
-  @override
-  void dispose() {
-    _titleController.dispose();
-    _subtitleController.dispose();
-    _contentController.dispose();
-    super.dispose();
   }
 
   Future<void> _submit() async {
-    final token = _loginStore.authToken;
+    final token = widget.token ?? Modular.get<LoginStore>().authToken;
     if (token == null) {
       Modular.to.navigate(AppRoutes.auth);
       return;
     }
-
-    _formStore.setTitle(_titleController.text);
-    _formStore.setSubtitle(_subtitleController.text);
-    _formStore.setContent(_contentController.text);
 
     final wasEditing = _formStore.isEditing;
     final success = await _formStore.submit(token);
@@ -80,7 +64,10 @@ class _NewsFormPageState extends State<NewsFormPage> {
           : _formStore.errorMessage ?? 'Não foi possível salvar a notícia.',
     );
 
-    if (success) {
+    if (!success) return;
+    if (Modular.to.canPop()) {
+      Modular.to.pop(_formStore.savedArticle);
+    } else {
       Modular.to.navigate(AppRoutes.news);
     }
   }
@@ -93,54 +80,92 @@ class _NewsFormPageState extends State<NewsFormPage> {
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 390),
+            constraints: const BoxConstraints(maxWidth: 520),
             child: Column(
               children: [
                 Expanded(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Observer(
-                          builder: (_) => Text(
-                            _formStore.isEditing
-                                ? 'Editar notícia'
-                                : 'Nova notícia',
-                            style: GoogleFonts.manrope(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0,
+                        const AppFormHeading('Preencha as informações abaixo'),
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Text(
+                            'Informações gerais:',
+                            style: AppFieldStyles.value.copyWith(
+                              color: const Color(0xFF232323),
+                              fontSize: 15,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        AppCoverImagePicker(
-                          key: const Key('news_form_cover_image_picker'),
-                          store: _formStore.cover,
+                        AppFormGap(
+                          AppLabeledField(
+                            key: const Key('news_form_title_field'),
+                            label: 'Título:',
+                            required: true,
+                            initialValue: _formStore.title,
+                            maxLength: 150,
+                            onChanged: _formStore.setTitle,
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        AppTextField(
-                          key: const Key('news_form_title_field'),
-                          label: 'Título:',
-                          hintText: 'Título da notícia',
-                          controller: _titleController,
+                        AppFormGap(
+                          AppLabeledField(
+                            key: const Key('news_form_subtitle_field'),
+                            label: 'Sub-Título',
+                            initialValue: _formStore.subtitle,
+                            maxLength: 200,
+                            onChanged: _formStore.setSubtitle,
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        AppTextField(
-                          key: const Key('news_form_subtitle_field'),
-                          label: 'Subtítulo:',
-                          hintText: 'Subtítulo (opcional)',
-                          controller: _subtitleController,
+                        AppFormGap(
+                          AppLabeledField(
+                            key: const Key('news_form_content_field'),
+                            label: 'Descrição:',
+                            required: true,
+                            initialValue: _formStore.content,
+                            maxLines: 14,
+                            minLines: 10,
+                            maxLength: contentMaxLength,
+                            onChanged: _formStore.setContent,
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        AppTextField(
-                          key: const Key('news_form_content_field'),
-                          label: 'Conteúdo:',
-                          hintText: 'Escreva o conteúdo da notícia',
-                          controller: _contentController,
-                          maxLines: 8,
+                        const AppFieldLabel('Capa:'),
+                        const SizedBox(height: 4),
+                        AppFormGap(
+                          AppCoverImagePicker(
+                            key: const Key('news_form_cover_image_picker'),
+                            store: _formStore.cover,
+                          ),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Expanded(
+                              flex: 3,
+                              child: AppLabeledField(
+                                key: const Key('news_form_city_field'),
+                                label: 'Cidade:',
+                                hintText: 'Ex.: Cascavel',
+                                initialValue: _formStore.city,
+                                onChanged: _formStore.setCity,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              flex: 2,
+                              child: Observer(
+                                builder: (_) => AppLabeledDropdown<String>(
+                                  label: 'Estado:',
+                                  value: _formStore.state,
+                                  options: BrazilianStates.codes,
+                                  labelOf: (code) => code,
+                                  onChanged: _formStore.setState,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -148,12 +173,10 @@ class _NewsFormPageState extends State<NewsFormPage> {
                 ),
                 Observer(
                   builder: (_) => Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                    padding: const EdgeInsets.fromLTRB(28, 10, 28, 14),
                     child: AppPrimaryButton(
                       key: const Key('news_form_submit_button'),
-                      label: _formStore.isEditing
-                          ? 'Salvar alterações'
-                          : 'Publicar',
+                      label: _formStore.isEditing ? 'Salvar' : 'Publicar',
                       onPressed: _formStore.canSubmit ? _submit : null,
                       isLoading: _formStore.isLoading,
                     ),

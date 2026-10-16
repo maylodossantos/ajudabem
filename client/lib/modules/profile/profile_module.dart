@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/tab_transition.dart';
 import '../../core/routes/auth_guard.dart';
 import 'presentation/pages/needs_admin_page.dart';
 import 'presentation/pages/about_config_page.dart';
@@ -23,6 +24,8 @@ class ProfileModule extends Module {
   void routes(RouteManager r) {
     r.child(
       AppRoutes.profile,
+      transition: TransitionType.custom,
+      customTransition: TabTransition.slide,
       guards: [AuthGuard()],
       child: (_) => const ProfilePage(),
     );

@@ -28,4 +28,18 @@ void main() {
       '23 de novembro',
     );
   });
+
+  test('relative dates read like a feed', () {
+    final now = DateTime(2026, 10, 2, 9);
+    expect(DateInputFormatter.relative(DateTime(2026, 10, 2, 8), now), 'hoje');
+    expect(
+      DateInputFormatter.relative(DateTime(2026, 10, 1, 23), now),
+      'ontem',
+    );
+    expect(
+      DateInputFormatter.relative(DateTime(2026, 9, 28), now),
+      'há 4 dias',
+    );
+    expect(DateInputFormatter.relative(DateTime(2026, 9, 1), now), '1 de set.');
+  });
 }

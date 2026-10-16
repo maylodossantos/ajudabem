@@ -2,6 +2,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/routes/tab_transition.dart';
 import 'domain/usecases/register_user_usecase.dart';
 import 'presentation/pages/login_page.dart';
 import 'presentation/pages/recover_access_page.dart';
@@ -25,7 +26,12 @@ class AuthModule extends Module {
 
   @override
   void routes(RouteManager r) {
-    r.child(AppRoutes.auth, child: (_) => const LoginPage());
+    r.child(
+      AppRoutes.auth,
+      transition: TransitionType.custom,
+      customTransition: TabTransition.slide,
+      child: (_) => const LoginPage(),
+    );
     r.child(AppRoutes.recoverAccess, child: (_) => const RecoverAccessPage());
     r.child(AppRoutes.verifyCode, child: (_) => const VerifyCodePage());
     r.child(AppRoutes.resetPassword, child: (_) => const ResetPasswordPage());

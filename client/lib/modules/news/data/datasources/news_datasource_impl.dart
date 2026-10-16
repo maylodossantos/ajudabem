@@ -72,6 +72,8 @@ class NewsDatasourceImpl implements NewsDatasource {
       'subtitle': params.subtitle,
       'content': params.content,
       'cover_image': ?params.coverImage,
+      'city': params.city.trim().isEmpty ? null : params.city.trim(),
+      'state': params.state.isEmpty ? null : params.state,
     };
   }
 }

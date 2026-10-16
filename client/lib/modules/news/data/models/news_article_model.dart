@@ -8,10 +8,14 @@ class NewsArticleModel {
     required this.content,
     required this.coverImage,
     required this.authorName,
+    this.city = '',
+    this.state = '',
+    this.createdAt,
   });
 
   factory NewsArticleModel.fromJson(Map<String, dynamic> json) {
     final author = json['author'];
+    final createdAt = json['createdAt'];
 
     return NewsArticleModel(
       id: (json['id'] as num?)?.toInt() ?? 0,
@@ -22,6 +26,9 @@ class NewsArticleModel {
       authorName: author is Map<String, dynamic>
           ? author['name'] as String? ?? ''
           : '',
+      city: json['city'] as String? ?? '',
+      state: json['state'] as String? ?? '',
+      createdAt: createdAt is String ? DateTime.tryParse(createdAt) : null,
     );
   }
 
@@ -31,6 +38,9 @@ class NewsArticleModel {
   final String content;
   final String? coverImage;
   final String authorName;
+  final String city;
+  final String state;
+  final DateTime? createdAt;
 
   NewsArticle toEntity() {
     return NewsArticle(
@@ -40,6 +50,9 @@ class NewsArticleModel {
       content: content,
       coverImage: coverImage,
       authorName: authorName,
+      city: city,
+      state: state,
+      createdAt: createdAt,
     );
   }
 }

@@ -134,6 +134,10 @@ void main() {
             careRecord(referral: 'CRAS Centro'),
             careRecord(number: 2, status: CareRecordStatus.inProgress),
           ],
+          triage: const RiskTriage(
+            justification: 'Dorme na praça e está sem comida.',
+            model: 'qwen2.5:3b',
+          ),
         ),
       },
     );
@@ -143,6 +147,8 @@ void main() {
       CareCasePage(personId: 1, store: CareCaseStore(repository), token: 'jwt'),
     );
 
+    expect(find.text('Por que urgência alta?'), findsOneWidget);
+    expect(find.text('Dorme na praça e está sem comida.'), findsOneWidget);
     expect(find.text('Encaminhamentos'), findsOneWidget);
     expect(find.text('•  CRAS Centro'), findsOneWidget);
     expect(find.text('Andamento #1'), findsOneWidget);

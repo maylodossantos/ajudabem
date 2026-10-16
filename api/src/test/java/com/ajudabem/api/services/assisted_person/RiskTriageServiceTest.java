@@ -3,11 +3,14 @@ package com.ajudabem.api.services.assisted_person;
 import com.ajudabem.api.domains.assisted_person.AssistedPerson;
 import com.ajudabem.api.domains.assisted_person.Gender;
 import com.ajudabem.api.domains.assisted_person.RiskLevel;
+import com.ajudabem.api.domains.assisted_person.RiskTriageLog;
 import com.ajudabem.api.domains.assisted_person.Tag;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
+import com.ajudabem.api.repositories.RiskTriageLogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.client.MockRestServiceServer;
@@ -33,6 +36,7 @@ class RiskTriageServiceTest {
 
     private MockRestServiceServer ollama;
     private AssistedPersonRepository repository;
+    private RiskTriageLogRepository logRepository;
     private RiskTriageService service;
 
     @BeforeEach
@@ -40,7 +44,9 @@ class RiskTriageServiceTest {
         RestClient.Builder builder = RestClient.builder().baseUrl("http://ollama");
         ollama = MockRestServiceServer.bindTo(builder).build();
         repository = mock(AssistedPersonRepository.class);
-        service = new RiskTriageService(builder.build(), "qwen2.5:3b", new ObjectMapper(), repository);
+        logRepository = mock(RiskTriageLogRepository.class);
+        service = new RiskTriageService(builder.build(), "qwen2.5:3b", new ObjectMapper(), repository,
+                logRepository);
     }
 
     private AssistedPerson person() {
@@ -78,6 +84,13 @@ class RiskTriageServiceTest {
 
         assertThat(service.triage(person())).contains(RiskLevel.HIGH);
         ollama.verify();
+
+        ArgumentCaptor<RiskTriageLog> saved = ArgumentCaptor.forClass(RiskTriageLog.class);
+        verify(logRepository).save(saved.capture());
+        assertThat(saved.getValue().getRiskLevel()).isEqualTo(RiskLevel.HIGH);
+        assertThat(saved.getValue().getJustification()).isEqualTo("Idosa sem remédio");
+        assertThat(saved.getValue().getModel()).isEqualTo("qwen2.5:3b");
+        assertThat(saved.getValue().getInput()).contains("sem remédio para pressão");
     }
 
     @Test
@@ -103,6 +116,7 @@ class RiskTriageServiceTest {
         ollama.expect(requestTo("http://ollama/api/chat")).andRespond(withServerError());
 
         assertThat(service.triage(person())).isEmpty();
+        verify(logRepository, never()).save(any());
     }
 
     @Test

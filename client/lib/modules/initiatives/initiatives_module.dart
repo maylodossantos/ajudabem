@@ -3,10 +3,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/routes/auth_guard.dart';
-import 'data/api_initiative_repositories.dart';
 import 'domain/entities/campaign.dart';
+import 'initiatives_data_module.dart';
 import 'domain/entities/volunteer_action.dart';
-import 'domain/repositories/initiative_repositories.dart';
 import 'presentation/pages/action_detail_page.dart';
 import 'presentation/pages/action_form_page.dart';
 import 'presentation/pages/action_volunteers_page.dart';
@@ -23,14 +22,7 @@ import 'presentation/stores/initiatives_store.dart';
 
 class InitiativesModule extends Module {
   @override
-  List<Module> get imports => [CoreModule()];
-
-  @override
-  void exportedBinds(Injector i) {
-    i.addSingleton<CampaignRepository>(ApiCampaignRepository.new);
-    i.addSingleton<VolunteerActionRepository>(ApiVolunteerActionRepository.new);
-    i.add(CampaignsFeedStore.new);
-  }
+  List<Module> get imports => [CoreModule(), InitiativesDataModule()];
 
   @override
   void binds(Injector i) {

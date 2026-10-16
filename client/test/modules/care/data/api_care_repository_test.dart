@@ -81,6 +81,12 @@ void main() {
                 'finishReason': 'HELPED',
               },
             ],
+            'triage': {
+              'riskLevel': 'HIGH',
+              'justification': 'Dorme na rua no frio.',
+              'model': 'qwen2.5:3b',
+              'createdAt': '2026-09-01T10:05:00',
+            },
           }),
           200,
           headers: json,
@@ -112,6 +118,8 @@ void main() {
     expect(detail.person.organizationName, 'Amigos dos Rios');
     expect(detail.records.single.status, CareRecordStatus.finished);
     expect(detail.referrals, ['CRAS Centro']);
+    expect(detail.triage?.justification, 'Dorme na rua no frio.');
+    expect(detail.triage?.model, 'qwen2.5:3b');
   });
 
   test('assume translates a case taken by another ONG', () async {

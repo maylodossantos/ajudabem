@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'ajuda_bem_logo.dart';
 import 'app_notification_bell.dart';
@@ -52,7 +53,11 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
     if (showSearchButton) {
       return IconButton(
         onPressed: onSearch,
-        icon: const Icon(Icons.search, color: Color(0xFF232323), size: 24),
+        icon: SvgPicture.asset(
+          'assets/icons/search.svg',
+          width: 30,
+          height: 30,
+        ),
         tooltip: 'Pesquisar',
       );
     }

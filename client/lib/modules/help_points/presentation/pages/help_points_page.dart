@@ -190,6 +190,10 @@ class _QuickFilters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Observer(builder: (_) => _chips());
+  }
+
+  Widget _chips() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(horizontal: 20),

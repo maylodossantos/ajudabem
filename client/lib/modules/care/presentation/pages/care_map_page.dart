@@ -107,7 +107,9 @@ class _CareMapPageState extends State<CareMapPage> {
                   if (widget.showTiles)
                     TileLayer(
                       urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+                      subdomains: const ['a', 'b', 'c', 'd'],
+                      retinaMode: RetinaMode.isHighDensity(context),
                       userAgentPackageName: 'com.example.ajuda_bem',
                     ),
                   if (_store.mode == MapMode.foci) ...[
@@ -180,7 +182,7 @@ class _CareMapPageState extends State<CareMapPage> {
                         vertical: 2,
                       ),
                       child: const Text(
-                        '© OpenStreetMap',
+                        '© OpenStreetMap · © CARTO',
                         style: TextStyle(fontSize: 10),
                       ),
                     ),

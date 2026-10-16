@@ -102,6 +102,8 @@ void main() {
         subtitle: 'Subtítulo',
         content: 'Conteúdo',
         coverImage: 'https://i.ibb.co/abc/cover.png',
+        city: ' Cascavel ',
+        state: 'PR',
       ),
       'jwt-token',
     );
@@ -113,6 +115,8 @@ void main() {
       'subtitle': 'Subtítulo',
       'content': 'Conteúdo',
       'cover_image': 'https://i.ibb.co/abc/cover.png',
+      'city': 'Cascavel',
+      'state': 'PR',
     });
     expect(article.title, 'Título');
   });

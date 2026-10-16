@@ -268,11 +268,22 @@ class _VerifiedAvatar extends StatelessWidget {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        AppAvatar(radius: 48, imageUrl: imageUrl),
-        const Positioned(
-          right: -2,
-          bottom: 4,
-          child: Icon(Icons.verified, color: Color(0xFF3B8FE8), size: 30),
+        AppAvatar(radius: 46, imageUrl: imageUrl, placeholderIcon: null),
+        Positioned(
+          right: 2,
+          bottom: 2,
+          child: Container(
+            padding: const EdgeInsets.all(1.5),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.verified,
+              color: Color(0xFF3B8FE8),
+              size: 22,
+            ),
+          ),
         ),
       ],
     );

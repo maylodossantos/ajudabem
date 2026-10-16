@@ -1,5 +1,5 @@
 abstract final class AppRoutes {
-  static const auth = '/';
+  static const auth = '/auth/';
   static const register = '/register/';
   static const recoverAccess = '/recover-access/';
   static const verifyCode = '/verify-code/';
@@ -7,6 +7,8 @@ abstract final class AppRoutes {
   static const news = '/news/';
   static const newsDetail = '/news/detail/';
   static const newsForm = '/news/form/';
+  static const newsManage = '/news/manage/';
+  static const newsManageDetail = '/news/manage/detail/';
   static const profile = '/profile/';
   static const profileEdit = '/profile/edit/';
   static const aboutConfig = '/profile/about/';

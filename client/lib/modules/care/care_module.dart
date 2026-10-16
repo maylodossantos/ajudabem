@@ -3,10 +3,9 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/routes/auth_guard.dart';
-import 'data/api_care_repository.dart';
+import 'care_data_module.dart';
 import 'domain/entities/care_case.dart';
 import 'domain/entities/care_filter.dart';
-import 'domain/repositories/care_repository.dart';
 import 'presentation/pages/care_case_page.dart';
 import 'presentation/pages/care_filter_page.dart';
 import 'presentation/pages/care_list_page.dart';
@@ -19,13 +18,7 @@ import 'presentation/stores/care_record_form_store.dart';
 
 class CareModule extends Module {
   @override
-  List<Module> get imports => [CoreModule()];
-
-  @override
-  void exportedBinds(Injector i) {
-    i.addSingleton<CareRepository>(ApiCareRepository.new);
-    i.add(CareListStore.new);
-  }
+  List<Module> get imports => [CoreModule(), CareDataModule()];
 
   @override
   void binds(Injector i) {

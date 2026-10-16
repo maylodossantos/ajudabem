@@ -6,6 +6,9 @@ class NewsArticle {
     required this.content,
     required this.coverImage,
     required this.authorName,
+    this.city = '',
+    this.state = '',
+    this.createdAt,
   });
 
   final int id;
@@ -14,4 +17,10 @@ class NewsArticle {
   final String content;
   final String? coverImage;
   final String authorName;
+  final String city;
+  final String state;
+  final DateTime? createdAt;
+
+  String get locationLabel =>
+      [city, state].where((part) => part.isNotEmpty).join(', ');
 }

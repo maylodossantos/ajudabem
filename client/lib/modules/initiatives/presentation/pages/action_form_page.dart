@@ -10,6 +10,7 @@ import '../../../../core/formatters/time_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_cep_field.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_form_parts.dart';
 import '../../../../core/widgets/app_labeled_field.dart';
@@ -96,6 +97,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 AppLabeledField(
                   key: const Key('action_title'),
                   label: 'Título:',
+                  required: true,
                   hintText: 'Ex.: Distribuição de alimentos',
                   initialValue: _store.title,
                   onChanged: _store.setTitle,
@@ -105,7 +107,8 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 AppLabeledField(
                   key: const Key('action_date'),
                   label: 'Data:',
-                  hintText: 'dd/mm/aaaa',
+                  required: true,
+                  hintText: 'Ex.: 20/11/2026',
                   initialValue: _store.date,
                   keyboardType: TextInputType.number,
                   inputFormatters: [DateInputFormatter()],
@@ -116,7 +119,8 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 AppLabeledField(
                   key: const Key('action_start'),
                   label: 'Início:',
-                  hintText: 'hh:mm',
+                  required: true,
+                  hintText: 'Ex.: 08:00',
                   initialValue: _store.startTime,
                   keyboardType: TextInputType.number,
                   inputFormatters: [TimeInputFormatter()],
@@ -125,7 +129,8 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 AppLabeledField(
                   key: const Key('action_end'),
                   label: 'Término:',
-                  hintText: 'hh:mm',
+                  required: true,
+                  hintText: 'Ex.: 12:00',
                   initialValue: _store.endTime,
                   keyboardType: TextInputType.number,
                   inputFormatters: [TimeInputFormatter()],
@@ -142,6 +147,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 AppLabeledField(
                   key: const Key('action_volunteers'),
                   label: 'Quantidade de Voluntários:',
+                  required: true,
                   initialValue: _store.volunteers,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
@@ -152,10 +158,26 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 ),
               ),
               const AppFormHeading('Local da ação:'),
+              _pair(
+                AppCepField(
+                  key: const Key('action_cep'),
+                  initialValue: CepInputFormatter.display(_store.zipCode),
+                  onChanged: _store.setZipCode,
+                  onStreet: _store.setStreet,
+                  onCity: _store.setCity,
+                  onState: _store.setState,
+                ),
+                AppLabeledField(
+                  label: 'Número:',
+                  initialValue: _store.number,
+                  onChanged: _store.setNumber,
+                ),
+              ),
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_street'),
                   label: 'Endereço:',
+                  required: true,
                   initialValue: _store.street,
                   onChanged: _store.setStreet,
                 ),
@@ -164,6 +186,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 AppLabeledField(
                   key: const Key('action_city'),
                   label: 'Cidade:',
+                  required: true,
                   initialValue: _store.city,
                   onChanged: _store.setCity,
                 ),
@@ -175,24 +198,11 @@ class _ActionFormPageState extends State<ActionFormPage> {
                   onChanged: _store.setState,
                 ),
               ),
-              _pair(
-                AppLabeledField(
-                  label: 'CEP:',
-                  initialValue: CepInputFormatter.display(_store.zipCode),
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [CepInputFormatter()],
-                  onChanged: _store.setZipCode,
-                ),
-                AppLabeledField(
-                  label: 'Número:',
-                  initialValue: _store.number,
-                  onChanged: _store.setNumber,
-                ),
-              ),
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_description'),
                   label: 'Descrição:',
+                  required: true,
                   hintText:
                       'Descreva o objetivo da ação e como ela será feita.',
                   initialValue: _store.description,

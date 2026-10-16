@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 
 class AppAvatar extends StatelessWidget {
-  const AppAvatar({required this.radius, super.key, this.imageUrl});
+  const AppAvatar({
+    required this.radius,
+    super.key,
+    this.imageUrl,
+    this.placeholderIcon = Icons.person_outline,
+  });
 
   final String? imageUrl;
   final double radius;
+  final IconData? placeholderIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +21,9 @@ class AppAvatar extends StatelessWidget {
       radius: radius,
       backgroundColor: const Color(0xFFD9D9D9),
       backgroundImage: hasPhoto ? NetworkImage(url) : null,
-      child: hasPhoto
+      child: hasPhoto || placeholderIcon == null
           ? null
-          : Icon(Icons.person_outline, size: radius, color: Colors.white),
+          : Icon(placeholderIcon, size: radius, color: Colors.white),
     );
   }
 }

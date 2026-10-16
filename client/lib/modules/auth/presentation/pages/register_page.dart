@@ -77,7 +77,7 @@ class RegisterPage extends StatelessWidget {
                         AppTextField(
                           key: const Key('register_cpf_field'),
                           label: 'CPF:',
-                          hintText: '000.000.000-00',
+                          hintText: 'Ex.: 123.456.789-00',
                           prefixIcon: Icons.badge_outlined,
                           keyboardType: TextInputType.number,
                           inputFormatters: [CpfInputFormatter()],
@@ -87,7 +87,7 @@ class RegisterPage extends StatelessWidget {
                         AppTextField(
                           key: const Key('register_birth_date_field'),
                           label: 'Data de nascimento:',
-                          hintText: 'dd/mm/aaaa',
+                          hintText: 'Ex.: 15/03/1990',
                           prefixIcon: Icons.calendar_today_outlined,
                           keyboardType: TextInputType.number,
                           inputFormatters: [DateInputFormatter()],

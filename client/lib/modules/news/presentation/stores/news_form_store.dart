@@ -18,6 +18,8 @@ abstract class NewsFormStoreBase with Store {
   final NewsRepository _repository;
   final ImageUploadStore cover;
 
+  NewsArticle? savedArticle;
+
   @observable
   int? articleId;
 
@@ -29,6 +31,12 @@ abstract class NewsFormStoreBase with Store {
 
   @observable
   String content = '';
+
+  @observable
+  String city = '';
+
+  @observable
+  String state = 'PR';
 
   @observable
   bool isLoading = false;
@@ -52,6 +60,8 @@ abstract class NewsFormStoreBase with Store {
     title = article.title;
     subtitle = article.subtitle;
     content = article.content;
+    city = article.city;
+    state = article.state.isEmpty ? 'PR' : article.state;
     cover.setImageUrl(article.coverImage);
   }
 
@@ -63,6 +73,12 @@ abstract class NewsFormStoreBase with Store {
 
   @action
   void setContent(String value) => content = value;
+
+  @action
+  void setCity(String value) => city = value;
+
+  @action
+  void setState(String value) => state = value;
 
   @action
   Future<bool> submit(String token) async {
@@ -79,14 +95,14 @@ abstract class NewsFormStoreBase with Store {
         subtitle: subtitle.trim(),
         content: content.trim(),
         coverImage: cover.imageUrl,
+        city: city,
+        state: state,
       );
 
       final id = articleId;
-      if (id == null) {
-        await _repository.create(params, token);
-      } else {
-        await _repository.update(id, params, token);
-      }
+      savedArticle = id == null
+          ? await _repository.create(params, token)
+          : await _repository.update(id, params, token);
       return true;
     } on AppException catch (error) {
       errorMessage = error.message;
