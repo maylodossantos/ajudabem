@@ -26,6 +26,12 @@ $env:JAVA_HOME = "C:\Users\Maylo\.jdks\ms-17.0.20.1"
 
 Tests are a mix of Mockito unit tests for services (which mock `CurrentUserService`, so they can't catch auth wiring bugs) and `@SpringBootTest` + MockMvc integration tests that go through the real JWT → `SecurityFilter` → controller chain (`CurrentUserResolutionTest`, `NewsAuthorizationIntegrationTest`). Anything touching auth or roles needs an integration test, not just a mocked one.
 
+Security tests (IDOR, crypto/passwords, injection, bots) live in `src/test/java/com/ajudabem/api/security/`, extend `SecurityTestSupport` (which carries `@Tag("security")`) and run alone with `./mvnw.cmd test "-Dgroups=security"`; CI runs them with the rest of the suite (`./mvnw test` in `.github/workflows/ci.yml`). Requests to `/auth/*` in tests should use `fromIp(newIp())`, because the rate limiter state is shared by every test in the same Spring context.
+
+- **Rate limiting / brute force**: `RateLimiter` (in-memory fixed windows) backs both `AuthRateLimitFilter` (every `POST /auth/*`, per client IP and path, `api.rate-limit.auth.requests` per `api.rate-limit.auth.window-seconds`, default 20/60s, uses `getRemoteAddr()` and ignores `X-Forwarded-For`) and `UserService` (5 failed logins or 5 wrong verification codes per email lock it for 15 min — a locked code is wiped; 3 forgot-password emails per account per 15 min). Both answer 429 (`TooManyAttemptsException`).
+- **Reset secrets**: the forgot-password code and the reset token are stored as BCrypt hashes (`PasswordEncoder`), never in plain text; only the email carries the code.
+- **Deploy**: `.github/workflows/deploy.yml` runs the tests and pushes `api/Dockerfile`'s image to `ghcr.io/<owner>/ajudabem-api` on every push to `main`. The image needs the same env vars as a local run (`DB_*`, `JWT_SECRET`, `MAIL_*`, ...).
+
 ## Architecture
 
 - **Layering**: `Controller → Service → Repository (Spring Data JPA) → Entity`, with MapStruct interfaces in `mappers/` doing all DTO↔entity conversion. Controllers hold no business logic — each endpoint method calls one service method and wraps the result in `ResponseEntity`.

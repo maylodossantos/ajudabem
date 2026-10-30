@@ -17,10 +17,12 @@ import com.ajudabem.api.exceptions.InvalidPasswordException;
 import com.ajudabem.api.exceptions.InvalidResetTokenException;
 import com.ajudabem.api.exceptions.InvalidVerificationCodeException;
 import com.ajudabem.api.exceptions.PasswordMismatchException;
+import com.ajudabem.api.exceptions.TooManyAttemptsException;
 import com.ajudabem.api.exceptions.UserAlreadyDeletedException;
 import com.ajudabem.api.exceptions.UserNotFoundException;
 import com.ajudabem.api.mappers.UserMapper;
 import com.ajudabem.api.repositories.UserRepository;
+import com.ajudabem.api.infra.security.RateLimiter;
 import com.ajudabem.api.infra.security.TokenService;
 import com.ajudabem.api.infra.validation.Digits;
 import jakarta.mail.MessagingException;
@@ -37,6 +39,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.Year;
 import java.util.UUID;
@@ -48,6 +51,10 @@ public class UserService {
     private static final SecureRandom RANDOM = new SecureRandom();
     private static final int VERIFICATION_CODE_EXPIRATION_MINUTES = 10;
     private static final int RESET_TOKEN_EXPIRATION_MINUTES = 10;
+    private static final int MAX_LOGIN_FAILURES = 5;
+    private static final int MAX_VERIFICATION_CODE_FAILURES = 5;
+    private static final int MAX_FORGOT_PASSWORD_REQUESTS = 3;
+    private static final Duration ATTEMPTS_WINDOW = Duration.ofMinutes(15);
     private static final String VERIFICATION_CODE_EMAIL_TEMPLATE = readTemplate("mail/verification-code-email.html");
 
     private final UserRepository repository;
@@ -56,6 +63,7 @@ public class UserService {
     private final TokenService tokenService;
     private final CurrentUserService currentUserService;
     private final JavaMailSender mailSender;
+    private final RateLimiter rateLimiter;
 
     @Value("${api.mail.from}")
     private String mailFrom;
@@ -88,11 +96,19 @@ public class UserService {
 
     public ResponseDTO login(LoginRequestDTO dto) {
 
+        String attemptsKey = "login:" + dto.email();
+        if (rateLimiter.isBlocked(attemptsKey, MAX_LOGIN_FAILURES)) {
+            throw new TooManyAttemptsException("Too many failed logins, try again later");
+        }
+
         User user = findUserByEmail(dto.email());
 
         if (!passwordEncoder.matches(dto.password(), user.getPassword())) {
+            rateLimiter.exceeds(attemptsKey, MAX_LOGIN_FAILURES, ATTEMPTS_WINDOW);
             throw new InvalidPasswordException("Invalid password");
         }
+
+        rateLimiter.reset(attemptsKey);
 
         String token = this.tokenService.generateToken(user);
 
@@ -128,13 +144,18 @@ public class UserService {
 
     public void forgotPassword(ForgotPasswordRequestDTO dto) {
 
+        if (rateLimiter.exceeds("forgot-password:" + dto.email(), MAX_FORGOT_PASSWORD_REQUESTS, ATTEMPTS_WINDOW)) {
+            throw new TooManyAttemptsException("Too many verification codes requested, try again later");
+        }
+
         User user = findUserByEmail(dto.email());
 
         String code = generateVerificationCode();
 
-        user.setResetPasswordCode(code);
+        user.setResetPasswordCode(passwordEncoder.encode(code));
         user.setResetPasswordCodeExpiresAt(LocalDateTime.now().plusMinutes(VERIFICATION_CODE_EXPIRATION_MINUTES));
         repository.save(user);
+        rateLimiter.reset("verify-code:" + user.getEmail());
 
         sendVerificationCodeEmail(user.getEmail(), code);
     }
@@ -184,16 +205,26 @@ public class UserService {
     public VerifyCodeResponseDTO verifyCode(VerifyCodeRequestDTO dto) {
 
         User user = findUserByEmail(dto.email());
+        String attemptsKey = "verify-code:" + user.getEmail();
+
+        if (rateLimiter.isBlocked(attemptsKey, MAX_VERIFICATION_CODE_FAILURES)) {
+            user.setResetPasswordCode(null);
+            user.setResetPasswordCodeExpiresAt(null);
+            repository.save(user);
+            throw new TooManyAttemptsException("Too many wrong codes, request a new one");
+        }
 
         if (!matchesUnexpired(dto.code(), user.getResetPasswordCode(), user.getResetPasswordCodeExpiresAt())) {
+            rateLimiter.exceeds(attemptsKey, MAX_VERIFICATION_CODE_FAILURES, ATTEMPTS_WINDOW);
             throw new InvalidVerificationCodeException("Invalid or expired verification code");
         }
 
+        rateLimiter.reset(attemptsKey);
         String resetToken = UUID.randomUUID().toString();
 
         user.setResetPasswordCode(null);
         user.setResetPasswordCodeExpiresAt(null);
-        user.setResetPasswordToken(resetToken);
+        user.setResetPasswordToken(passwordEncoder.encode(resetToken));
         user.setResetPasswordTokenExpiresAt(LocalDateTime.now().plusMinutes(RESET_TOKEN_EXPIRATION_MINUTES));
         repository.save(user);
 
@@ -218,8 +249,9 @@ public class UserService {
         repository.save(user);
     }
 
-    private static boolean matchesUnexpired(String given, String stored, LocalDateTime expiresAt) {
-        return given != null && given.equals(stored) && expiresAt != null && expiresAt.isAfter(LocalDateTime.now());
+    private boolean matchesUnexpired(String given, String storedHash, LocalDateTime expiresAt) {
+        return given != null && storedHash != null && expiresAt != null && expiresAt.isAfter(LocalDateTime.now())
+                && passwordEncoder.matches(given, storedHash);
     }
 
     private String generateVerificationCode() {

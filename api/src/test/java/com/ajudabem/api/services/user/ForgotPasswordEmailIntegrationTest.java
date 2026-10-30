@@ -12,8 +12,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,6 +38,9 @@ class ForgotPasswordEmailIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Test
     void forgotPassword_sendsARealEmailContainingTheVerificationCode() throws Exception {
         User user = new User();
@@ -53,12 +60,14 @@ class ForgotPasswordEmailIntegrationTest {
         assertThat(message.getAllRecipients()[0].toString()).isEqualTo("jane.doe@example.com");
         assertThat(message.getSubject()).isEqualTo("Confirme seu acesso - AjudaBem");
 
-        String code = userRepository.findByEmail("jane.doe@example.com")
+        Matcher codeInEmail = Pattern.compile(": (\\d{4})\\b").matcher(GreenMailUtil.getBody(message));
+        assertThat(codeInEmail.find()).isTrue();
+        String code = codeInEmail.group(1);
+
+        String storedCode = userRepository.findByEmail("jane.doe@example.com")
                 .orElseThrow()
                 .getResetPasswordCode();
-        assertThat(code).hasSize(4);
-
-        String plainTextBody = GreenMailUtil.getBody(message);
-        assertThat(plainTextBody).contains(code);
+        assertThat(storedCode).isNotEqualTo(code);
+        assertThat(passwordEncoder.matches(code, storedCode)).isTrue();
     }
 }

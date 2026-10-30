@@ -3,10 +3,10 @@ name: CI
 on:
   pull_request:
     branches: [main]
-    paths: ['api/**']
+    paths: ['api/**', 'client/**', '.github/workflows/ci.yml']
   push:
     branches: [main]
-    paths: ['api/**']
+    paths: ['api/**', 'client/**', '.github/workflows/ci.yml']
 
 jobs:
   test-api:
@@ -23,6 +23,7 @@ jobs:
           filters: |
             api:
               - 'api/**'
+              - '.github/workflows/ci.yml'
 
       - uses: actions/setup-java@v4
         if: steps.changes.outputs.api == 'true'
