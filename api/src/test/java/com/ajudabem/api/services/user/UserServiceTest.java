@@ -19,6 +19,7 @@ import com.ajudabem.api.exceptions.InvalidVerificationCodeException;
 import com.ajudabem.api.exceptions.PasswordMismatchException;
 import com.ajudabem.api.exceptions.UserAlreadyDeletedException;
 import com.ajudabem.api.exceptions.UserNotFoundException;
+import com.ajudabem.api.infra.security.RateLimiter;
 import com.ajudabem.api.infra.security.TokenService;
 import com.ajudabem.api.mappers.UserMapper;
 import com.ajudabem.api.repositories.UserRepository;
@@ -66,6 +67,9 @@ class UserServiceTest {
 
     @Mock
     private JavaMailSender mailSender;
+
+    @Mock
+    private RateLimiter rateLimiter;
 
     @InjectMocks
     private UserService userService;
@@ -282,10 +286,11 @@ class UserServiceTest {
 
         when(repository.findByEmail(dto.email())).thenReturn(Optional.of(user));
         when(mailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed-code");
 
         userService.forgotPassword(dto);
 
-        assertThat(user.getResetPasswordCode()).hasSize(4);
+        assertThat(user.getResetPasswordCode()).isEqualTo("hashed-code");
         assertThat(user.getResetPasswordCodeExpiresAt()).isAfter(LocalDateTime.now());
         verify(repository).save(user);
         verify(mailSender).send(any(MimeMessage.class));
@@ -313,18 +318,20 @@ class UserServiceTest {
     @Test
     void verifyCode_shouldReturnResetTokenAndClearCode_whenCodeIsValid() {
         User user = existingUser();
-        user.setResetPasswordCode("1234");
+        user.setResetPasswordCode("hashed-code");
         user.setResetPasswordCodeExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         VerifyCodeRequestDTO dto = new VerifyCodeRequestDTO("jane@example.com", "1234");
 
         when(repository.findByEmail(dto.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("1234", "hashed-code")).thenReturn(true);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashed-token");
 
         VerifyCodeResponseDTO result = userService.verifyCode(dto);
 
         assertThat(result.resetToken()).isNotBlank();
         assertThat(user.getResetPasswordCode()).isNull();
-        assertThat(user.getResetPasswordToken()).isEqualTo(result.resetToken());
+        assertThat(user.getResetPasswordToken()).isEqualTo("hashed-token").isNotEqualTo(result.resetToken());
         assertThat(user.getResetPasswordTokenExpiresAt()).isAfter(LocalDateTime.now());
         verify(repository).save(user);
     }
@@ -332,7 +339,7 @@ class UserServiceTest {
     @Test
     void verifyCode_shouldThrowInvalidVerificationCodeException_whenCodeDoesNotMatch() {
         User user = existingUser();
-        user.setResetPasswordCode("1234");
+        user.setResetPasswordCode("hashed-code");
         user.setResetPasswordCodeExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         VerifyCodeRequestDTO dto = new VerifyCodeRequestDTO("jane@example.com", "9999");
@@ -346,7 +353,7 @@ class UserServiceTest {
     @Test
     void verifyCode_shouldThrowInvalidVerificationCodeException_whenCodeIsExpired() {
         User user = existingUser();
-        user.setResetPasswordCode("1234");
+        user.setResetPasswordCode("hashed-code");
         user.setResetPasswordCodeExpiresAt(LocalDateTime.now().minusMinutes(1));
 
         VerifyCodeRequestDTO dto = new VerifyCodeRequestDTO("jane@example.com", "1234");
@@ -360,13 +367,14 @@ class UserServiceTest {
     @Test
     void resetPassword_shouldUpdatePasswordAndClearToken_whenTokenIsValidAndPasswordsMatch() {
         User user = existingUser();
-        user.setResetPasswordToken("valid-token");
+        user.setResetPasswordToken("hashed-token");
         user.setResetPasswordTokenExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         ResetPasswordRequestDTO dto = new ResetPasswordRequestDTO(
                 "jane@example.com", "valid-token", "newPassword123", "newPassword123");
 
         when(repository.findByEmail(dto.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("valid-token", "hashed-token")).thenReturn(true);
         when(passwordEncoder.encode(dto.password())).thenReturn("new-hashed-password");
 
         userService.resetPassword(dto);
@@ -379,7 +387,7 @@ class UserServiceTest {
     @Test
     void resetPassword_shouldThrowInvalidResetTokenException_whenTokenDoesNotMatch() {
         User user = existingUser();
-        user.setResetPasswordToken("valid-token");
+        user.setResetPasswordToken("hashed-token");
         user.setResetPasswordTokenExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         ResetPasswordRequestDTO dto = new ResetPasswordRequestDTO(
@@ -396,13 +404,14 @@ class UserServiceTest {
     @Test
     void resetPassword_shouldThrowPasswordMismatchException_whenPasswordsDoNotMatch() {
         User user = existingUser();
-        user.setResetPasswordToken("valid-token");
+        user.setResetPasswordToken("hashed-token");
         user.setResetPasswordTokenExpiresAt(LocalDateTime.now().plusMinutes(5));
 
         ResetPasswordRequestDTO dto = new ResetPasswordRequestDTO(
                 "jane@example.com", "valid-token", "newPassword123", "somethingElse");
 
         when(repository.findByEmail(dto.email())).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("valid-token", "hashed-token")).thenReturn(true);
 
         assertThatThrownBy(() -> userService.resetPassword(dto))
                 .isInstanceOf(PasswordMismatchException.class);

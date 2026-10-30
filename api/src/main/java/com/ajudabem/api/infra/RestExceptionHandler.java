@@ -9,6 +9,7 @@ import com.ajudabem.api.exceptions.CampaignNotFoundException;
 import com.ajudabem.api.exceptions.NotificationNotFoundException;
 import com.ajudabem.api.exceptions.TagAlreadyExistsException;
 import com.ajudabem.api.exceptions.TagNotFoundException;
+import com.ajudabem.api.exceptions.TooManyAttemptsException;
 import com.ajudabem.api.exceptions.InitiativeClosedException;
 import com.ajudabem.api.exceptions.VolunteerActionNotFoundException;
 import com.ajudabem.api.exceptions.VolunteerApplicationNotFoundException;
@@ -77,6 +78,11 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     })
     public ResponseEntity<ErrorResponseDTO> unauthorizedHandler(RuntimeException exception) {
         return error(HttpStatus.UNAUTHORIZED, exception);
+    }
+
+    @ExceptionHandler(TooManyAttemptsException.class)
+    public ResponseEntity<ErrorResponseDTO> tooManyRequestsHandler(RuntimeException exception) {
+        return error(HttpStatus.TOO_MANY_REQUESTS, exception);
     }
 
     @ExceptionHandler(ForbiddenActionException.class)
