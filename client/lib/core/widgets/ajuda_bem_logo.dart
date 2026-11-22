@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AjudaBemLogo extends StatelessWidget {
   const AjudaBemLogo({super.key});
 
@@ -9,7 +11,7 @@ class AjudaBemLogo extends StatelessWidget {
     return RichText(
       text: TextSpan(
         style: GoogleFonts.manrope(
-          color: const Color(0xFF232323),
+          color: AppColors.textStrong,
           fontSize: 24,
           fontWeight: FontWeight.w800,
           letterSpacing: 0,

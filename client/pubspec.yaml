@@ -46,6 +46,7 @@ dependencies:
   mobx: ^2.6.0
   pdfx: ^2.11.0
   printing: ^5.15.1
+  shared_preferences: ^2.5.6
   url_launcher: ^6.3.2
 
 dev_dependencies:
@@ -77,24 +78,19 @@ flutter:
 
   assets:
     - assets/images/forms/person.png
+    - assets/icons/actions/
     - assets/icons/google_icon.svg
-    - assets/icons/navigation/add.svg
-    - assets/icons/navigation/heart.svg
-    - assets/icons/navigation/news.svg
-    - assets/icons/navigation/ong.svg
-    - assets/icons/navigation/profile.svg
+    - assets/icons/navigation/
     - assets/icons/notify_icon.svg
-    - assets/icons/ong/
     - assets/illustrations/
-    - assets/icons/profile/ong_validation.svg
-    - assets/icons/profile/registered_people.svg
     - assets/icons/recover_access.png
     - assets/icons/register/email.svg
     - assets/icons/register/password.svg
     - assets/icons/register/phone.svg
     - assets/icons/register/user.svg
     - assets/icons/reset_password.svg
-    - assets/icons/search.svg
+    - assets/icons/shortcuts/
+    - assets/icons/utilities/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

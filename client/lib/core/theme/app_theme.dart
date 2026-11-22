@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import './app_colors.dart';
+
 abstract final class AppTheme {
-  static const _brand = Color(0xFF04957C);
-  static const _accent = Color(0xFFF2B84B);
-  static const _surface = Color(0xFFF3F3F3);
-  static const _text = Color(0xFF232323);
+  static const _brand = AppColors.brand;
+  static const _accent = AppColors.accent;
+  static const _surface = AppColors.background;
+  static const _text = AppColors.textStrong;
 
   static ThemeData get light {
     final colorScheme = ColorScheme.fromSeed(
@@ -33,29 +35,33 @@ abstract final class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size.fromHeight(39),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFFEEEEEE),
+        fillColor: AppColors.surfaceMuted,
         hintStyle: GoogleFonts.manrope(
-          color: const Color(0xFFA2A2A2),
-          fontSize: 16,
+          color: AppColors.textMuted,
+          fontSize: AppTextSize.title,
           fontWeight: FontWeight.w400,
           letterSpacing: 0,
         ),
-        prefixIconColor: const Color(0xFFB5B5B5),
-        suffixIconColor: const Color(0xFFB5B5B5),
+        prefixIconColor: AppColors.textMuted,
+        suffixIconColor: AppColors.textMuted,
         border: OutlineInputBorder(
           borderSide: BorderSide.none,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
       ),
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
       ),
     );
   }

@@ -132,6 +132,24 @@ mixin _$NewsFormStore on NewsFormStoreBase, Store {
     });
   }
 
+  late final _$categoryAtom = Atom(
+    name: 'NewsFormStoreBase.category',
+    context: context,
+  );
+
+  @override
+  NewsCategory get category {
+    _$categoryAtom.reportRead();
+    return super.category;
+  }
+
+  @override
+  set category(NewsCategory value) {
+    _$categoryAtom.reportWrite(value, super.category, () {
+      super.category = value;
+    });
+  }
+
   late final _$isLoadingAtom = Atom(
     name: 'NewsFormStoreBase.isLoading',
     context: context,
@@ -256,6 +274,18 @@ mixin _$NewsFormStore on NewsFormStoreBase, Store {
   }
 
   @override
+  void setCategory(NewsCategory value) {
+    final _$actionInfo = _$NewsFormStoreBaseActionController.startAction(
+      name: 'NewsFormStoreBase.setCategory',
+    );
+    try {
+      return super.setCategory(value);
+    } finally {
+      _$NewsFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 articleId: ${articleId},
@@ -264,6 +294,7 @@ subtitle: ${subtitle},
 content: ${content},
 city: ${city},
 state: ${state},
+category: ${category},
 isLoading: ${isLoading},
 errorMessage: ${errorMessage},
 isEditing: ${isEditing},

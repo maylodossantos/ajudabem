@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/impact/impact_repository.dart';
@@ -10,14 +9,17 @@ import '../../../../core/notifications/notifications_store.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_avatar.dart';
+import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_impact_row.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_section_title.dart';
-import '../../../../core/widgets/app_status_pill.dart';
+import '../../../../core/widgets/app_svg_icon.dart';
+import '../../../../core/widgets/app_utility_tile.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
+import '../../../organization/presentation/stores/organization_validation_store.dart';
 import '../../domain/entities/user_profile.dart';
 import '../stores/profile_store.dart';
 
@@ -32,6 +34,7 @@ class _ProfilePageState extends State<ProfilePage> {
   late final LoginStore _loginStore;
   late final ProfileStore _profileStore;
   late final ImpactStore _impactStore;
+  late final OrganizationValidationStore _organizationStore;
 
   @override
   void initState() {
@@ -39,6 +42,7 @@ class _ProfilePageState extends State<ProfilePage> {
     _loginStore = Modular.get<LoginStore>();
     _profileStore = Modular.get<ProfileStore>();
     _impactStore = Modular.get<ImpactStore>();
+    _organizationStore = Modular.get<OrganizationValidationStore>();
     WidgetsBinding.instance.addPostFrameCallback((_) => _loadProfile());
   }
 
@@ -53,6 +57,9 @@ class _ProfilePageState extends State<ProfilePage> {
       _profileStore.load(token),
       _impactStore.loadPlatform(token),
     ]);
+    if (_profileStore.profile?.isOng ?? false) {
+      await _organizationStore.load(token);
+    }
   }
 
   void _signOut() {
@@ -100,6 +107,7 @@ class _ProfilePageState extends State<ProfilePage> {
               return _ProfileContent(
                 profile: profile,
                 impact: _impactStore.platform,
+                organizationName: _organizationStore.organization?.tradeName,
                 onSignOut: _signOut,
               );
             },
@@ -115,10 +123,12 @@ class _ProfileContent extends StatelessWidget {
     required this.profile,
     required this.impact,
     required this.onSignOut,
+    this.organizationName,
   });
 
   final UserProfile profile;
   final PlatformImpact? impact;
+  final String? organizationName;
   final VoidCallback onSignOut;
 
   @override
@@ -128,7 +138,10 @@ class _ProfileContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _ProfileIdentity(profile: profile),
+          _ProfileIdentity(
+            profile: profile,
+            organizationName: organizationName,
+          ),
           const SizedBox(height: 30),
           const AppSectionTitle('Utilitários'),
           const SizedBox(height: 10),
@@ -137,45 +150,63 @@ class _ProfileContent extends StatelessWidget {
             children: profile.isAdmin
                 ? [
                     Expanded(
-                      child: _UtilityItem(
+                      child: AppUtilityTile(
                         key: const Key('admin_news_option'),
-                        iconAsset: 'assets/icons/profile/registered_people.svg',
-                        label: 'Notícias',
+                        iconAsset: AppIcons.news,
+                        label: 'Gerenciar\nnotícias',
                         onTap: () => Modular.to.pushNamed(AppRoutes.newsManage),
                       ),
                     ),
                     const SizedBox(width: 9),
-                    Expanded(child: _ongValidationItem(AppRoutes.ongReviews)),
+                    Expanded(
+                      child: _ongValidationItem(
+                        AppRoutes.ongReviews,
+                        AppIcons.validationReview,
+                        'Avaliar\nONGs',
+                      ),
+                    ),
                     const SizedBox(width: 9),
                     Expanded(
-                      child: _UtilityItem(
+                      child: AppUtilityTile(
                         key: const Key('admin_needs_option'),
-                        icon: Icons.label_outline,
-                        label: 'Necessidades',
+                        iconAsset: AppIcons.needs,
+                        label: 'Tipos de\nnecessidade',
                         onTap: () => Modular.to.pushNamed(AppRoutes.needsAdmin),
                       ),
                     ),
                   ]
                 : [
                     Expanded(
-                      child: _UtilityItem(
+                      child: AppUtilityTile(
                         key: const Key('registered_people_option'),
-                        iconAsset: 'assets/icons/profile/registered_people.svg',
-                        label: 'Pessoas\nCadastradas',
+                        iconAsset: AppIcons.registeredPeople,
+                        label: 'Pessoas\ncadastradas',
                         onTap: () =>
                             Modular.to.pushNamed(AppRoutes.assistedPeople),
                       ),
                     ),
                     const SizedBox(width: 9),
                     Expanded(
-                      child: _ongValidationItem(AppRoutes.ongValidation),
+                      child: profile.isOng
+                          ? AppUtilityTile(
+                              key: const Key('my_ong_option'),
+                              iconAsset: AppIcons.myOng,
+                              label: 'Minha ONG',
+                              onTap: () =>
+                                  Modular.to.pushNamed(AppRoutes.myOng),
+                            )
+                          : _ongValidationItem(
+                              AppRoutes.ongValidation,
+                              AppIcons.validationRequest,
+                              'Cadastrar\nminha ONG',
+                            ),
                     ),
                     const SizedBox(width: 9),
                     Expanded(
-                      child: _UtilityItem(
+                      child: AppUtilityTile(
                         key: const Key('volunteer_option'),
-                        icon: Icons.volunteer_activism_outlined,
-                        label: 'Voluntário',
+                        iconAsset: AppIcons.volunteer,
+                        label: 'Minhas ações',
                         onTap: () =>
                             Modular.to.pushNamed(AppRoutes.volunteerActions),
                       ),
@@ -183,14 +214,14 @@ class _ProfileContent extends StatelessWidget {
                   ],
           ),
           const SizedBox(height: 20),
-          if (!profile.isAdmin) ..._impact(),
+          if (!profile.isAdmin && !profile.isOng) ..._impact(),
           const AppSectionTitle('Configurações'),
           const SizedBox(height: 8),
           _SettingsAction(
-            label: 'Conta',
+            label: 'Meus dados',
             onTap: () => Modular.to.pushNamed(AppRoutes.profileEdit),
           ),
-          const _SettingsAction(label: 'Fale Conosco'),
+          const _SettingsAction(label: 'Fale conosco'),
           _SettingsAction(
             label: 'Sobre',
             onTap: () => Modular.to.pushNamed(AppRoutes.aboutConfig),
@@ -201,23 +232,23 @@ class _ProfileContent extends StatelessWidget {
     );
   }
 
-  Widget _ongValidationItem(String route) {
-    return _UtilityItem(
+  Widget _ongValidationItem(String route, String iconAsset, String label) {
+    return AppUtilityTile(
       key: const Key('ong_validation_option'),
-      iconAsset: 'assets/icons/profile/ong_validation.svg',
-      label: 'Validação para\nONG’s',
+      iconAsset: iconAsset,
+      label: label,
       onTap: () => Modular.to.pushNamed(route),
     );
   }
 
   List<Widget> _impact() {
     return [
-      const AppSectionTitle('Nosso Impacto em Números'),
+      const AppSectionTitle('Nosso impacto'),
       const SizedBox(height: 10),
       AppImpactRow(
         items: [
-          (impact?.registered, 'Vidas Registradas'),
-          (impact?.inCare, 'Vidas em Cuidado'),
+          (impact?.registered, 'Pessoas indicadas'),
+          (impact?.inCare, 'Pessoas em atendimento'),
           (impact?.newBeginnings, 'Novos recomeços'),
         ],
       ),
@@ -226,8 +257,8 @@ class _ProfileContent extends StatelessWidget {
         'Obrigado por fazer parte do Ajuda Bem. Juntos,\n'
         'transformamos vidas todos os dias.',
         style: GoogleFonts.manrope(
-          color: const Color(0xFF454545),
-          fontSize: 14,
+          color: AppColors.textBody,
+          fontSize: AppTextSize.body,
           fontWeight: FontWeight.w500,
           height: 1.35,
           letterSpacing: 0,
@@ -239,8 +270,8 @@ class _ProfileContent extends StatelessWidget {
         child: Text(
           '— Equipe AjudaBem',
           style: GoogleFonts.manrope(
-            color: const Color(0xFF454545),
-            fontSize: 11,
+            color: AppColors.textBody,
+            fontSize: AppTextSize.caption,
             fontWeight: FontWeight.w500,
             letterSpacing: 0,
           ),
@@ -252,9 +283,10 @@ class _ProfileContent extends StatelessWidget {
 }
 
 class _ProfileIdentity extends StatelessWidget {
-  const _ProfileIdentity({required this.profile});
+  const _ProfileIdentity({required this.profile, this.organizationName});
 
   final UserProfile profile;
+  final String? organizationName;
 
   @override
   Widget build(BuildContext context) {
@@ -266,28 +298,22 @@ class _ProfileIdentity extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (profile.isAdmin)
-                const AppStatusPill(
+              if (profile.isAdmin) ...[
+                const AppBadge(
                   key: Key('profile_role_badge'),
                   label: 'Administrador',
-                  color: Colors.white,
-                  background: AppColors.danger,
-                )
-              else if (profile.isOng)
-                AppStatusPill(
-                  key: const Key('profile_role_badge'),
-                  label: 'ONG',
-                  color: Colors.white,
-                  background: Theme.of(context).colorScheme.primary,
+                  tone: AppTone.danger,
+                  icon: Icons.shield_outlined,
                 ),
-              if (profile.isAdmin || profile.isOng) const SizedBox(height: 4),
+                const SizedBox(height: 4),
+              ],
               Text(
                 profile.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFF232323),
-                  fontSize: 16,
+                  color: AppColors.textStrong,
+                  fontSize: AppTextSize.title,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0,
                 ),
@@ -295,12 +321,16 @@ class _ProfileIdentity extends StatelessWidget {
               Text(
                 'ID: ${profile.id.toString().padLeft(7, '0')}',
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFFA2A2A2),
-                  fontSize: 12,
+                  color: AppColors.textMuted,
+                  fontSize: AppTextSize.caption,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0,
                 ),
               ),
+              if (profile.isOng) ...[
+                const SizedBox(height: 6),
+                _OngLink(name: organizationName),
+              ],
             ],
           ),
         ),
@@ -309,51 +339,49 @@ class _ProfileIdentity extends StatelessWidget {
   }
 }
 
-class _UtilityItem extends StatelessWidget {
-  const _UtilityItem({
-    required this.label,
-    super.key,
-    this.iconAsset,
-    this.icon,
-    this.onTap,
-  }) : assert(iconAsset != null || icon != null);
+class _OngLink extends StatelessWidget {
+  const _OngLink({this.name});
 
-  final String? iconAsset;
-  final IconData? icon;
-  final String label;
-  final VoidCallback? onTap;
+  final String? name;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
-      child: Column(
-        children: [
-          Container(
-            height: 68,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-              borderRadius: BorderRadius.circular(6),
-            ),
-            alignment: Alignment.center,
-            child: icon != null
-                ? Icon(icon, color: Colors.white, size: 44)
-                : SvgPicture.asset(iconAsset!, width: 43, height: 43),
+    final primary = Theme.of(context).colorScheme.primary;
+    final name = this.name;
+
+    return Material(
+      color: primary.withValues(alpha: 0.1),
+      shape: const StadiumBorder(),
+      child: InkWell(
+        key: const Key('profile_ong_link'),
+        customBorder: const StadiumBorder(),
+        onTap: () => Modular.to.navigate(AppRoutes.ong),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 5, 6, 5),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.verified_outlined, size: 16, color: primary),
+              const SizedBox(width: 6),
+              Flexible(
+                child: Text(
+                  name == null
+                      ? 'Responsável pela ONG'
+                      : 'Responsável por $name',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.manrope(
+                    color: primary,
+                    fontSize: AppTextSize.caption,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0,
+                  ),
+                ),
+              ),
+              Icon(Icons.chevron_right, size: 18, color: primary),
+            ],
           ),
-          const SizedBox(height: 5),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.manrope(
-              color: Colors.black,
-              fontSize: 12,
-              height: 1.15,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -379,7 +407,7 @@ class _SettingsAction extends StatelessWidget {
             label,
             style: GoogleFonts.manrope(
               color: Colors.black,
-              fontSize: 14,
+              fontSize: AppTextSize.body,
               fontWeight: FontWeight.w400,
               letterSpacing: 0,
             ),

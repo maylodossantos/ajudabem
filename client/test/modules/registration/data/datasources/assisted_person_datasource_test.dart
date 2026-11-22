@@ -10,6 +10,7 @@ import 'package:http/testing.dart';
 
 void main() {
   const params = CreateAssistedPersonParams(
+    identified: true,
     fullName: 'Maria',
     age: 42,
     gender: 'FEMALE',
@@ -91,6 +92,7 @@ void main() {
     expect(capturedRequest.headers['Authorization'], 'Bearer jwt-token');
     expect(capturedRequest.headers['Content-Type'], 'application/json');
     expect(jsonDecode(capturedRequest.body), {
+      'identified': true,
       'full_name': 'Maria',
       'age': 42,
       'gender': 'FEMALE',
@@ -103,6 +105,7 @@ void main() {
       'state': 'Paraná',
       'zip_code': '80000-000',
       'country': 'Brasil',
+      'locationDescription': '',
     });
     expect(result.id, 10);
     expect(result.fullName, 'Maria');

@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 
@@ -29,7 +30,7 @@ class InitiativeChooserPage extends StatelessWidget {
                 'Escolha sua iniciativa',
                 style: GoogleFonts.manrope(
                   color: primary,
-                  fontSize: 20,
+                  fontSize: AppTextSize.display,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
@@ -38,7 +39,10 @@ class InitiativeChooserPage extends StatelessWidget {
               Text(
                 'Selecione o tipo de iniciativa que deseja criar no AjudaBem.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.manrope(fontSize: 15, letterSpacing: 0),
+                style: GoogleFonts.manrope(
+                  fontSize: AppTextSize.body,
+                  letterSpacing: 0,
+                ),
               ),
               const SizedBox(height: 28),
               _Option(
@@ -88,7 +92,7 @@ class _Option extends StatelessWidget {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppRadius.lg),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -102,7 +106,7 @@ class _Option extends StatelessWidget {
               Container(
                 width: 112,
                 decoration: const BoxDecoration(
-                  color: Color(0xFFD6F3EE),
+                  color: AppColors.brandSoft,
                   borderRadius: BorderRadius.horizontal(
                     right: Radius.circular(12),
                   ),
@@ -121,7 +125,7 @@ class _Option extends StatelessWidget {
                         title,
                         style: GoogleFonts.manrope(
                           color: primary,
-                          fontSize: 16,
+                          fontSize: AppTextSize.title,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
@@ -130,8 +134,8 @@ class _Option extends StatelessWidget {
                       Text(
                         description,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF232323),
-                          fontSize: 13,
+                          color: AppColors.textStrong,
+                          fontSize: AppTextSize.small,
                           height: 1.35,
                           letterSpacing: 0,
                         ),

@@ -10,4 +10,4 @@ import com.ajudabem.api.dto.user.UserResponseSummaryDTO;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record AssistedPersonResponseDTO(Long id, String full_name, Integer age, Gender gender, RiskLevel riskLevel, List<AssistedPersonTagResponseDTO> tags, UserResponseSummaryDTO author, String notes, String street, String number, String neighborhood, String city, String state, String zip_code, String country, CareStatus careStatus, FinishReason finishReason, OrganizationSummaryDTO organization, LocalDateTime careUpdatedAt) { }
+public record AssistedPersonResponseDTO(Long id, String full_name, Integer age, Gender gender, RiskLevel riskLevel, List<AssistedPersonTagResponseDTO> tags, UserResponseSummaryDTO author, String notes, String street, String number, String neighborhood, String city, String state, String zip_code, String country, String locationDescription, CareStatus careStatus, FinishReason finishReason, OrganizationSummaryDTO organization, LocalDateTime careUpdatedAt) { }

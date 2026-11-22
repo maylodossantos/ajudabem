@@ -22,7 +22,9 @@ Future<bool> showAppConfirmDialog(
       backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
         child: SingleChildScrollView(
@@ -36,7 +38,7 @@ Future<bool> showAppConfirmDialog(
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
                   color: Theme.of(dialogContext).colorScheme.primary,
-                  fontSize: 20,
+                  fontSize: AppTextSize.display,
                   fontWeight: FontWeight.w800,
                   height: 1.3,
                   letterSpacing: 0,
@@ -47,8 +49,8 @@ Future<bool> showAppConfirmDialog(
                 message,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFF232323),
-                  fontSize: 15,
+                  color: AppColors.textStrong,
+                  fontSize: AppTextSize.body,
                   height: 1.4,
                   letterSpacing: 0,
                 ),
@@ -60,22 +62,10 @@ Future<bool> showAppConfirmDialog(
                 onPressed: () => Navigator.of(dialogContext).pop(false),
               ),
               const SizedBox(height: 4),
-              TextButton(
+              AppDangerTextButton(
                 key: const Key('confirm_dialog_confirm'),
+                label: confirmLabel,
                 onPressed: () => Navigator.of(dialogContext).pop(true),
-                style: TextButton.styleFrom(
-                  foregroundColor: AppColors.danger,
-                  minimumSize: const Size.fromHeight(44),
-                ),
-                child: Text(
-                  confirmLabel,
-                  style: GoogleFonts.manrope(
-                    color: AppColors.danger,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
               ),
             ],
           ),

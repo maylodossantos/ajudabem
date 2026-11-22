@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppChoiceChip extends StatelessWidget {
   const AppChoiceChip({
     required this.label,
@@ -20,7 +22,7 @@ class AppChoiceChip extends StatelessWidget {
     return Material(
       color: selected ? primary : Colors.transparent,
       shape: StadiumBorder(
-        side: BorderSide(color: selected ? primary : const Color(0xFF232323)),
+        side: BorderSide(color: selected ? primary : AppColors.textStrong),
       ),
       child: InkWell(
         onTap: onTap,
@@ -30,8 +32,8 @@ class AppChoiceChip extends StatelessWidget {
           child: Text(
             label,
             style: GoogleFonts.manrope(
-              color: selected ? Colors.white : const Color(0xFF232323),
-              fontSize: 14,
+              color: selected ? Colors.white : AppColors.textStrong,
+              fontSize: AppTextSize.body,
               fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),

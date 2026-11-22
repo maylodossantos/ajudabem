@@ -6,6 +6,7 @@ import '../../../../core/formatters/cep_input_formatter.dart';
 import '../../../../core/formatters/phone_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/external_link_service.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_item_actions_menu.dart';
@@ -121,7 +122,7 @@ class _HelpPointDetailPageState extends State<HelpPointDetailPage> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +137,7 @@ class _HelpPointDetailPageState extends State<HelpPointDetailPage> {
                           ),
                           if (_canManage)
                             AppItemActionsMenu(
-                              tooltip: 'Opções do ponto de ajuda',
+                              itemLabel: 'ponto de ajuda',
                               isBusy: _isDeleting,
                               onEdit: _edit,
                               onDelete: _delete,
@@ -223,7 +224,7 @@ class _HelpPointDetailPageState extends State<HelpPointDetailPage> {
                           (point.scheduleNote?.isNotEmpty ?? false)) ...[
                         const SizedBox(height: 18),
                         Text(
-                          'Horário de Funcionamento',
+                          'Horário de funcionamento',
                           style: _Styles.section,
                         ),
                         const SizedBox(height: 6),
@@ -263,28 +264,28 @@ class _HelpPointDetailPageState extends State<HelpPointDetailPage> {
 abstract final class _Styles {
   static final title = GoogleFonts.manrope(
     color: Colors.black,
-    fontSize: 18,
+    fontSize: AppTextSize.heading,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
   );
 
   static final section = GoogleFonts.manrope(
     color: Colors.black,
-    fontSize: 17,
+    fontSize: AppTextSize.title,
     fontWeight: FontWeight.w700,
     letterSpacing: 0,
   );
 
   static final body = GoogleFonts.manrope(
-    color: const Color(0xFF232323),
-    fontSize: 15,
+    color: AppColors.textStrong,
+    fontSize: AppTextSize.title,
     height: 1.35,
     letterSpacing: 0,
   );
 
   static final muted = GoogleFonts.manrope(
-    color: const Color(0xFF6B6B6B),
-    fontSize: 15,
+    color: AppColors.textSecondary,
+    fontSize: AppTextSize.body,
     height: 1.35,
     letterSpacing: 0,
   );
@@ -321,7 +322,7 @@ class _ContactButton extends StatelessWidget {
       label: Text(
         label,
         style: GoogleFonts.manrope(
-          fontSize: 16,
+          fontSize: AppTextSize.title,
           fontWeight: FontWeight.w700,
           letterSpacing: 0,
         ),
@@ -329,7 +330,9 @@ class _ContactButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 40),
         padding: const EdgeInsets.symmetric(horizontal: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
       ),
     );
   }

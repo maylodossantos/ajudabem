@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -13,7 +14,7 @@ import '../stores/recover_access_store.dart';
 class RecoverAccessPage extends StatelessWidget {
   const RecoverAccessPage({super.key});
 
-  static const _primaryText = Color(0xFF232323);
+  static const _primaryText = AppColors.textStrong;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class RecoverAccessPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                           color: Theme.of(context).colorScheme.primary,
-                          fontSize: 16,
+                          fontSize: AppTextSize.title,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
@@ -57,7 +58,7 @@ class RecoverAccessPage extends StatelessWidget {
                               textAlign: TextAlign.center,
                               style: GoogleFonts.manrope(
                                 color: _primaryText,
-                                fontSize: 14,
+                                fontSize: AppTextSize.body,
                                 fontWeight: FontWeight.w400,
                                 letterSpacing: 0,
                               ),
@@ -67,7 +68,7 @@ class RecoverAccessPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
-                        label: 'E-mail:',
+                        label: 'E-mail',
                         hintText: 'Digite seu e-mail',
                         prefixIconAsset: 'assets/icons/register/email.svg',
                         keyboardType: TextInputType.emailAddress,

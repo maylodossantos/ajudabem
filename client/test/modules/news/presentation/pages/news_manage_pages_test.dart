@@ -92,7 +92,7 @@ void main() {
     );
 
     expect(find.text('Título'), findsOneWidget);
-    expect(find.text('Sub-Título'), findsOneWidget);
+    expect(find.text('Subtítulo'), findsOneWidget);
     expect(find.text('Descrição'), findsOneWidget);
     expect(find.text('Texto completo da notícia.'), findsOneWidget);
     expect(find.byKey(const Key('news_manage_edit')), findsOneWidget);
@@ -120,9 +120,16 @@ void main() {
     await pump(tester, NewsFormPage(store: store, token: 'jwt-token'));
 
     expect(find.text('Preencha as informações abaixo'), findsOneWidget);
-    expect(find.text('Informações gerais:'), findsOneWidget);
-    expect(find.text('Sub-Título'), findsOneWidget);
-    expect(find.text('Descrição:'), findsOneWidget);
+    expect(
+      tester
+          .getTopLeft(find.byKey(const Key('news_form_cover_image_picker')))
+          .dy,
+      lessThan(
+        tester.getTopLeft(find.byKey(const Key('news_form_title_field'))).dy,
+      ),
+    );
+    expect(find.text('Subtítulo'), findsOneWidget);
+    expect(find.text('Descrição'), findsOneWidget);
     expect(find.text('0/10000'), findsOneWidget);
     expect(find.text('Publicar'), findsOneWidget);
 

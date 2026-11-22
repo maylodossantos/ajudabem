@@ -36,10 +36,10 @@ void main() {
     );
 
     await pump(showOng: false);
-    expect(find.text('Ong'), findsNothing);
+    expect(find.text('ONG'), findsNothing);
 
     await pump(showOng: true);
-    await tester.tap(find.text('Ong'));
+    await tester.tap(find.text('ONG'));
     expect(tapped, isTrue);
   });
 }

@@ -5,7 +5,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/app_status_view.dart';
@@ -67,28 +66,15 @@ class _InitiativesPageState extends State<InitiativesPage> {
 
         return AppPageScaffold(
           currentItem: AppNavigationItem.ong,
-          floatingActionButton: _store.isEmpty
-              ? FloatingActionButton(
-                  key: const Key('initiatives_create_fab'),
-                  shape: const CircleBorder(),
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  tooltip: 'Criar iniciativa',
-                  onPressed: () => _go(AppRoutes.initiativeChooser),
-                  child: const Icon(Icons.add, size: 32),
-                )
-              : null,
-          bottomBar: _store.isEmpty || !_store.loaded
-              ? null
-              : AppPrimaryButton(
-                  key: const Key('initiatives_create_button'),
-                  label: campaignsTab ? 'Criar campanha' : 'Criar Ação',
-                  onPressed: () => _go(
-                    campaignsTab
-                        ? AppRoutes.campaignForm
-                        : AppRoutes.actionForm,
-                  ),
-                ),
+          floatingActionButton: FloatingActionButton(
+            key: const Key('initiatives_create_fab'),
+            shape: const CircleBorder(),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            foregroundColor: Colors.white,
+            tooltip: 'Criar iniciativa',
+            onPressed: () => _go(AppRoutes.initiativeChooser),
+            child: const Icon(Icons.add, size: 32),
+          ),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [

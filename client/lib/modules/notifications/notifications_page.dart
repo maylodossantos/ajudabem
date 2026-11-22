@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/notifications/app_notification.dart';
 import '../../core/notifications/notifications_store.dart';
 import '../../core/routes/app_routes.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_bottom_navigation.dart';
 import '../../core/widgets/app_error_view.dart';
 import '../../core/widgets/app_page_scaffold.dart';
@@ -101,7 +102,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       child: Text(
                         'Notificações',
                         style: GoogleFonts.manrope(
-                          fontSize: 20,
+                          fontSize: AppTextSize.display,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
@@ -151,7 +152,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   label,
                                   style: GoogleFonts.manrope(
                                     color: primary,
-                                    fontSize: 15,
+                                    fontSize: AppTextSize.title,
                                     fontWeight: FontWeight.w800,
                                   ),
                                 ),
@@ -183,41 +184,22 @@ class _NotificationTile extends StatelessWidget {
   final AppNotification notification;
   final VoidCallback onTap;
 
-  static IconData iconOf(NotificationType type) => switch (type) {
-    NotificationType.caseNominated => Icons.person_pin_circle_outlined,
-    NotificationType.caseAssumed => Icons.volunteer_activism_outlined,
-    NotificationType.caseFinished => Icons.task_alt,
-    NotificationType.campaignCreated => Icons.campaign_outlined,
-    NotificationType.actionCreated => Icons.groups_outlined,
-    NotificationType.volunteerApplied => Icons.person_add_alt_1_outlined,
-    NotificationType.applicationAccepted => Icons.check_circle_outline,
-    NotificationType.organizationApproved => Icons.verified_outlined,
-    NotificationType.organizationRejected => Icons.error_outline,
-    NotificationType.unknown => Icons.notifications_none,
-  };
-
   @override
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
     final unread = !notification.isRead;
 
     return Material(
-      color: unread ? const Color(0xFFEFFAF7) : Colors.white,
-      borderRadius: BorderRadius.circular(12),
+      color: unread ? AppColors.brandSoft : Colors.white,
+      borderRadius: BorderRadius.circular(AppRadius.lg),
       child: InkWell(
         key: Key('notification_${notification.id}'),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(14),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 26,
-                backgroundColor: const Color(0xFFCFF2EC),
-                child: Icon(iconOf(notification.type), color: primary),
-              ),
-              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -225,7 +207,7 @@ class _NotificationTile extends StatelessWidget {
                     Text(
                       notification.title,
                       style: GoogleFonts.manrope(
-                        fontSize: 15,
+                        fontSize: AppTextSize.title,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0,
                       ),
@@ -233,7 +215,10 @@ class _NotificationTile extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       notification.message,
-                      style: GoogleFonts.manrope(fontSize: 13.5, height: 1.3),
+                      style: GoogleFonts.manrope(
+                        fontSize: AppTextSize.small,
+                        height: 1.3,
+                      ),
                     ),
                   ],
                 ),

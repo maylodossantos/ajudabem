@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppCoverDetail extends StatefulWidget {
   const AppCoverDetail({
     required this.imageUrl,
@@ -58,7 +60,7 @@ class _AppCoverDetailState extends State<AppCoverDetail> {
               );
             },
             child: ColoredBox(
-              color: const Color(0xFFA2A2A2),
+              color: AppColors.textMuted,
               child: url == null || url.isEmpty
                   ? placeholder
                   : Image.network(
@@ -93,8 +95,8 @@ class _AppCoverDetailState extends State<AppCoverDetail> {
                     Text(
                       widget.caption,
                       style: GoogleFonts.manrope(
-                        color: const Color(0xFFA2A2A2),
-                        fontSize: 14,
+                        color: AppColors.textMuted,
+                        fontSize: AppTextSize.body,
                         letterSpacing: 0,
                       ),
                     ),
@@ -103,8 +105,8 @@ class _AppCoverDetailState extends State<AppCoverDetail> {
                   Text(
                     widget.title,
                     style: GoogleFonts.manrope(
-                      color: const Color(0xFF232323),
-                      fontSize: 19,
+                      color: AppColors.textStrong,
+                      fontSize: AppTextSize.display,
                       fontWeight: FontWeight.w700,
                       height: 1.35,
                       letterSpacing: 0,
@@ -115,8 +117,8 @@ class _AppCoverDetailState extends State<AppCoverDetail> {
                     Text(
                       widget.subtitle,
                       style: GoogleFonts.manrope(
-                        color: const Color(0xFFA2A2A2),
-                        fontSize: 15,
+                        color: AppColors.textMuted,
+                        fontSize: AppTextSize.body,
                         fontWeight: FontWeight.w300,
                         height: 1.45,
                         letterSpacing: 0,
@@ -127,8 +129,8 @@ class _AppCoverDetailState extends State<AppCoverDetail> {
                   SelectableText(
                     widget.body,
                     style: GoogleFonts.manrope(
-                      color: const Color(0xFF232323),
-                      fontSize: 15,
+                      color: AppColors.textStrong,
+                      fontSize: AppTextSize.body,
                       height: 1.5,
                       letterSpacing: 0,
                     ),

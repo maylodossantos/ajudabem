@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -13,13 +14,14 @@ import '../../../../core/widgets/app_text_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../profile/presentation/stores/profile_store.dart';
 import '../stores/login_store.dart';
+import '../widgets/dev_quick_login.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key, this.showSocialLogin = false});
 
   final bool showSocialLogin;
 
-  static const _primaryText = Color(0xFF232323);
+  static const _primaryText = AppColors.textStrong;
   static const _facebookBlue = Color(0xFF1877F2);
 
   @override
@@ -49,7 +51,7 @@ class LoginPage extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.manrope(
                             color: Theme.of(context).colorScheme.primary,
-                            fontSize: 16,
+                            fontSize: AppTextSize.title,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0,
                           ),
@@ -62,7 +64,7 @@ class LoginPage extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.manrope(
                             color: _primaryText,
-                            fontSize: 14,
+                            fontSize: AppTextSize.body,
                             height: 1.4,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0,
@@ -71,7 +73,7 @@ class LoginPage extends StatelessWidget {
                         const SizedBox(height: 16),
                         AppTextField(
                           key: const Key('login_email_field'),
-                          label: 'E-mail:',
+                          label: 'E-mail',
                           hintText: 'E-mail',
                           prefixIconAsset: 'assets/icons/register/email.svg',
                           keyboardType: TextInputType.emailAddress,
@@ -81,7 +83,7 @@ class LoginPage extends StatelessWidget {
                         Observer(
                           builder: (_) => AppTextField(
                             key: const Key('login_password_field'),
-                            label: 'Senha:',
+                            label: 'Senha',
                             hintText: 'Senha',
                             prefixIconAsset:
                                 'assets/icons/register/password.svg',
@@ -111,6 +113,16 @@ class LoginPage extends StatelessWidget {
                             isLoading: store.isLoading,
                           ),
                         ),
+                        if (showDevQuickLogin) ...[
+                          const SizedBox(height: 16),
+                          Observer(
+                            builder: (_) => DevQuickLogin(
+                              enabled: !store.isLoading,
+                              onSelected: (account) =>
+                                  _quickLogin(context, store, account),
+                            ),
+                          ),
+                        ],
                         if (showSocialLogin) ...[
                           const SizedBox(height: 12),
                           const _OrDivider(),
@@ -167,6 +179,17 @@ class LoginPage extends StatelessWidget {
     );
   }
 
+  Future<void> _quickLogin(
+    BuildContext context,
+    LoginStore store,
+    DevAccount account,
+  ) {
+    store
+      ..setEmail(account.email)
+      ..setPassword(account.password);
+    return _submit(context, store);
+  }
+
   Future<void> _submit(BuildContext context, LoginStore store) async {
     final success = await store.submit();
 
@@ -206,7 +229,7 @@ class _OrDivider extends StatelessWidget {
             'Ou',
             style: GoogleFonts.manrope(
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 16,
+              fontSize: AppTextSize.title,
               fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),

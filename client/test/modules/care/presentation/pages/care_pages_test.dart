@@ -50,9 +50,9 @@ void main() {
 
     expect(find.text('Maria Souza'), findsOneWidget);
     expect(find.text('João Lima'), findsOneWidget);
-    expect(find.text('Região: Centro'), findsNWidgets(2));
-    expect(find.text('Distância aproximada: 2,4 km'), findsNWidgets(2));
-    expect(find.text('Necessidades: Alimentação'), findsNWidgets(2));
+    expect(find.text('Centro'), findsNWidgets(2));
+    expect(find.text('2,4 km de distância'), findsNWidgets(2));
+    expect(find.text('Alimentação'), findsNWidgets(2));
 
     await tester.tap(find.byKey(const Key('care_assume_1')));
     await tester.pumpAndSettle();
@@ -87,10 +87,10 @@ void main() {
       ),
     );
 
-    expect(find.text('Responsável: Amigos dos Rios'), findsOneWidget);
-    expect(find.text('Início: 02/09/2026'), findsOneWidget);
+    expect(find.text('Amigos dos Rios'), findsOneWidget);
+    expect(find.text('Início em 02/09/2026'), findsOneWidget);
     expect(find.text('4 dias sem atualização'), findsOneWidget);
-    expect(find.text('Ver caso'), findsOneWidget);
+    expect(find.text('Ver detalhes'), findsOneWidget);
   });
 
   testWidgets('a nominated case can be assumed from its detail page', (
@@ -119,7 +119,7 @@ void main() {
     expect(repository.assumed, [1]);
     expect(find.text('Em andamento'), findsOneWidget);
     expect(find.text('Histórico'), findsOneWidget);
-    expect(find.text('Adicionar Andamento'), findsOneWidget);
+    expect(find.text('Adicionar andamento'), findsOneWidget);
   });
 
   testWidgets('a case in care shows referrals and the history', (tester) async {
@@ -132,7 +132,7 @@ void main() {
           ),
           records: [
             careRecord(referral: 'CRAS Centro'),
-            careRecord(number: 2, status: CareRecordStatus.inProgress),
+            careRecord(number: 2, status: CareRecordStatus.progressUpdate),
           ],
           triage: const RiskTriage(
             justification: 'Dorme na praça e está sem comida.',
@@ -149,11 +149,13 @@ void main() {
 
     expect(find.text('Por que urgência alta?'), findsOneWidget);
     expect(find.text('Dorme na praça e está sem comida.'), findsOneWidget);
+    expect(find.textContaining('Classificado por IA'), findsOneWidget);
+    expect(find.textContaining('qwen'), findsNothing);
     expect(find.text('Encaminhamentos'), findsOneWidget);
     expect(find.text('•  CRAS Centro'), findsOneWidget);
     expect(find.text('Andamento #1'), findsOneWidget);
     expect(find.text('Andamento #2'), findsOneWidget);
-    expect(find.text('Adicionar Andamento'), findsOneWidget);
+    expect(find.text('Adicionar andamento'), findsOneWidget);
   });
 
   testWidgets('finishing a case asks for the reason before saving', (
@@ -176,21 +178,26 @@ void main() {
       ),
     );
 
-    expect(find.text('Andamento #2'), findsOneWidget);
-    expect(find.text('Em atendimento'), findsOneWidget);
-    expect(find.text('Moradia'), findsOneWidget);
+    expect(find.text('Atendimento #2'), findsOneWidget);
+    expect(find.text('Registrar andamento'), findsOneWidget);
+    expect(find.text('Próxima ação'), findsOneWidget);
+    expect(find.text('Moradia'), findsNothing);
     expect(button(tester, 'care_record_submit_button').onPressed, isNotNull);
 
-    await tester.tap(find.text('Finalizado'));
+    await tester.tap(find.byKey(const Key('care_record_finish_button')));
     await tester.pumpAndSettle();
 
-    expect(find.text('Motivo da finalização'), findsOneWidget);
-    expect(find.text('Finalizar atendimento'), findsOneWidget);
+    expect(find.text('Finalizado'), findsOneWidget);
+    expect(find.text('Resultado do atendimento'), findsOneWidget);
     expect(button(tester, 'care_record_submit_button').onPressed, isNull);
 
     store.setFinishReason(FinishReason.helped);
     await tester.pumpAndSettle();
 
     expect(button(tester, 'care_record_submit_button').onPressed, isNotNull);
+
+    await tester.tap(find.byKey(const Key('care_record_back_button')));
+    await tester.pumpAndSettle();
+    expect(find.text('Registrar andamento'), findsOneWidget);
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../stores/image_upload_store.dart';
+import '../theme/app_colors.dart';
 import 'app_image_picker.dart';
 
 class AppCoverImagePicker extends StatelessWidget {
@@ -26,8 +27,8 @@ class AppCoverImagePicker extends StatelessWidget {
             aspectRatio: 16 / 9,
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFFD9D9D9),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.border,
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 image: hasImage
                     ? DecorationImage(
                         image: NetworkImage(imageUrl),
@@ -57,7 +58,7 @@ class AppCoverImagePicker extends StatelessWidget {
                           'Adicionar capa',
                           style: GoogleFonts.manrope(
                             color: Colors.white,
-                            fontSize: 13,
+                            fontSize: AppTextSize.small,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

@@ -1,5 +1,6 @@
 class CreateAssistedPersonParams {
   const CreateAssistedPersonParams({
+    required this.identified,
     required this.fullName,
     required this.age,
     required this.gender,
@@ -12,11 +13,13 @@ class CreateAssistedPersonParams {
     required this.state,
     required this.zipCode,
     required this.country,
+    this.locationDescription = '',
   });
 
+  final bool identified;
   final String fullName;
-  final int age;
-  final String gender;
+  final int? age;
+  final String? gender;
   final List<int> tagIds;
   final String notes;
   final String street;
@@ -26,4 +29,5 @@ class CreateAssistedPersonParams {
   final String state;
   final String zipCode;
   final String country;
+  final String locationDescription;
 }

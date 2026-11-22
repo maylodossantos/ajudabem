@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/theme/app_colors.dart';
+
 class StepDots extends StatelessWidget {
   const StepDots({required this.count, required this.current, super.key});
 
@@ -20,7 +22,7 @@ class StepDots extends StatelessWidget {
               shape: BoxShape.circle,
               color: i == current
                   ? Theme.of(context).colorScheme.primary
-                  : const Color(0xFFD9D9D9),
+                  : AppColors.border,
             ),
           ),
       ],

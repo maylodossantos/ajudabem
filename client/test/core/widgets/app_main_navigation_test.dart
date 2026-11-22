@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('a visitor is asked to log in before the Cadastro tab', (
-    tester,
-  ) async {
+  testWidgets('a visitor sees Notícias, Ajuda and Entrar only', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.light,
@@ -20,12 +18,28 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Cadastro'));
-    await tester.pump();
+    expect(find.text('Início'), findsOneWidget);
+    expect(find.text('Ajuda'), findsOneWidget);
+    expect(find.text('Entrar'), findsOneWidget);
+    expect(find.text('Perfil'), findsNothing);
+    expect(find.text('Indicar'), findsNothing);
+  });
 
-    expect(
-      find.text('Faça login para acessar o menu de cadastro.'),
-      findsOneWidget,
+  testWidgets('a signed-in user sees Perfil and Cadastro', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: const Scaffold(
+          bottomNavigationBar: AppMainNavigation(
+            currentItem: AppNavigationItem.help,
+            isSignedIn: true,
+          ),
+        ),
+      ),
     );
+
+    expect(find.text('Perfil'), findsOneWidget);
+    expect(find.text('Indicar'), findsOneWidget);
+    expect(find.text('Entrar'), findsNothing);
   });
 }

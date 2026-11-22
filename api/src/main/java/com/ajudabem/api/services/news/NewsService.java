@@ -1,6 +1,7 @@
 package com.ajudabem.api.services.news;
 
 import com.ajudabem.api.domains.news.News;
+import com.ajudabem.api.domains.news.NewsCategory;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.dto.news.NewsRequestDTO;
 import com.ajudabem.api.dto.news.NewsResponseDTO;
@@ -28,6 +29,9 @@ public class NewsService {
 
         News newNews = mapper.toEntity(dto);
         newNews.setAuthor(user);
+        if (newNews.getCategory() == null) {
+            newNews.setCategory(NewsCategory.OTHER);
+        }
 
         repository.save(newNews);
 

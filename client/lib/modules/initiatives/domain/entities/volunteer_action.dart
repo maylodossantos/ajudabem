@@ -69,6 +69,14 @@ class VolunteerAction {
 
   bool get isActive => status == InitiativeStatus.active;
 
+  bool isPast(DateTime now) => DateTime(
+    date.year,
+    date.month,
+    date.day,
+  ).isBefore(DateTime(now.year, now.month, now.day));
+
+  bool isOverdue(DateTime now) => isActive && isPast(now);
+
   bool get isFull => acceptedCount >= volunteersNeeded;
 
   String get dateLabel => '${DateInputFormatter.longDate(date)}.';

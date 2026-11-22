@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class AppAvatar extends StatelessWidget {
   const AppAvatar({
     required this.radius,
@@ -19,7 +21,7 @@ class AppAvatar extends StatelessWidget {
 
     return CircleAvatar(
       radius: radius,
-      backgroundColor: const Color(0xFFD9D9D9),
+      backgroundColor: AppColors.border,
       backgroundImage: hasPhoto ? NetworkImage(url) : null,
       child: hasPhoto || placeholderIcon == null
           ? null

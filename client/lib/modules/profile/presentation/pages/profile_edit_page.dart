@@ -125,7 +125,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                           'Editar perfil',
                           style: GoogleFonts.manrope(
                             color: Theme.of(context).colorScheme.primary,
-                            fontSize: 18,
+                            fontSize: AppTextSize.heading,
                             fontWeight: FontWeight.w800,
                             letterSpacing: 0,
                           ),
@@ -141,7 +141,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         const SizedBox(height: 28),
                         AppTextField(
                           key: const Key('profile_edit_name_field'),
-                          label: 'Nome:',
+                          label: 'Nome',
                           hintText: 'Nome',
                           controller: _nameController,
                           prefixIconAsset: 'assets/icons/register/user.svg',
@@ -150,7 +150,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('profile_edit_phone_field'),
-                          label: 'Telefone:',
+                          label: 'Telefone',
                           hintText: 'Telefone',
                           controller: _phoneController,
                           prefixIconAsset: 'assets/icons/register/phone.svg',
@@ -160,8 +160,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('profile_edit_cpf_field'),
-                          label: 'CPF:',
-                          hintText: 'Ex.: 123.456.789-00',
+                          label: 'CPF',
+                          hintText: '123.456.789-00',
                           controller: _cpfController,
                           prefixIcon: Icons.badge_outlined,
                           keyboardType: TextInputType.number,
@@ -171,8 +171,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('profile_edit_birth_date_field'),
-                          label: 'Data de nascimento:',
-                          hintText: 'Ex.: 15/03/1990',
+                          label: 'Data de nascimento',
+                          hintText: '15/03/1990',
                           controller: _birthDateController,
                           prefixIcon: Icons.calendar_today_outlined,
                           keyboardType: TextInputType.number,
@@ -181,7 +181,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         ),
                         const SizedBox(height: 8),
                         AppTextField(
-                          label: 'E-mail:',
+                          label: 'E-mail',
                           hintText: 'E-mail',
                           controller: _emailController,
                           enabled: false,
@@ -203,7 +203,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                               'Excluir minha conta',
                               style: GoogleFonts.manrope(
                                 color: AppColors.danger,
-                                fontSize: 13,
+                                fontSize: AppTextSize.small,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: 0,
                               ),

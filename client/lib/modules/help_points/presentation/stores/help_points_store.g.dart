@@ -17,6 +17,14 @@ mixin _$HelpPointsStore on HelpPointsStoreBase, Store {
         () => super.visiblePoints,
         name: 'HelpPointsStoreBase.visiblePoints',
       )).value;
+  Computed<List<HelpPoint>>? _$mappedPointsComputed;
+
+  @override
+  List<HelpPoint> get mappedPoints =>
+      (_$mappedPointsComputed ??= Computed<List<HelpPoint>>(
+        () => super.mappedPoints,
+        name: 'HelpPointsStoreBase.mappedPoints',
+      )).value;
   Computed<HelpPointOptions>? _$optionsComputed;
 
   @override
@@ -159,24 +167,6 @@ mixin _$HelpPointsStore on HelpPointsStoreBase, Store {
     });
   }
 
-  late final _$showAsGridAtom = Atom(
-    name: 'HelpPointsStoreBase.showAsGrid',
-    context: context,
-  );
-
-  @override
-  bool get showAsGrid {
-    _$showAsGridAtom.reportRead();
-    return super.showAsGrid;
-  }
-
-  @override
-  set showAsGrid(bool value) {
-    _$showAsGridAtom.reportWrite(value, super.showAsGrid, () {
-      super.showAsGrid = value;
-    });
-  }
-
   late final _$deletingIdsAtom = Atom(
     name: 'HelpPointsStoreBase.deletingIds',
     context: context,
@@ -295,18 +285,6 @@ mixin _$HelpPointsStore on HelpPointsStoreBase, Store {
   }
 
   @override
-  void toggleView() {
-    final _$actionInfo = _$HelpPointsStoreBaseActionController.startAction(
-      name: 'HelpPointsStoreBase.toggleView',
-    );
-    try {
-      return super.toggleView();
-    } finally {
-      _$HelpPointsStoreBaseActionController.endAction(_$actionInfo);
-    }
-  }
-
-  @override
   String toString() {
     return '''
 points: ${points},
@@ -316,10 +294,10 @@ filter: ${filter},
 origin: ${origin},
 isLocating: ${isLocating},
 locationError: ${locationError},
-showAsGrid: ${showAsGrid},
 deletingIds: ${deletingIds},
 now: ${now},
 visiblePoints: ${visiblePoints},
+mappedPoints: ${mappedPoints},
 options: ${options},
 isNearbyActive: ${isNearbyActive}
     ''';

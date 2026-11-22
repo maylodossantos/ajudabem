@@ -12,6 +12,7 @@ import '../../../../core/widgets/app_labeled_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/news_article.dart';
+import '../../domain/entities/news_category.dart';
 import '../stores/news_form_store.dart';
 
 class NewsFormPage extends StatefulWidget {
@@ -90,20 +91,15 @@ class _NewsFormPageState extends State<NewsFormPage> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         const AppFormHeading('Preencha as informações abaixo'),
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 6),
-                          child: Text(
-                            'Informações gerais:',
-                            style: AppFieldStyles.value.copyWith(
-                              color: const Color(0xFF232323),
-                              fontSize: 15,
-                            ),
-                          ),
+                        AppCoverImagePicker(
+                          key: const Key('news_form_cover_image_picker'),
+                          store: _formStore.cover,
                         ),
+                        const SizedBox(height: 16),
                         AppFormGap(
                           AppLabeledField(
                             key: const Key('news_form_title_field'),
-                            label: 'Título:',
+                            label: 'Título',
                             required: true,
                             initialValue: _formStore.title,
                             maxLength: 150,
@@ -113,30 +109,34 @@ class _NewsFormPageState extends State<NewsFormPage> {
                         AppFormGap(
                           AppLabeledField(
                             key: const Key('news_form_subtitle_field'),
-                            label: 'Sub-Título',
+                            label: 'Subtítulo',
                             initialValue: _formStore.subtitle,
                             maxLength: 200,
                             onChanged: _formStore.setSubtitle,
                           ),
                         ),
                         AppFormGap(
+                          Observer(
+                            builder: (_) => AppLabeledDropdown<NewsCategory>(
+                              key: const Key('news_form_category_field'),
+                              label: 'Categoria',
+                              value: _formStore.category,
+                              options: NewsCategory.values,
+                              labelOf: (category) => category.label,
+                              onChanged: _formStore.setCategory,
+                            ),
+                          ),
+                        ),
+                        AppFormGap(
                           AppLabeledField(
                             key: const Key('news_form_content_field'),
-                            label: 'Descrição:',
+                            label: 'Descrição',
                             required: true,
                             initialValue: _formStore.content,
                             maxLines: 14,
                             minLines: 10,
                             maxLength: contentMaxLength,
                             onChanged: _formStore.setContent,
-                          ),
-                        ),
-                        const AppFieldLabel('Capa:'),
-                        const SizedBox(height: 4),
-                        AppFormGap(
-                          AppCoverImagePicker(
-                            key: const Key('news_form_cover_image_picker'),
-                            store: _formStore.cover,
                           ),
                         ),
                         Row(
@@ -146,8 +146,8 @@ class _NewsFormPageState extends State<NewsFormPage> {
                               flex: 3,
                               child: AppLabeledField(
                                 key: const Key('news_form_city_field'),
-                                label: 'Cidade:',
-                                hintText: 'Ex.: Cascavel',
+                                label: 'Cidade',
+                                hintText: 'Cascavel',
                                 initialValue: _formStore.city,
                                 onChanged: _formStore.setCity,
                               ),
@@ -157,7 +157,7 @@ class _NewsFormPageState extends State<NewsFormPage> {
                               flex: 2,
                               child: Observer(
                                 builder: (_) => AppLabeledDropdown<String>(
-                                  label: 'Estado:',
+                                  label: 'Estado',
                                   value: _formStore.state,
                                   options: BrazilianStates.codes,
                                   labelOf: (code) => code,

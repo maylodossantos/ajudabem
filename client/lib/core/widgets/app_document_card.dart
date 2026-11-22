@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 sealed class DocumentBlock {
   const DocumentBlock();
 }
@@ -35,8 +37,8 @@ class AppDocumentCard extends StatelessWidget {
   final List<DocumentSection> sections;
 
   static final _bodyStyle = GoogleFonts.manrope(
-    color: const Color(0xFF232323),
-    fontSize: 13,
+    color: AppColors.textStrong,
+    fontSize: AppTextSize.small,
     fontWeight: FontWeight.w400,
     height: 1.35,
     letterSpacing: 0,
@@ -49,7 +51,7 @@ class AppDocumentCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

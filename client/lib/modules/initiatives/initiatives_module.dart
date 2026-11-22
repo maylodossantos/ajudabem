@@ -32,7 +32,6 @@ class InitiativesModule extends Module {
     i.add(CampaignDetailStore.new);
     i.add(ActionDetailStore.new);
     i.add(VolunteersStore.new);
-    i.add(OpenActionsStore.new);
   }
 
   @override

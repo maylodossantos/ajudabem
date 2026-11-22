@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppImpactRow extends StatelessWidget {
   const AppImpactRow({required this.items, super.key});
 
@@ -36,7 +38,7 @@ class _ImpactItem extends StatelessWidget {
           height: 50,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primary,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           alignment: Alignment.center,
           child: FittedBox(
@@ -57,8 +59,8 @@ class _ImpactItem extends StatelessWidget {
           maxLines: 2,
           textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
-            color: const Color(0xFF232323),
-            fontSize: 12,
+            color: AppColors.textStrong,
+            fontSize: AppTextSize.caption,
             fontWeight: FontWeight.w800,
             height: 1.1,
             letterSpacing: 0,

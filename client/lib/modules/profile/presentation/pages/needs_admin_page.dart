@@ -6,12 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/tags/need_tag.dart';
 import '../../../../core/tags/tags_store.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_item_actions_menu.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
+import '../../../../core/widgets/app_text_input_dialog.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 
 class NeedsAdminPage extends StatefulWidget {
@@ -47,9 +49,13 @@ class _NeedsAdminPageState extends State<NeedsAdminPage> {
   }
 
   Future<void> _edit([NeedTag? tag]) async {
-    final name = await showDialog<String>(
-      context: context,
-      builder: (_) => _NameDialog(initial: tag?.name ?? ''),
+    final name = await showAppTextInputDialog(
+      context,
+      title: tag == null ? 'Nova necessidade' : 'Renomear',
+      initialValue: tag?.name ?? '',
+      hintText: 'Higiene',
+      fieldKey: const Key('need_name_field'),
+      confirmKey: const Key('need_name_save'),
     );
     final token = _token;
     if (name == null || name.trim().isEmpty || token == null || !mounted) {
@@ -107,7 +113,7 @@ class _NeedsAdminPageState extends State<NeedsAdminPage> {
             child: Text(
               'Necessidades',
               style: GoogleFonts.manrope(
-                fontSize: 20,
+                fontSize: AppTextSize.display,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0,
               ),
@@ -127,7 +133,7 @@ class _NeedsAdminPageState extends State<NeedsAdminPage> {
                   padding: const EdgeInsets.only(left: 16),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Row(
                     children: [
@@ -135,14 +141,14 @@ class _NeedsAdminPageState extends State<NeedsAdminPage> {
                         child: Text(
                           tag.name,
                           style: GoogleFonts.manrope(
-                            fontSize: 15,
+                            fontSize: AppTextSize.title,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                       AppItemActionsMenu(
                         key: Key('need_menu_${tag.id}'),
-                        tooltip: 'Opções da necessidade',
+                        itemLabel: 'necessidade',
                         isBusy: _busyId == tag.id && _store.isSaving,
                         onEdit: () => _edit(tag),
                         onDelete: () => _delete(tag),
@@ -155,51 +161,6 @@ class _NeedsAdminPageState extends State<NeedsAdminPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _NameDialog extends StatefulWidget {
-  const _NameDialog({required this.initial});
-
-  final String initial;
-
-  @override
-  State<_NameDialog> createState() => _NameDialogState();
-}
-
-class _NameDialogState extends State<_NameDialog> {
-  late final _controller = TextEditingController(text: widget.initial);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.initial.isEmpty ? 'Nova necessidade' : 'Renomear'),
-      content: TextField(
-        key: const Key('need_name_field'),
-        controller: _controller,
-        autofocus: true,
-        maxLength: 50,
-        decoration: const InputDecoration(hintText: 'Ex.: Higiene'),
-        onSubmitted: (value) => Navigator.of(context).pop(value),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          key: const Key('need_name_save'),
-          onPressed: () => Navigator.of(context).pop(_controller.text),
-          child: const Text('Salvar'),
-        ),
-      ],
     );
   }
 }

@@ -25,8 +25,8 @@ class AppFileUploadTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
     final textStyle = GoogleFonts.manrope(
-      color: isDone ? Colors.white : const Color(0xFF232323),
-      fontSize: 15,
+      color: isDone ? Colors.white : AppColors.textStrong,
+      fontSize: AppTextSize.title,
       fontWeight: FontWeight.w700,
       letterSpacing: 0,
     );
@@ -55,7 +55,7 @@ class AppFileUploadTile extends StatelessWidget {
           else
             Icon(
               isDone ? Icons.check_circle_outline : Icons.upload_outlined,
-              color: isDone ? Colors.white : const Color(0xFF232323),
+              color: isDone ? Colors.white : AppColors.textStrong,
               size: 24,
             ),
         ],
@@ -68,8 +68,8 @@ class AppFileUploadTile extends StatelessWidget {
         Text(
           label,
           style: GoogleFonts.manrope(
-            color: const Color(0xFF232323),
-            fontSize: 16,
+            color: AppColors.textStrong,
+            fontSize: AppTextSize.title,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
@@ -77,10 +77,10 @@ class AppFileUploadTile extends StatelessWidget {
         const SizedBox(height: 6),
         Material(
           color: isDone ? AppColors.success : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           child: InkWell(
             onTap: isLoading ? null : onTap,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             child: SizedBox(
               height: 52,
               child: isDone

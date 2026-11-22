@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
 import 'ajuda_bem_logo.dart';
+import 'app_choice_chip.dart';
 import 'app_page_scaffold.dart';
 
 class AppFilterScaffold extends StatelessWidget {
@@ -34,7 +36,7 @@ class AppFilterScaffold extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(28, 12, 28, 20),
           child: AppBottomActions(
-            secondaryLabel: 'Resetar',
+            secondaryLabel: 'Limpar filtros',
             onSecondary: onReset,
             primaryLabel: 'Salvar',
             primaryKey: const Key('filter_save_button'),
@@ -75,8 +77,8 @@ class AppFilterSection extends StatelessWidget {
           child: Text(
             title,
             style: GoogleFonts.manrope(
-              color: const Color(0xFF232323),
-              fontSize: 18,
+              color: AppColors.textStrong,
+              fontSize: AppTextSize.heading,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
@@ -88,13 +90,15 @@ class AppFilterSection extends StatelessWidget {
   }
 }
 
-class AppDistanceSlider extends StatelessWidget {
-  const AppDistanceSlider({
+class AppDistanceChoice extends StatelessWidget {
+  const AppDistanceChoice({
     required this.maxDistanceKm,
     required this.onChanged,
     super.key,
     this.limitKm = 50,
   });
+
+  static const steps = [1.0, 3.0, 5.0, 10.0, 20.0];
 
   final double? maxDistanceKm;
   final ValueChanged<double?> onChanged;
@@ -102,24 +106,15 @@ class AppDistanceSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final distance = maxDistanceKm;
+    final current = maxDistanceKm;
+    final distances = {...steps.where((km) => km <= limitKm), ?current}.toList()
+      ..sort();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          distance == null ? 'Sem limite' : 'Até ${distance.round()} km',
-          style: GoogleFonts.manrope(fontSize: 15, letterSpacing: 0),
-        ),
-        Slider(
-          min: 1,
-          max: limitKm,
-          divisions: limitKm.round() - 1,
-          value: distance ?? limitKm,
-          label: distance == null ? 'Sem limite' : '${distance.round()} km',
-          onChanged: (value) => onChanged(value >= limitKm ? null : value),
-        ),
-      ],
+    return AppChoiceChipGroup<double?>(
+      options: [null, ...distances],
+      isSelected: (km) => km == current,
+      onToggle: onChanged,
+      labelOf: (km) => km == null ? 'Sem limite' : 'Até ${km.round()} km',
     );
   }
 }

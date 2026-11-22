@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
@@ -14,7 +15,7 @@ class RegistrationMenuPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const AuthAppBar(showSearchButton: true),
+      appBar: const AuthAppBar(),
       bottomNavigationBar: const AppMainNavigation(
         key: Key('registration_menu_bottom_navigation'),
         currentItem: AppNavigationItem.register,
@@ -36,7 +37,7 @@ class RegistrationMenuPage extends StatelessWidget {
                     'Formulários',
                     style: GoogleFonts.manrope(
                       color: Colors.black,
-                      fontSize: 16,
+                      fontSize: AppTextSize.title,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0,
                     ),
@@ -47,8 +48,8 @@ class RegistrationMenuPage extends StatelessWidget {
                     'moradia, alimento, saúde, dependências ou qualquer outra '
                     'necessidade urgente.',
                     style: GoogleFonts.manrope(
-                      color: const Color(0xFF454545),
-                      fontSize: 14,
+                      color: AppColors.textBody,
+                      fontSize: AppTextSize.body,
                       fontWeight: FontWeight.w700,
                       height: 1.25,
                       letterSpacing: 0,
@@ -84,7 +85,7 @@ class _ActionBanner extends StatelessWidget {
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
             ),
           ),
@@ -108,7 +109,7 @@ class _ActionBanner extends StatelessWidget {
                 'Um mundo melhor\nnasce de uma boa\nação.',
                 style: GoogleFonts.manrope(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: AppTextSize.title,
                   fontWeight: FontWeight.w700,
                   height: 1.3,
                   letterSpacing: 0,
@@ -131,10 +132,10 @@ class _RegistrationOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Theme.of(context).colorScheme.primary,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         child: SizedBox(
           width: double.infinity,
           height: 38,
@@ -144,12 +145,12 @@ class _RegistrationOption extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    'Cadastro de Pessoa em Vulnerabilidade',
+                    'Indicar pessoa',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.manrope(
                       color: Colors.white,
-                      fontSize: 14,
+                      fontSize: AppTextSize.body,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0,
                     ),

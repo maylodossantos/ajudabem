@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppFormHeading extends StatelessWidget {
   const AppFormHeading(this.text, {super.key});
 
@@ -14,7 +16,7 @@ class AppFormHeading extends StatelessWidget {
         text,
         style: GoogleFonts.manrope(
           color: Colors.black,
-          fontSize: 17,
+          fontSize: AppTextSize.title,
           fontWeight: FontWeight.w800,
           letterSpacing: 0,
         ),
@@ -46,7 +48,7 @@ class AppFormError extends StatelessWidget {
         text,
         style: GoogleFonts.manrope(
           color: Theme.of(context).colorScheme.error,
-          fontSize: 12,
+          fontSize: AppTextSize.caption,
         ),
       ),
     );

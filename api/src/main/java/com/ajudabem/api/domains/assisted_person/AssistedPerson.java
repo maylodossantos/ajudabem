@@ -44,6 +44,9 @@ public class AssistedPerson extends EntityBase {
     private String zip_code;
     private String country;
 
+    private String locationDescription;
+    private boolean locationPending;
+
     private Double latitude;
     private Double longitude;
 

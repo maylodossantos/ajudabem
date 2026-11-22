@@ -9,6 +9,13 @@ part of 'care_record_form_store.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$CareRecordFormStore on CareRecordFormStoreBase, Store {
+  Computed<bool>? _$finishingComputed;
+
+  @override
+  bool get finishing => (_$finishingComputed ??= Computed<bool>(
+    () => super.finishing,
+    name: 'CareRecordFormStoreBase.finishing',
+  )).value;
   Computed<DateTime?>? _$occurredAtComputed;
 
   @override
@@ -39,6 +46,24 @@ mixin _$CareRecordFormStore on CareRecordFormStoreBase, Store {
   set status(CareRecordStatus value) {
     _$statusAtom.reportWrite(value, super.status, () {
       super.status = value;
+    });
+  }
+
+  late final _$lastActionAtom = Atom(
+    name: 'CareRecordFormStoreBase.lastAction',
+    context: context,
+  );
+
+  @override
+  CareRecordStatus get lastAction {
+    _$lastActionAtom.reportRead();
+    return super.lastAction;
+  }
+
+  @override
+  set lastAction(CareRecordStatus value) {
+    _$lastActionAtom.reportWrite(value, super.lastAction, () {
+      super.lastAction = value;
     });
   }
 
@@ -304,6 +329,30 @@ mixin _$CareRecordFormStore on CareRecordFormStoreBase, Store {
   }
 
   @override
+  void startFinishing() {
+    final _$actionInfo = _$CareRecordFormStoreBaseActionController.startAction(
+      name: 'CareRecordFormStoreBase.startFinishing',
+    );
+    try {
+      return super.startFinishing();
+    } finally {
+      _$CareRecordFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  void cancelFinishing() {
+    final _$actionInfo = _$CareRecordFormStoreBaseActionController.startAction(
+      name: 'CareRecordFormStoreBase.cancelFinishing',
+    );
+    try {
+      return super.cancelFinishing();
+    } finally {
+      _$CareRecordFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   void setDate(String value) {
     final _$actionInfo = _$CareRecordFormStoreBaseActionController.startAction(
       name: 'CareRecordFormStoreBase.setDate',
@@ -427,6 +476,7 @@ mixin _$CareRecordFormStore on CareRecordFormStoreBase, Store {
   String toString() {
     return '''
 status: ${status},
+lastAction: ${lastAction},
 date: ${date},
 time: ${time},
 needs: ${needs},
@@ -439,6 +489,7 @@ note: ${note},
 finishReason: ${finishReason},
 isSaving: ${isSaving},
 errorMessage: ${errorMessage},
+finishing: ${finishing},
 occurredAt: ${occurredAt},
 canSubmit: ${canSubmit}
     ''';

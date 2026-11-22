@@ -16,6 +16,7 @@ import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -93,5 +94,36 @@ class NewsAuthorizationIntegrationTest {
     @Test
     void getAllNews_shouldReturn200_withoutAuthentication() throws Exception {
         mockMvc.perform(get("/news")).andExpect(status().isOk());
+    }
+
+    @Test
+    void createNews_shouldReturnTheChosenCategory() throws Exception {
+        String token = tokenFor("admin-category@example.com", UserRole.ADMIN);
+        String body = objectMapper.writeValueAsString(Map.of(
+                "title", "Title",
+                "content", "Content",
+                "category", "HEALTH"
+        ));
+
+        mockMvc.perform(
+                post("/news")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body)
+        ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.category").value("HEALTH"));
+    }
+
+    @Test
+    void createNews_shouldDefaultToOther_whenNoCategoryIsSent() throws Exception {
+        String token = tokenFor("admin-no-category@example.com", UserRole.ADMIN);
+
+        mockMvc.perform(
+                post("/news")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(newsBody())
+        ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.category").value("OTHER"));
     }
 }

@@ -70,13 +70,64 @@ void main() {
         ..setTime('14:30');
     }
 
-    test('starts with the person needs and the right status', () {
-      expect(startedStore().status, CareRecordStatus.started);
+    test('starts with the person needs and the first action of the stage', () {
+      expect(startedStore().status, CareRecordStatus.inCare);
       expect(startedStore().needs, {'Alimentação'});
       expect(
         startedStore(firstRecord: false).status,
-        CareRecordStatus.inProgress,
+        CareRecordStatus.progressUpdate,
       );
+    });
+
+    test('offers different actions for the first and the next records', () {
+      expect(CareRecordStatus.actionsFor(firstRecord: true), [
+        CareRecordStatus.inCare,
+        CareRecordStatus.referred,
+        CareRecordStatus.unsuccessfulAttempt,
+      ]);
+      expect(CareRecordStatus.actionsFor(firstRecord: false), [
+        CareRecordStatus.progressUpdate,
+        CareRecordStatus.awaitingReturn,
+        CareRecordStatus.unsuccessfulAttempt,
+      ]);
+    });
+
+    test('finishing is explicit and can be undone', () {
+      final store = startedStore()
+        ..setStatus(CareRecordStatus.referred)
+        ..startFinishing();
+      expect(store.finishing, isTrue);
+
+      store.cancelFinishing();
+      expect(store.status, CareRecordStatus.referred);
+      expect(store.finishing, isFalse);
+    });
+
+    test('an unsuccessful attempt only sends what it asks for', () async {
+      final repository = FakeCareRepository(
+        details: {
+          1: CareCaseDetail(
+            person: careCase(status: CareStatus.inCare),
+            records: const [],
+          ),
+        },
+      );
+      final store = CareRecordFormStore(repository)
+        ..startWith(careCase(), firstRecord: true)
+        ..setDate('02/09/2026')
+        ..setTime('14:30')
+        ..setSituation('Sem abrigo')
+        ..setStatus(CareRecordStatus.unsuccessfulAttempt)
+        ..setActionTaken('Fomos à praça')
+        ..setNextStep('Voltar amanhã');
+
+      await store.submit(1, 'jwt', tagIdsOf: (_) => const []);
+
+      final sent = repository.lastRecord!;
+      expect(sent.status, CareRecordStatus.unsuccessfulAttempt);
+      expect(sent.situation, isEmpty);
+      expect(sent.actionTaken, 'Fomos à praça');
+      expect(sent.nextStep, 'Voltar amanhã');
     });
 
     test('rejects invalid or future moments', () {
@@ -94,7 +145,7 @@ void main() {
     });
 
     test('finishing requires a reason', () {
-      final store = startedStore()..setStatus(CareRecordStatus.finished);
+      final store = startedStore()..startFinishing();
       expect(store.canSubmit, isFalse);
 
       store.setFinishReason(FinishReason.helped);
@@ -127,7 +178,7 @@ void main() {
 
       expect(detail?.records, hasLength(1));
       final sent = repository.lastRecord!;
-      expect(sent.status, CareRecordStatus.started);
+      expect(sent.status, CareRecordStatus.inCare);
       expect(sent.tagIds, unorderedEquals([1, 2]));
       expect(sent.referral, 'CRAS');
       expect(sent.finishReason, isNull);

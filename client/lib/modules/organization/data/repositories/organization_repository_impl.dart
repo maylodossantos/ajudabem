@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../../domain/entities/organization.dart';
+import '../../domain/entities/organization_contact_params.dart';
 import '../../domain/entities/organization_form_params.dart';
 import '../../domain/repositories/organization_repository.dart';
 import '../datasources/organization_datasource.dart';
@@ -16,6 +17,12 @@ class OrganizationRepositoryImpl implements OrganizationRepository {
   @override
   Future<Organization> submit(OrganizationFormParams params, String token) =>
       _datasource.submit(params, token);
+
+  @override
+  Future<Organization> updateContact(
+    OrganizationContactParams params,
+    String token,
+  ) => _datasource.updateContact(params, token);
 
   @override
   Future<List<Organization>> list(

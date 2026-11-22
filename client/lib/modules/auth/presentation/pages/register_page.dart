@@ -8,6 +8,7 @@ import '../../../../core/formatters/cpf_input_formatter.dart';
 import '../../../../core/formatters/date_input_formatter.dart';
 import '../../../../core/formatters/phone_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -40,7 +41,7 @@ class RegisterPage extends StatelessWidget {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.manrope(
                             color: Theme.of(context).colorScheme.primary,
-                            fontSize: 16,
+                            fontSize: AppTextSize.title,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0,
                           ),
@@ -48,7 +49,7 @@ class RegisterPage extends StatelessWidget {
                         const SizedBox(height: 16),
                         AppTextField(
                           key: const Key('register_name_field'),
-                          label: 'Nome:',
+                          label: 'Nome',
                           hintText: 'Nome',
                           prefixIconAsset: 'assets/icons/register/user.svg',
                           keyboardType: TextInputType.name,
@@ -57,7 +58,7 @@ class RegisterPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('register_email_field'),
-                          label: 'E-mail:',
+                          label: 'E-mail',
                           hintText: 'E-mail',
                           prefixIconAsset: 'assets/icons/register/email.svg',
                           keyboardType: TextInputType.emailAddress,
@@ -66,7 +67,7 @@ class RegisterPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('register_phone_field'),
-                          label: 'Telefone:',
+                          label: 'Telefone',
                           hintText: 'Telefone',
                           prefixIconAsset: 'assets/icons/register/phone.svg',
                           keyboardType: TextInputType.phone,
@@ -76,8 +77,8 @@ class RegisterPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('register_cpf_field'),
-                          label: 'CPF:',
-                          hintText: 'Ex.: 123.456.789-00',
+                          label: 'CPF',
+                          hintText: '123.456.789-00',
                           prefixIcon: Icons.badge_outlined,
                           keyboardType: TextInputType.number,
                           inputFormatters: [CpfInputFormatter()],
@@ -86,8 +87,8 @@ class RegisterPage extends StatelessWidget {
                         const SizedBox(height: 8),
                         AppTextField(
                           key: const Key('register_birth_date_field'),
-                          label: 'Data de nascimento:',
-                          hintText: 'Ex.: 15/03/1990',
+                          label: 'Data de nascimento',
+                          hintText: '15/03/1990',
                           prefixIcon: Icons.calendar_today_outlined,
                           keyboardType: TextInputType.number,
                           inputFormatters: [DateInputFormatter()],
@@ -97,7 +98,7 @@ class RegisterPage extends StatelessWidget {
                         Observer(
                           builder: (_) => AppTextField(
                             key: const Key('register_password_field'),
-                            label: 'Senha:',
+                            label: 'Senha',
                             hintText: 'Senha',
                             prefixIconAsset:
                                 'assets/icons/register/password.svg',
@@ -120,8 +121,8 @@ class RegisterPage extends StatelessWidget {
                         Observer(
                           builder: (_) => AppTextField(
                             key: const Key('register_confirm_password_field'),
-                            label: 'Confirme sua senha:',
-                            hintText: 'Senha',
+                            label: 'Confirme sua senha',
+                            hintText: 'Repita a senha',
                             prefixIconAsset:
                                 'assets/icons/register/password.svg',
                             obscureText: store.isConfirmPasswordObscured,
@@ -204,7 +205,7 @@ class _TermsCheckbox extends StatelessWidget {
     return InkWell(
       key: const Key('register_accept_terms'),
       onTap: () => onChanged(!value),
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -222,7 +223,7 @@ class _TermsCheckbox extends StatelessWidget {
               text: TextSpan(
                 style: GoogleFonts.manrope(
                   color: color,
-                  fontSize: 14,
+                  fontSize: AppTextSize.body,
                   fontWeight: FontWeight.w700,
                   height: 1.2,
                   letterSpacing: 0,

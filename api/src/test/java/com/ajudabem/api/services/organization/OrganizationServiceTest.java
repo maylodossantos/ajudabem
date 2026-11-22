@@ -8,6 +8,7 @@ import com.ajudabem.api.domains.organization.OrganizationStatus;
 import com.ajudabem.api.domains.organization.RejectionReason;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.domains.user.UserRole;
+import com.ajudabem.api.dto.organization.OrganizationContactRequestDTO;
 import com.ajudabem.api.dto.organization.OrganizationRequestDTO;
 import com.ajudabem.api.dto.organization.OrganizationResponseDTO;
 import com.ajudabem.api.dto.organization.RejectOrganizationRequestDTO;
@@ -16,6 +17,7 @@ import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.exceptions.InvalidDocumentFileException;
 import com.ajudabem.api.exceptions.MissingOrganizationDocumentsException;
 import com.ajudabem.api.exceptions.OrganizationAlreadySubmittedException;
+import com.ajudabem.api.exceptions.OrganizationNotApprovedException;
 import com.ajudabem.api.exceptions.OrganizationNotPendingException;
 import com.ajudabem.api.exceptions.OrganizationResubmissionTooSoonException;
 import com.ajudabem.api.mappers.OrganizationMapper;
@@ -374,5 +376,45 @@ class OrganizationServiceTest {
             assertions.accept(organization);
             return true;
         });
+    }
+
+    private static OrganizationContactRequestDTO contact() {
+        return new OrganizationContactRequestDTO(
+                "Rua Paraná", "120", "Centro", "Cascavel", "pr", "85801-000", "amigos.org", "@amigos");
+    }
+
+    @Test
+    void updateContact_shouldChangeOnlyContactAndAddressOfAnApprovedOrganization() {
+        User owner = user(1L, UserRole.USER_ONG);
+        Organization organization = organization(10L, owner, OrganizationStatus.APPROVED);
+        when(currentUserService.get()).thenReturn(owner);
+        when(repository.findByOwner(owner)).thenReturn(Optional.of(organization));
+        when(geocodingService.locate("Rua Paraná", "120", "Cascavel", "PR", "85801000"))
+                .thenReturn(Optional.of(new GeocodingService.Coordinates(-24.95, -53.45)));
+
+        service.updateContact(contact());
+
+        verify(repository).save(org(saved -> {
+            assertThat(saved.getStreet()).isEqualTo("Rua Paraná");
+            assertThat(saved.getState()).isEqualTo("PR");
+            assertThat(saved.getZipCode()).isEqualTo("85801000");
+            assertThat(saved.getInstagram()).isEqualTo("@amigos");
+            assertThat(saved.getLatitude()).isEqualTo(-24.95);
+            assertThat(saved.getCnpj()).isEqualTo("11222333000181");
+            assertThat(saved.getCorporateName()).isEqualTo("Instituto Esperança LTDA");
+            assertThat(saved.getStatus()).isEqualTo(OrganizationStatus.APPROVED);
+        }));
+    }
+
+    @Test
+    void updateContact_shouldRefuseAnOrganizationThatIsNotApproved() {
+        User owner = user(1L, UserRole.USER);
+        when(currentUserService.get()).thenReturn(owner);
+        when(repository.findByOwner(owner))
+                .thenReturn(Optional.of(organization(10L, owner, OrganizationStatus.PENDING)));
+
+        assertThatThrownBy(() -> service.updateContact(contact()))
+                .isInstanceOf(OrganizationNotApprovedException.class);
+        verify(repository, never()).save(any());
     }
 }

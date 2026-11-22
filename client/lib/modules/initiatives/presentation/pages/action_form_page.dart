@@ -96,9 +96,9 @@ class _ActionFormPageState extends State<ActionFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_title'),
-                  label: 'Título:',
+                  label: 'Título',
                   required: true,
-                  hintText: 'Ex.: Distribuição de alimentos',
+                  hintText: 'Distribuição de alimentos',
                   initialValue: _store.title,
                   onChanged: _store.setTitle,
                 ),
@@ -106,9 +106,9 @@ class _ActionFormPageState extends State<ActionFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_date'),
-                  label: 'Data:',
+                  label: 'Data',
                   required: true,
-                  hintText: 'Ex.: 20/11/2026',
+                  hintText: '20/11/2026',
                   initialValue: _store.date,
                   keyboardType: TextInputType.number,
                   inputFormatters: [DateInputFormatter()],
@@ -118,9 +118,9 @@ class _ActionFormPageState extends State<ActionFormPage> {
               _pair(
                 AppLabeledField(
                   key: const Key('action_start'),
-                  label: 'Início:',
+                  label: 'Início',
                   required: true,
-                  hintText: 'Ex.: 08:00',
+                  hintText: '08:00',
                   initialValue: _store.startTime,
                   keyboardType: TextInputType.number,
                   inputFormatters: [TimeInputFormatter()],
@@ -128,9 +128,9 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 ),
                 AppLabeledField(
                   key: const Key('action_end'),
-                  label: 'Término:',
+                  label: 'Término',
                   required: true,
-                  hintText: 'Ex.: 12:00',
+                  hintText: '12:00',
                   initialValue: _store.endTime,
                   keyboardType: TextInputType.number,
                   inputFormatters: [TimeInputFormatter()],
@@ -146,7 +146,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_volunteers'),
-                  label: 'Quantidade de Voluntários:',
+                  label: 'Quantidade de voluntários',
                   required: true,
                   initialValue: _store.volunteers,
                   keyboardType: TextInputType.number,
@@ -168,7 +168,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
                   onState: _store.setState,
                 ),
                 AppLabeledField(
-                  label: 'Número:',
+                  label: 'Número',
                   initialValue: _store.number,
                   onChanged: _store.setNumber,
                 ),
@@ -176,7 +176,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_street'),
-                  label: 'Endereço:',
+                  label: 'Endereço',
                   required: true,
                   initialValue: _store.street,
                   onChanged: _store.setStreet,
@@ -185,13 +185,13 @@ class _ActionFormPageState extends State<ActionFormPage> {
               _pair(
                 AppLabeledField(
                   key: const Key('action_city'),
-                  label: 'Cidade:',
+                  label: 'Cidade',
                   required: true,
                   initialValue: _store.city,
                   onChanged: _store.setCity,
                 ),
                 AppLabeledDropdown<String>(
-                  label: 'Estado:',
+                  label: 'Estado',
                   value: _store.state,
                   options: BrazilianStates.codes,
                   labelOf: BrazilianStates.nameOf,
@@ -201,7 +201,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('action_description'),
-                  label: 'Descrição:',
+                  label: 'Descrição',
                   required: true,
                   hintText:
                       'Descreva o objetivo da ação e como ela será feita.',
@@ -212,7 +212,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
               ),
               AppFormGap(
                 AppLabeledField(
-                  label: 'Afazeres:',
+                  label: 'Atividades',
                   hintText: 'Uma atividade por linha.',
                   initialValue: _store.tasks,
                   maxLines: 5,
@@ -221,7 +221,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
               ),
               AppFormGap(
                 AppLabeledField(
-                  label: 'Quem pode ajudar?',
+                  label: 'Perfil do voluntário',
                   hintText: 'Requisitos ou perfis ideais, um por linha.',
                   initialValue: _store.requirements,
                   maxLines: 4,
@@ -229,7 +229,7 @@ class _ActionFormPageState extends State<ActionFormPage> {
                 ),
               ),
               AppLabeledField(
-                label: 'Observações:',
+                label: 'Observações',
                 hintText: 'Informações importantes para os voluntários.',
                 initialValue: _store.notes,
                 maxLines: 4,

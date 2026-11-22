@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppInfoCard extends StatelessWidget {
   const AppInfoCard({required this.child, super.key, this.title});
 
@@ -14,7 +16,7 @@ class AppInfoCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,7 +26,7 @@ class AppInfoCard extends StatelessWidget {
               title,
               style: GoogleFonts.manrope(
                 color: Colors.black,
-                fontSize: 17,
+                fontSize: AppTextSize.title,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0,
               ),
@@ -46,8 +48,8 @@ class AppBulletList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = GoogleFonts.manrope(
-      color: const Color(0xFF232323),
-      fontSize: 14,
+      color: AppColors.textStrong,
+      fontSize: AppTextSize.body,
       height: 1.35,
       letterSpacing: 0,
     );
@@ -80,14 +82,14 @@ class AppFieldGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final labelStyle = GoogleFonts.manrope(
-      color: muted ? const Color(0xFFA2A2A2) : Colors.black,
+      color: muted ? AppColors.textMuted : Colors.black,
       fontSize: muted ? 13 : 15,
       fontWeight: muted ? FontWeight.w400 : FontWeight.w700,
       letterSpacing: 0,
     );
     final valueStyle = GoogleFonts.manrope(
-      color: const Color(0xFF454545),
-      fontSize: 13,
+      color: AppColors.textBody,
+      fontSize: AppTextSize.small,
       letterSpacing: 0,
     );
 

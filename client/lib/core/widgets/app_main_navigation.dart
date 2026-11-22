@@ -7,7 +7,6 @@ import '../routes/app_routes.dart';
 import '../routes/auth_guard.dart';
 import '../routes/tab_transition.dart';
 import 'app_bottom_navigation.dart';
-import 'app_feedback.dart';
 
 class AppMainNavigation extends StatelessWidget {
   const AppMainNavigation({
@@ -51,13 +50,9 @@ class AppMainNavigation extends StatelessWidget {
             signedIn ? AppRoutes.profile : AppRoutes.auth,
             AppNavigationItem.profile,
           ),
-          onRegister: signedIn
-              ? () =>
-                    _go(AppRoutes.registrationMenu, AppNavigationItem.register)
-              : () => showAppSnackBar(
-                  context,
-                  'Faça login para acessar o menu de cadastro.',
-                ),
+          onRegister: () =>
+              _go(AppRoutes.registrationMenu, AppNavigationItem.register),
+          signedIn: signedIn,
           showOng: isOng,
           onOng: () => _go(AppRoutes.ong, AppNavigationItem.ong),
         ),

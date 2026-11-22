@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+import 'app_svg_icon.dart';
+
 class AppDialog extends StatelessWidget {
   const AppDialog({
     required this.icon,
@@ -20,9 +23,11 @@ class AppDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: AppColors.surfaceSubtle,
       insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+      ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 420),
         child: SingleChildScrollView(
@@ -34,7 +39,7 @@ class AppDialog extends StatelessWidget {
                 alignment: Alignment.centerRight,
                 child: IconButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close, color: Color(0xFF3A3A3A)),
+                  icon: const AppSvgIcon(AppIcons.close, size: 20),
                   tooltip: 'Fechar',
                 ),
               ),
@@ -44,8 +49,8 @@ class AppDialog extends StatelessWidget {
                 title,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFF232323),
-                  fontSize: 20,
+                  color: AppColors.textStrong,
+                  fontSize: AppTextSize.display,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
@@ -55,8 +60,8 @@ class AppDialog extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFF232323),
-                  fontSize: 15,
+                  color: AppColors.textStrong,
+                  fontSize: AppTextSize.body,
                   height: 1.35,
                   letterSpacing: 0,
                 ),
@@ -83,8 +88,8 @@ class AppDialogIcon extends StatelessWidget {
   const AppDialogIcon({
     required this.icon,
     super.key,
-    this.color = const Color(0xFF232323),
-    this.background = const Color(0xFFDDE0E6),
+    this.color = AppColors.textStrong,
+    this.background = AppColors.border,
     this.size = 64,
   });
 

@@ -17,6 +17,7 @@ class AssistedPersonModel {
     required this.state,
     required this.zipCode,
     required this.country,
+    this.locationDescription = '',
   });
 
   factory AssistedPersonModel.fromJson(Map<String, dynamic> json) {
@@ -42,6 +43,7 @@ class AssistedPersonModel {
       state: json['state'] as String? ?? '',
       zipCode: json['zip_code'] as String? ?? '',
       country: json['country'] as String? ?? '',
+      locationDescription: json['locationDescription'] as String? ?? '',
     );
   }
 
@@ -60,6 +62,7 @@ class AssistedPersonModel {
   final String state;
   final String zipCode;
   final String country;
+  final String locationDescription;
 
   AssistedPerson toEntity() {
     return AssistedPerson(
@@ -78,6 +81,7 @@ class AssistedPersonModel {
       state: state,
       zipCode: zipCode,
       country: country,
+      locationDescription: locationDescription,
     );
   }
 }

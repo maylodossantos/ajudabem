@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppCheckboxTile extends StatelessWidget {
   const AppCheckboxTile({
     required this.value,
@@ -15,8 +17,8 @@ class AppCheckboxTile extends StatelessWidget {
   final InlineSpan label;
 
   static final textStyle = GoogleFonts.manrope(
-    color: const Color(0xFF232323),
-    fontSize: 13,
+    color: AppColors.textStrong,
+    fontSize: AppTextSize.small,
     height: 1.3,
     letterSpacing: 0,
   );
@@ -38,7 +40,7 @@ class AppCheckboxTile extends StatelessWidget {
               decoration: BoxDecoration(
                 color: value
                     ? Theme.of(context).colorScheme.primary
-                    : const Color(0xFFDADADA),
+                    : AppColors.border,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: value

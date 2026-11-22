@@ -6,34 +6,34 @@ import '../theme/app_colors.dart';
 
 abstract final class AppFieldStyles {
   static final label = GoogleFonts.manrope(
-    color: const Color(0xFF232323),
-    fontSize: 16,
+    color: AppColors.textStrong,
+    fontSize: AppTextSize.title,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
   );
 
   static final value = GoogleFonts.manrope(
-    color: const Color(0xFF454545),
-    fontSize: 14,
+    color: AppColors.textBody,
+    fontSize: AppTextSize.body,
     letterSpacing: 0,
   );
 
   static final hint = GoogleFonts.manrope(
-    color: const Color(0xFFBABABA),
-    fontSize: 14,
+    color: AppColors.textMuted,
+    fontSize: AppTextSize.body,
     letterSpacing: 0,
   );
 
   static final requiredMark = GoogleFonts.manrope(
     color: AppColors.danger,
-    fontSize: 16,
+    fontSize: AppTextSize.title,
     fontWeight: FontWeight.w800,
     letterSpacing: 0,
   );
 
   static BoxDecoration box(BuildContext context) => BoxDecoration(
     border: Border.all(color: Theme.of(context).colorScheme.primary),
-    borderRadius: BorderRadius.circular(6),
+    borderRadius: BorderRadius.circular(AppRadius.sm),
   );
 }
 
@@ -68,10 +68,12 @@ class AppLabeledField extends StatefulWidget {
     this.minLines,
     this.maxLength,
     this.required = false,
+    this.enabled = true,
   });
 
   final String label;
   final bool required;
+  final bool enabled;
   final ValueChanged<String> onChanged;
   final int maxLines;
   final int? minLines;
@@ -118,7 +120,7 @@ class _AppLabeledFieldState extends State<AppLabeledField> {
     final maxLines = widget.maxLines;
     final maxLength = widget.maxLength;
 
-    return Column(
+    final field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppFieldLabel(widget.label, required: widget.required),
@@ -134,6 +136,7 @@ class _AppLabeledFieldState extends State<AppLabeledField> {
           child: Center(
             child: TextFormField(
               controller: _controller,
+              enabled: widget.enabled,
               onChanged: _changed,
               maxLines: maxLines,
               minLines: widget.minLines ?? (maxLines < 3 ? maxLines : 3),
@@ -145,7 +148,7 @@ class _AppLabeledFieldState extends State<AppLabeledField> {
                 if (maxLength != null)
                   LengthLimitingTextInputFormatter(maxLength),
               ],
-              style: GoogleFonts.manrope(fontSize: 14),
+              style: GoogleFonts.manrope(fontSize: AppTextSize.body),
               decoration: InputDecoration.collapsed(
                 hintText: widget.hintText,
                 hintStyle: AppFieldStyles.hint,
@@ -162,7 +165,7 @@ class _AppLabeledFieldState extends State<AppLabeledField> {
                 '$_length/$maxLength',
                 style: GoogleFonts.manrope(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: 10,
+                  fontSize: AppTextSize.caption,
                   letterSpacing: 0,
                 ),
               ),
@@ -170,6 +173,8 @@ class _AppLabeledFieldState extends State<AppLabeledField> {
           ),
       ],
     );
+
+    return AppDisabledWhen(disabled: !widget.enabled, child: field);
   }
 }
 
@@ -184,10 +189,12 @@ class AppLabeledDropdown<T> extends StatelessWidget {
     this.hintText,
     this.height = 44,
     this.required = false,
+    this.enabled = true,
   });
 
   final String label;
   final bool required;
+  final bool enabled;
   final T? value;
   final List<T> options;
   final ValueChanged<T> onChanged;
@@ -218,7 +225,7 @@ class AppLabeledDropdown<T> extends StatelessWidget {
     final current = value;
     final primary = Theme.of(context).colorScheme.primary;
 
-    return Column(
+    final field = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppFieldLabel(label, required: required),
@@ -227,7 +234,7 @@ class AppLabeledDropdown<T> extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             key: ValueKey('form-dropdown-$label'),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
             onTap: () => _open(context),
             child: Container(
               height: height,
@@ -253,6 +260,8 @@ class AppLabeledDropdown<T> extends StatelessWidget {
         ),
       ],
     );
+
+    return AppDisabledWhen(disabled: !enabled, child: field);
   }
 }
 
@@ -289,7 +298,7 @@ class _OptionsSheet<T> extends StatelessWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD9D9D9),
+                  color: AppColors.border,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -300,7 +309,7 @@ class _OptionsSheet<T> extends StatelessWidget {
                 title,
                 style: GoogleFonts.manrope(
                   color: primary,
-                  fontSize: 18,
+                  fontSize: AppTextSize.heading,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
@@ -320,9 +329,9 @@ class _OptionsSheet<T> extends StatelessWidget {
                     color: isSelected
                         ? primary.withValues(alpha: 0.1)
                         : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                       onTap: () => Navigator.of(context).pop(option),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(
@@ -337,8 +346,8 @@ class _OptionsSheet<T> extends StatelessWidget {
                                 style: GoogleFonts.manrope(
                                   color: isSelected
                                       ? primary
-                                      : const Color(0xFF232323),
-                                  fontSize: 15,
+                                      : AppColors.textStrong,
+                                  fontSize: AppTextSize.title,
                                   fontWeight: isSelected
                                       ? FontWeight.w700
                                       : FontWeight.w500,
@@ -362,6 +371,29 @@ class _OptionsSheet<T> extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class AppDisabledWhen extends StatelessWidget {
+  const AppDisabledWhen({
+    required this.disabled,
+    required this.child,
+    super.key,
+  });
+
+  final bool disabled;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      ignoring: disabled,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 150),
+        opacity: disabled ? 0.4 : 1,
+        child: child,
       ),
     );
   }

@@ -16,7 +16,7 @@ void main() {
     addTearDown(tester.view.reset);
   }
 
-  testWidgets('lists the points with the quick filters; admins can add', (
+  testWidgets('shows the tapped point card on the map, toggles to the list', (
     tester,
   ) async {
     useTallScreen(tester);
@@ -39,24 +39,41 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.light,
-          home: HelpPointsPage(store: store, canManage: admin),
+          home: HelpPointsPage(
+            store: store,
+            canManage: admin,
+            showTiles: false,
+          ),
         ),
       );
       await tester.pump();
     }
 
     await pump(admin: false);
-    expect(find.text('Pontos de ajuda'), findsOneWidget);
-    expect(find.text('Albergue Municipal Esperança'), findsOneWidget);
-    expect(find.text('UPA Veneza'), findsOneWidget);
-    expect(find.text('Próximos de você'), findsOneWidget);
+    expect(find.text('Ver lista'), findsOneWidget);
+    expect(find.text('Filtros'), findsOneWidget);
+    expect(find.byKey(const Key('help_point_marker_1')), findsOneWidget);
+    expect(find.byKey(const Key('help_point_marker_2')), findsNothing);
+    expect(find.text('Ver detalhes →'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('help_point_marker_1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('help_point_card_1')), findsOneWidget);
+    expect(find.byKey(const Key('help_point_card_2')), findsNothing);
+    expect(find.text('Ver detalhes →'), findsOneWidget);
     expect(find.byKey(const Key('help_points_add_button')), findsNothing);
 
-    await tester.ensureVisible(find.text('Saúde'));
-    await tester.tap(find.text('Saúde'));
+    await tester.tap(find.byKey(const Key('help_points_view_toggle')));
     await tester.pump();
-    expect(find.text('Albergue Municipal Esperança'), findsNothing);
-    expect(find.text('UPA Veneza'), findsOneWidget);
+    expect(find.byKey(const Key('help_point_list_1')), findsOneWidget);
+    expect(find.byKey(const Key('help_point_list_2')), findsOneWidget);
+    expect(find.text('Ver detalhes →'), findsNothing);
+    expect(find.text('Ver mapa'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('help_points_view_toggle')));
+    await tester.pump();
+    expect(find.byKey(const Key('help_point_marker_1')), findsOneWidget);
+    expect(find.byKey(const Key('help_point_card_1')), findsOneWidget);
 
     await pump(admin: true);
     expect(find.byKey(const Key('help_points_add_button')), findsOneWidget);
@@ -98,7 +115,7 @@ void main() {
     await tester.tap(find.text('abrir'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Tipo de Local'), findsOneWidget);
+    expect(find.text('Tipo de local'), findsOneWidget);
     expect(find.text('Sem limite'), findsOneWidget);
     for (final option in ['Alimentação', 'Aberto agora', 'Mais próximos']) {
       await tester.ensureVisible(find.text(option));

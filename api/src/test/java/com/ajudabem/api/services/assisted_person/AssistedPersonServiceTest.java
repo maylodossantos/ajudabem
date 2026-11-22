@@ -13,6 +13,7 @@ import com.ajudabem.api.repositories.TagRepository;
 import com.ajudabem.api.services.user.CurrentUserService;
 import com.ajudabem.api.services.help_point.GeocodingService;
 import com.ajudabem.api.services.notification.NotificationService;
+import com.ajudabem.api.services.organization.OrganizationAccessService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,6 +49,9 @@ class AssistedPersonServiceTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private OrganizationAccessService organizationAccess;
+
     @InjectMocks
     private AssistedPersonService assistedPersonService;
 
@@ -70,8 +74,8 @@ class AssistedPersonServiceTest {
 
     private AssistedPersonRequestDTO requestDTO() {
         return new AssistedPersonRequestDTO(
-                "John Doe", 30, Gender.MALE, List.of(1L, 2L), "notes",
-                "street", "1", "neighborhood", "city", "state", "zip", "country"
+                "John Doe", 30, Gender.MALE, true, List.of(1L, 2L), "notes",
+                "street", "1", "neighborhood", "city", "state", "zip", "country", null
         );
     }
 
@@ -190,17 +194,34 @@ class AssistedPersonServiceTest {
     }
 
     @Test
-    void getAssistedPerson_shouldLetAdminsAndOngsViewAnyonesRegistration() {
+    void getAssistedPerson_shouldLetAdminsAndOngsViewRegistrationsTheyHaveAccessTo() {
         AssistedPerson entity = personBy(AUTHOR, 7L);
         when(assistedPersonRepository.findById(7L)).thenReturn(Optional.of(entity));
 
         for (UserRole role : List.of(UserRole.ADMIN, UserRole.USER_ONG)) {
-            when(currentUserService.get()).thenReturn(user(99L, role));
+            User viewer = user(99L, role);
+            when(currentUserService.get()).thenReturn(viewer);
 
             assistedPersonService.getAssistedPerson(7L);
+
+            verify(organizationAccess).requireCaseAccess(viewer, entity);
         }
 
         verify(mapper, times(2)).toResponse(entity);
+    }
+
+    @Test
+    void getAssistedPerson_shouldThrowForbidden_whenAnotherOrganizationIsInCharge() {
+        AssistedPerson entity = personBy(AUTHOR, 7L);
+        User ong = user(99L, UserRole.USER_ONG);
+        when(assistedPersonRepository.findById(7L)).thenReturn(Optional.of(entity));
+        when(currentUserService.get()).thenReturn(ong);
+        doThrow(new ForbiddenActionException("Only the organization in charge can see this case"))
+                .when(organizationAccess).requireCaseAccess(ong, entity);
+
+        assertThatThrownBy(() -> assistedPersonService.getAssistedPerson(7L))
+                .isInstanceOf(ForbiddenActionException.class);
+        verify(mapper, never()).toResponse(any(AssistedPerson.class));
     }
 
     @Test
@@ -257,5 +278,48 @@ class AssistedPersonServiceTest {
                 .isInstanceOf(AssistedPersonNotFoundException.class);
 
         verify(assistedPersonRepository, never()).save(any());
+    }
+
+    @Test
+    void createAssistedPerson_withoutIdentityOrAddress_shouldAnonymizeAndStartAtTheCityCenter() {
+        User author = new User();
+        author.setId(10L);
+        AssistedPersonRequestDTO dto = new AssistedPersonRequestDTO(
+                null, null, null, false, List.of(1L), "Dorme na praça",
+                "", "", "", "Cascavel", "PR", "", "Brasil", "Embaixo da marquise da rodoviária"
+        );
+        AssistedPerson entity = new AssistedPerson();
+        entity.setFull_name("ignored");
+        entity.setAge(40);
+        entity.setGender(Gender.MALE);
+        entity.setCity("Cascavel");
+        entity.setState("PR");
+        entity.setLocationDescription("Embaixo da marquise da rodoviária");
+
+        when(currentUserService.get()).thenReturn(author);
+        when(mapper.toEntity(dto)).thenReturn(entity);
+        when(geocodingService.search("Cascavel, PR, Brasil"))
+                .thenReturn(Optional.of(new GeocodingService.Coordinates(-24.95, -53.45)));
+
+        assistedPersonService.createAssistedPerson(dto);
+
+        assertThat(entity.getFull_name()).isEqualTo(AssistedPersonRequestDTO.UNIDENTIFIED_NAME);
+        assertThat(entity.getAge()).isNull();
+        assertThat(entity.getGender()).isNull();
+        assertThat(entity.getLatitude()).isEqualTo(-24.95);
+        assertThat(entity.isLocationPending()).isTrue();
+        verify(assistedPersonRepository).save(entity);
+    }
+
+    @Test
+    void identityIsRequiredOnlyWhenThePersonIsIdentified() {
+        AssistedPersonRequestDTO anonymous = new AssistedPersonRequestDTO(
+                null, null, null, false, List.of(), null, null, null, null, null, null, null, null, null);
+        AssistedPersonRequestDTO missing = new AssistedPersonRequestDTO(
+                "", null, null, true, List.of(), null, null, null, null, null, null, null, null, null);
+
+        assertThat(anonymous.isIdentityGiven()).isTrue();
+        assertThat(missing.isIdentityGiven()).isFalse();
+        assertThat(requestDTO().isIdentityGiven()).isTrue();
     }
 }

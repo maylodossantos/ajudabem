@@ -40,7 +40,7 @@ class _HelpPointFilterPageState extends State<HelpPointFilterPage> {
       sections: [
         if (options.types.isNotEmpty)
           AppFilterSection(
-            title: 'Tipo de Local',
+            title: 'Tipo de local',
             child: AppChoiceChipGroup<AssistanceType>(
               options: AssistanceType.values
                   .where(options.types.contains)
@@ -55,7 +55,7 @@ class _HelpPointFilterPageState extends State<HelpPointFilterPage> {
         if (options.hasLocations) ...[
           AppFilterSection(
             title: 'Distância',
-            child: AppDistanceSlider(
+            child: AppDistanceChoice(
               key: const Key('help_point_filter_distance'),
               maxDistanceKm: _filter.maxDistanceKm,
               limitKm: HelpPointFilter.maxDistanceLimitKm,

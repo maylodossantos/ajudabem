@@ -1,12 +1,18 @@
 import 'dart:typed_data';
 
 import '../../domain/entities/organization.dart';
+import '../../domain/entities/organization_contact_params.dart';
 import '../../domain/entities/organization_form_params.dart';
 
 abstract interface class OrganizationDatasource {
   Future<Organization?> getMine(String token);
 
   Future<Organization> submit(OrganizationFormParams params, String token);
+
+  Future<Organization> updateContact(
+    OrganizationContactParams params,
+    String token,
+  );
 
   Future<List<Organization>> list(
     String token, {

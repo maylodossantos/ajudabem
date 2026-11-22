@@ -32,6 +32,8 @@ public interface AssistedPersonRepository extends JpaRepository<AssistedPerson, 
     @EntityGraph(attributePaths = "tags")
     List<AssistedPerson> findTop20ByRiskLevelIsNullOrderByCreatedAtAsc();
 
+    List<AssistedPerson> findTop20ByLocationPendingTrueOrderByCreatedAtAsc();
+
     @EntityGraph(attributePaths = "tags")
     List<AssistedPerson> findAllByCareStatusInAndLatitudeIsNotNull(Collection<CareStatus> careStatuses);
 

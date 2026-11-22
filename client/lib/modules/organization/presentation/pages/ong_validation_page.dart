@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
@@ -117,7 +118,7 @@ class _OngValidationPageState extends State<OngValidationPage> {
         title: 'Sua ONG foi aprovada!',
         message:
             'Agora você já pode acessar as funcionalidades da área de ONGs.',
-        actionLabel: 'Ir para ONGs',
+        actionLabel: 'Ir para minha ONG',
         onAction: () => Modular.to.navigate(AppRoutes.ong),
       ),
       OrganizationStatus.rejected when organization.canResubmitAt(now) =>
@@ -169,7 +170,7 @@ class _WaitingTime extends StatelessWidget {
             strokeWidth: 3,
             strokeCap: StrokeCap.round,
             color: primary,
-            backgroundColor: const Color(0xFFE2E2E2),
+            backgroundColor: AppColors.border,
           ),
         ),
         const SizedBox(width: 10),
@@ -177,7 +178,7 @@ class _WaitingTime extends StatelessWidget {
           days == 1 ? '1 dia' : '$days dias',
           style: GoogleFonts.manrope(
             color: primary,
-            fontSize: 15,
+            fontSize: AppTextSize.title,
             fontWeight: FontWeight.w700,
             letterSpacing: 0,
           ),
@@ -201,8 +202,8 @@ class _RejectionReason extends StatelessWidget {
     }
 
     final textStyle = GoogleFonts.manrope(
-      color: const Color(0xFF454545),
-      fontSize: 14,
+      color: AppColors.textBody,
+      fontSize: AppTextSize.body,
       height: 1.4,
       letterSpacing: 0,
     );

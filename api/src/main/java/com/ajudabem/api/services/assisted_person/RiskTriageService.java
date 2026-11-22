@@ -4,20 +4,14 @@ import com.ajudabem.api.domains.assisted_person.AssistedPerson;
 import com.ajudabem.api.domains.assisted_person.RiskLevel;
 import com.ajudabem.api.domains.assisted_person.RiskTriageLog;
 import com.ajudabem.api.domains.assisted_person.Tag;
+import com.ajudabem.api.infra.OllamaClient;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.RiskTriageLogRepository;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
-import java.net.http.HttpClient;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -47,7 +41,9 @@ public class RiskTriageService {
             the situation could reasonably be dangerous, choose the higher level.
 
             Write the justification in Brazilian Portuguese, in one or two short sentences, \
-            citing the facts of the case that decided the level.""";
+            citing the facts of the case that decided the level. Only describe those facts: \
+            never name the risk level (LOW, MEDIUM, HIGH, baixa, média, alta) or mention the \
+            classification itself in the justification.""";
 
     private static final Map<String, Object> RESPONSE_SCHEMA = Map.of(
             "type", "object",
@@ -58,30 +54,17 @@ public class RiskTriageService {
             "required", List.of("justification", "riskLevel")
     );
 
-    private final RestClient ollama;
-    private final String model;
+    private final OllamaClient ollama;
     private final ObjectMapper objectMapper;
     private final AssistedPersonRepository repository;
     private final RiskTriageLogRepository logRepository;
 
-    @Autowired
     public RiskTriageService(
-            @Value("${api.ollama.url}") String ollamaUrl,
-            @Value("${api.ollama.model}") String model,
-            ObjectMapper objectMapper,
-            AssistedPersonRepository repository,
-            RiskTriageLogRepository logRepository) {
-        this(ollamaClient(ollamaUrl), model, objectMapper, repository, logRepository);
-    }
-
-    RiskTriageService(
-            RestClient ollama,
-            String model,
+            OllamaClient ollama,
             ObjectMapper objectMapper,
             AssistedPersonRepository repository,
             RiskTriageLogRepository logRepository) {
         this.ollama = ollama;
-        this.model = model;
         this.objectMapper = objectMapper;
         this.repository = repository;
         this.logRepository = logRepository;
@@ -101,22 +84,9 @@ public class RiskTriageService {
         String input = describe(person);
         long startedAt = System.currentTimeMillis();
         try {
-            OllamaChatResponse response = ollama.post()
-                    .uri("/api/chat")
-                    .body(Map.of(
-                            "model", model,
-                            "stream", false,
-                            "format", RESPONSE_SCHEMA,
-                            "options", Map.of("temperature", 0),
-                            "messages", List.of(
-                                    Map.of("role", "system", "content", SYSTEM_PROMPT),
-                                    Map.of("role", "user", "content", input)
-                            )
-                    ))
-                    .retrieve()
-                    .body(OllamaChatResponse.class);
+            String content = ollama.chat(SYSTEM_PROMPT, input, RESPONSE_SCHEMA);
 
-            TriageResult result = objectMapper.readValue(response.message().content(), TriageResult.class);
+            TriageResult result = objectMapper.readValue(content, TriageResult.class);
             if (result.riskLevel() == null) {
                 return Optional.empty();
             }
@@ -131,13 +101,13 @@ public class RiskTriageService {
 
     private void record(AssistedPerson person, TriageResult result, String input, long durationMs) {
         log.info("Risk triage of assisted person {}: {} in {} ms by {} - {}",
-                person.getId(), result.riskLevel(), durationMs, model, result.justification());
+                person.getId(), result.riskLevel(), durationMs, ollama.model(), result.justification());
 
         RiskTriageLog entry = new RiskTriageLog();
         entry.setAssistedPerson(person);
         entry.setRiskLevel(result.riskLevel());
-        entry.setJustification(result.justification());
-        entry.setModel(model);
+        entry.setJustification(TriageJustification.clean(result.justification()));
+        entry.setModel(ollama.model());
         entry.setInput(input);
         entry.setDurationMs(durationMs);
         logRepository.save(entry);
@@ -155,35 +125,19 @@ public class RiskTriageService {
                 Idade: %s
                 Gênero: %s
                 Tem endereço fixo: %s
+                Local aproximado: %s
                 Necessidades marcadas: %s
                 Descrição do voluntário: %s
                 </case>""".formatted(
                 person.getAge() == null ? "não informada" : person.getAge(),
                 person.getGender() == null ? "não informado" : person.getGender(),
                 hasFixedAddress ? "sim" : "não",
+                person.getLocationDescription() == null || person.getLocationDescription().isBlank()
+                        ? "(não informado)" : person.getLocationDescription(),
                 needs,
                 person.getNotes() == null || person.getNotes().isBlank() ? "(vazia)" : person.getNotes());
     }
 
-    private static RestClient ollamaClient(String baseUrl) {
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(
-                HttpClient.newBuilder()
-                        .version(HttpClient.Version.HTTP_1_1)
-                        .connectTimeout(Duration.ofSeconds(2))
-                        .build());
-        requestFactory.setReadTimeout(Duration.ofMinutes(2));
-
-        return RestClient.builder().baseUrl(baseUrl).requestFactory(requestFactory).build();
-    }
-
     record TriageResult(String justification, RiskLevel riskLevel) {
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    record OllamaChatResponse(Message message) {
-
-        @JsonIgnoreProperties(ignoreUnknown = true)
-        record Message(String content) {
-        }
     }
 }

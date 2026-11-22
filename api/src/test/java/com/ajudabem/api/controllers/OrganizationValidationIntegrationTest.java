@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -210,5 +211,38 @@ class OrganizationValidationIntegrationTest {
 
         mockMvc.perform(get("/organization").header("Authorization", bearer(ong)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateContact_shouldOnlyBeAllowedToTheOwnerOfAnApprovedOrganization() throws Exception {
+        User owner = saveUser("contact.owner@example.com", UserRole.USER);
+        User admin = saveUser("contact.admin@example.com", UserRole.ADMIN);
+        User stranger = saveUser("contact.stranger@example.com", UserRole.USER);
+        String body = objectMapper.writeValueAsString(Map.of(
+                "street", "Rua Paraná", "number", "120", "neighborhood", "Centro", "city", "Cascavel",
+                "state", "pr", "zipCode", "85801-000", "website", "amigos.org", "instagram", "@amigos"));
+
+        long id = idOf(submit(owner, "61.222.333/0001-50", ALL_DOCUMENTS).andExpect(status().isOk()));
+
+        mockMvc.perform(put("/organization/me/contact").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(put("/organization/me/contact").header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isConflict());
+
+        mockMvc.perform(post("/organization/" + id + "/approve").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(put("/organization/me/contact").header("Authorization", bearer(stranger))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(put("/organization/me/contact").header("Authorization", bearer(owner))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.street").value("Rua Paraná"))
+                .andExpect(jsonPath("$.state").value("PR"))
+                .andExpect(jsonPath("$.instagram").value("@amigos"))
+                .andExpect(jsonPath("$.cnpj").value("61222333000150"))
+                .andExpect(jsonPath("$.status").value("APPROVED"));
     }
 }

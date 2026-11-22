@@ -1,3 +1,4 @@
+import '../theme/app_colors.dart';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -158,7 +159,10 @@ class _AppPdfViewerState extends State<AppPdfViewer>
     final error = _error;
     if (error != null) {
       return Center(
-        child: Text(error, style: GoogleFonts.manrope(fontSize: 14)),
+        child: Text(
+          error,
+          style: GoogleFonts.manrope(fontSize: AppTextSize.body),
+        ),
       );
     }
 
@@ -224,12 +228,12 @@ class _AppPdfViewerState extends State<AppPdfViewer>
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFFAFAFA),
-                    borderRadius: BorderRadius.circular(20),
+                    color: AppColors.surfaceSubtle,
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
                   ),
                   child: Text(
                     '$_currentPage/${pages.length}',
-                    style: GoogleFonts.manrope(fontSize: 15),
+                    style: GoogleFonts.manrope(fontSize: AppTextSize.body),
                   ),
                 ),
               ),

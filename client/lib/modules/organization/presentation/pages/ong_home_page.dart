@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../../core/geo/geo_point.dart';
 import '../../../../core/impact/impact_store.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_impact_row.dart';
+import '../../../../core/widgets/app_map.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/app_section_title.dart';
+import '../../../../core/widgets/app_svg_icon.dart';
+import '../../../../core/widgets/app_utility_tile.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../../care/domain/entities/care_case.dart';
 import '../../../care/domain/entities/care_filter.dart';
@@ -114,40 +120,43 @@ class _OngHomePageState extends State<OngHomePage> {
                     ),
                   ),
                   const SizedBox(height: 18),
+                  _FocusMapCard(
+                    cases: _urgent.visibleCases
+                        .where((person) => person.hasLocation)
+                        .toList(),
+                    onOpen: () => _go(AppRoutes.careMap),
+                  ),
+                  const SizedBox(height: 18),
                   _WhiteCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const AppSectionTitle('Utilitários'),
                         const SizedBox(height: 12),
-                        GridView.count(
-                          crossAxisCount: 3,
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          mainAxisSpacing: 12,
-                          crossAxisSpacing: 10,
-                          childAspectRatio: 0.78,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          spacing: 10,
                           children: [
-                            _Tool(
-                              iconAsset:
-                                  'assets/icons/ong/nominated_people.png',
-                              label: 'Pessoas\nIndicadas',
-                              onTap: () => _go(AppRoutes.nominatedPeople),
+                            Expanded(
+                              child: AppUtilityTile(
+                                iconAsset: AppIcons.nominatedPeople,
+                                label: 'Pessoas\nindicadas',
+                                onTap: () => _go(AppRoutes.nominatedPeople),
+                              ),
                             ),
-                            _Tool(
-                              iconAsset: 'assets/icons/ong/people_in_care.png',
-                              label: 'Pessoas em\nAtendimento',
-                              onTap: () => _go(AppRoutes.peopleInCare),
+                            Expanded(
+                              child: AppUtilityTile(
+                                iconAsset: AppIcons.inCare,
+                                label: 'Em\natendimento',
+                                onTap: () => _go(AppRoutes.peopleInCare),
+                              ),
                             ),
-                            _Tool(
-                              iconAsset: 'assets/icons/ong/initiatives.png',
-                              label: 'Iniciativas',
-                              onTap: () => _go(AppRoutes.initiatives),
-                            ),
-                            _Tool(
-                              iconAsset: 'assets/icons/ong/focus_map.png',
-                              label: 'Mapa de Focos',
-                              onTap: () => _go(AppRoutes.careMap),
+                            Expanded(
+                              child: AppUtilityTile(
+                                iconAsset: AppIcons.initiatives,
+                                label: 'Iniciativas',
+                                onTap: () => _go(AppRoutes.initiatives),
+                              ),
                             ),
                           ],
                         ),
@@ -170,7 +179,7 @@ class _OngHomePageState extends State<OngHomePage> {
                       key: const Key('ong_home_urgent_more'),
                       onPressed: () =>
                           _go(AppRoutes.nominatedPeople, _urgentFilter),
-                      child: const Text('Ver casos urgentes...'),
+                      child: const Text('Ver todos os urgentes'),
                     ),
                   ],
                 ],
@@ -191,14 +200,17 @@ class _UrgentCase extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final white = GoogleFonts.manrope(color: Colors.white, fontSize: 13.5);
+    final white = GoogleFonts.manrope(
+      color: Colors.white,
+      fontSize: AppTextSize.small,
+    );
 
     return Material(
       color: Theme.of(context).colorScheme.primary,
       elevation: 3,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       child: InkWell(
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(18, 14, 18, 16),
@@ -209,7 +221,7 @@ class _UrgentCase extends StatelessWidget {
                 person.fullName,
                 style: GoogleFonts.manrope(
                   color: Colors.white,
-                  fontSize: 18,
+                  fontSize: AppTextSize.heading,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -251,7 +263,7 @@ class _WhiteCard extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: child,
     );
@@ -304,7 +316,7 @@ class _Identity extends StatelessWidget {
           'ONG',
           style: GoogleFonts.manrope(
             color: Theme.of(context).colorScheme.primary,
-            fontSize: 18,
+            fontSize: AppTextSize.heading,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
@@ -314,8 +326,8 @@ class _Identity extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.manrope(
-            color: const Color(0xFF232323),
-            fontSize: 18,
+            color: AppColors.textStrong,
+            fontSize: AppTextSize.heading,
             fontWeight: FontWeight.w700,
             letterSpacing: 0,
           ),
@@ -325,48 +337,129 @@ class _Identity extends StatelessWidget {
   }
 }
 
-class _Tool extends StatelessWidget {
-  const _Tool({
-    required this.iconAsset,
-    required this.label,
-    required this.onTap,
-  });
+class _FocusMapCard extends StatelessWidget {
+  const _FocusMapCard({required this.cases, required this.onOpen});
 
-  final String iconAsset;
-  final String label;
-  final VoidCallback onTap;
+  final List<CareCase> cases;
+  final VoidCallback onOpen;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: 1.4,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                borderRadius: BorderRadius.circular(8),
+    final primary = Theme.of(context).colorScheme.primary;
+    final points = [
+      for (final person in cases) LatLng(person.latitude!, person.longitude!),
+    ];
+    final count = cases.length;
+
+    return Material(
+      key: const Key('ong_home_focus_map'),
+      color: primary,
+      elevation: 3,
+      borderRadius: BorderRadius.circular(AppRadius.xl),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onOpen,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(
+              height: 150,
+              child: IgnorePointer(
+                child: FlutterMap(
+                  options: MapOptions(
+                    initialCenter: points.isEmpty
+                        ? AppMap.cascavel
+                        : points.first,
+                    initialZoom: AppMap.cityZoom,
+                    backgroundColor: AppMap.tileBackground,
+                    initialCameraFit: points.length > 1
+                        ? CameraFit.coordinates(
+                            coordinates: points,
+                            padding: const EdgeInsets.all(28),
+                            maxZoom: AppMap.streetZoom,
+                          )
+                        : null,
+                    interactionOptions: const InteractionOptions(
+                      flags: InteractiveFlag.none,
+                    ),
+                  ),
+                  children: [
+                    AppMap.tileLayer(),
+                    CircleLayer(
+                      circles: [
+                        for (final point in points)
+                          CircleMarker(
+                            point: point,
+                            radius: 300,
+                            useRadiusInMeter: true,
+                            color: Urgency.high.color.withValues(alpha: 0.35),
+                            borderColor: Urgency.high.color,
+                            borderStrokeWidth: 1.5,
+                          ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-              padding: const EdgeInsets.all(14),
-              child: Image.asset(iconAsset, fit: BoxFit.contain),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.manrope(
-              color: Colors.black,
-              fontSize: 12,
-              height: 1.15,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 12, 14),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mapa de focos',
+                          style: GoogleFonts.manrope(
+                            color: Colors.white,
+                            fontSize: AppTextSize.heading,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          count == 0
+                              ? 'Veja onde estão as pessoas que precisam de ajuda.'
+                              : count == 1
+                              ? '1 caso urgente aguardando uma ONG.'
+                              : '$count casos urgentes aguardando uma ONG.',
+                          style: GoogleFonts.manrope(
+                            color: Colors.white,
+                            fontSize: AppTextSize.small,
+                            letterSpacing: 0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 9,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                    ),
+                    child: Text(
+                      'Abrir mapa',
+                      style: GoogleFonts.manrope(
+                        color: primary,
+                        fontSize: AppTextSize.small,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

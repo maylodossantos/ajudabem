@@ -130,6 +130,7 @@ class ApiCareRepository implements CareRepository {
       city: json['city'] as String? ?? '',
       state: json['state'] as String? ?? '',
       zipCode: json['zipCode'] as String? ?? '',
+      locationDescription: json['locationDescription'] as String? ?? '',
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
       createdAt: _date(json['createdAt']),

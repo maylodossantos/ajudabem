@@ -5,6 +5,7 @@ import com.ajudabem.api.domains.assisted_person.Gender;
 import com.ajudabem.api.domains.assisted_person.RiskLevel;
 import com.ajudabem.api.domains.assisted_person.RiskTriageLog;
 import com.ajudabem.api.domains.assisted_person.Tag;
+import com.ajudabem.api.infra.OllamaClient;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.RiskTriageLogRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,8 +46,8 @@ class RiskTriageServiceTest {
         ollama = MockRestServiceServer.bindTo(builder).build();
         repository = mock(AssistedPersonRepository.class);
         logRepository = mock(RiskTriageLogRepository.class);
-        service = new RiskTriageService(builder.build(), "qwen2.5:3b", new ObjectMapper(), repository,
-                logRepository);
+        service = new RiskTriageService(new OllamaClient(builder.build(), "qwen2.5:3b"), new ObjectMapper(),
+                repository, logRepository);
     }
 
     private AssistedPerson person() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import 'app_bottom_navigation.dart';
 import 'app_button.dart';
 import 'app_main_navigation.dart';
@@ -67,40 +68,68 @@ class AppBottomActions extends StatelessWidget {
     this.primaryKey,
     this.secondaryKey,
     this.secondaryColor,
+    this.secondaryBorderColor,
+    this.primaryColor,
     this.isLoading = false,
   });
 
   final String secondaryLabel;
   final VoidCallback? onSecondary;
   final Color? secondaryColor;
+  final Color? secondaryBorderColor;
+  final Color? primaryColor;
   final String primaryLabel;
   final VoidCallback? onPrimary;
   final Key? primaryKey;
   final Key? secondaryKey;
   final bool isLoading;
 
+  static const _height = 44.0;
+  static const _gap = AppSpacing.md;
+  static const _padding = AppSpacing.sm;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: AppOutlinedButton(
-            key: secondaryKey,
-            label: secondaryLabel,
-            onPressed: onSecondary,
-            color: secondaryColor,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: AppPrimaryButton(
-            key: primaryKey,
-            label: primaryLabel,
-            isLoading: isLoading,
-            onPressed: onPrimary,
-          ),
-        ),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final labelWidth = (constraints.maxWidth - _gap) / 2 - 2 * _padding - 4;
+        final fontSize = AppButtonLabel.fitSize([
+          secondaryLabel,
+          primaryLabel,
+        ], labelWidth);
+
+        return Row(
+          children: [
+            Expanded(
+              child: AppOutlinedButton(
+                key: secondaryKey,
+                label: secondaryLabel,
+                onPressed: onSecondary,
+                color: secondaryColor,
+                borderColor: secondaryBorderColor,
+                dense: true,
+                fontSize: fontSize,
+                height: _height,
+                radius: AppRadius.md,
+              ),
+            ),
+            const SizedBox(width: _gap),
+            Expanded(
+              child: AppPrimaryButton(
+                key: primaryKey,
+                label: primaryLabel,
+                isLoading: isLoading,
+                onPressed: onPrimary,
+                color: primaryColor,
+                fontSize: fontSize,
+                height: _height,
+                radius: AppRadius.md,
+                horizontalPadding: _padding,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

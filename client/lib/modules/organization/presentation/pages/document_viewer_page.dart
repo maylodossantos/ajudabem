@@ -111,7 +111,7 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
     final error = _error;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F2),
+      backgroundColor: AppColors.background,
       appBar: const AuthAppBar(showBackButton: true),
       body: SafeArea(
         top: false,
@@ -119,14 +119,14 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ColoredBox(
-              color: const Color(0xFFFAFAFA),
+              color: AppColors.surfaceSubtle,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 14),
                 child: Text(
                   widget.args.document.type.label,
                   style: GoogleFonts.manrope(
-                    color: const Color(0xFF232323),
-                    fontSize: 18,
+                    color: AppColors.textStrong,
+                    fontSize: AppTextSize.heading,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 0,
                   ),
@@ -141,7 +141,7 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                   : AppPdfViewer(bytes: bytes, controller: _viewer),
             ),
             ColoredBox(
-              color: const Color(0xFFFAFAFA),
+              color: AppColors.surfaceSubtle,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -152,8 +152,8 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                     AppSquareIconButton(
                       key: const Key('document_zoom_in_button'),
                       icon: Icons.zoom_in,
-                      color: const Color(0xFF232323),
-                      background: const Color(0xFFE8E8E8),
+                      color: AppColors.textStrong,
+                      background: AppColors.surfaceMuted,
                       tooltip: 'Aproximar',
                       onPressed: bytes == null
                           ? null
@@ -163,8 +163,8 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                     AppSquareIconButton(
                       key: const Key('document_zoom_out_button'),
                       icon: Icons.zoom_out,
-                      color: const Color(0xFF232323),
-                      background: const Color(0xFFE8E8E8),
+                      color: AppColors.textStrong,
+                      background: AppColors.surfaceMuted,
                       tooltip: 'Afastar',
                       onPressed: bytes == null
                           ? null
@@ -175,8 +175,8 @@ class _DocumentViewerPageState extends State<DocumentViewerPage> {
                       key: const Key('document_print_button'),
                       icon: Icons.print_outlined,
                       tooltip: 'Imprimir',
-                      color: const Color(0xFF232323),
-                      background: const Color(0xFFE8E8E8),
+                      color: AppColors.textStrong,
+                      background: AppColors.surfaceMuted,
                       onPressed: _bytes == null ? null : _print,
                     ),
                     const SizedBox(width: 8),

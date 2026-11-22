@@ -71,7 +71,7 @@ class _DeleteAccountConfirmPageState extends State<DeleteAccountConfirmPage> {
                     textAlign: TextAlign.center,
                     style: GoogleFonts.manrope(
                       color: Colors.black,
-                      fontSize: 18,
+                      fontSize: AppTextSize.heading,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0,
                     ),
@@ -83,8 +83,8 @@ class _DeleteAccountConfirmPageState extends State<DeleteAccountConfirmPage> {
                     'recuperar sua conta depois.',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.manrope(
-                      color: const Color(0xFF454545),
-                      fontSize: 14,
+                      color: AppColors.textBody,
+                      fontSize: AppTextSize.body,
                       fontWeight: FontWeight.w400,
                       height: 1.4,
                       letterSpacing: 0,
@@ -104,7 +104,7 @@ class _DeleteAccountConfirmPageState extends State<DeleteAccountConfirmPage> {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.manrope(
                             color: AppColors.danger,
-                            fontSize: 13,
+                            fontSize: AppTextSize.small,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -114,22 +114,33 @@ class _DeleteAccountConfirmPageState extends State<DeleteAccountConfirmPage> {
                   const Spacer(),
                   Observer(
                     builder: (_) => AppPrimaryButton(
-                      key: const Key('delete_account_confirm_button'),
-                      label: 'Excluir minha conta',
-                      color: AppColors.danger,
-                      isLoading: _profileStore.isLoading,
-                      onPressed: _confirmDelete,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Observer(
-                    builder: (_) => AppOutlinedButton(
                       key: const Key('delete_account_cancel_button'),
                       label: 'Cancelar',
+                      height: 44,
+                      radius: AppRadius.md,
                       onPressed: _profileStore.isLoading
                           ? null
                           : Modular.to.pop,
                     ),
+                  ),
+                  const SizedBox(height: 4),
+                  Observer(
+                    builder: (_) => _profileStore.isLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(AppSpacing.md),
+                            child: SizedBox.square(
+                              dimension: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: AppColors.danger,
+                              ),
+                            ),
+                          )
+                        : AppDangerTextButton(
+                            key: const Key('delete_account_confirm_button'),
+                            label: 'Excluir minha conta',
+                            onPressed: _confirmDelete,
+                          ),
                   ),
                 ],
               ),

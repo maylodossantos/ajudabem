@@ -57,6 +57,7 @@ void main() {
       await tester.tap(find.byKey(const Key('needs_add_button')));
       await tester.pumpAndSettle();
       await tester.enterText(find.byKey(const Key('need_name_field')), name);
+      await tester.pump();
       await tester.tap(find.byKey(const Key('need_name_save')));
       await tester.pumpAndSettle();
     }

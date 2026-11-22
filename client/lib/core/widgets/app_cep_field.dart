@@ -17,7 +17,7 @@ class AppCepField extends StatefulWidget {
     this.onNeighborhood,
     this.onCity,
     this.onState,
-    this.label = 'CEP:',
+    this.label = 'CEP',
     this.required = false,
     this.service,
   });
@@ -93,7 +93,7 @@ class _AppCepFieldState extends State<AppCepField> {
         AppLabeledField(
           label: widget.label,
           required: widget.required,
-          hintText: 'Ex.: 85801-000',
+          hintText: '85801-000',
           initialValue: widget.initialValue,
           keyboardType: TextInputType.number,
           inputFormatters: [CepInputFormatter()],
@@ -114,7 +114,10 @@ class _AppCepFieldState extends State<AppCepField> {
                 const SizedBox(width: 6),
                 Text(
                   'Buscando endereço...',
-                  style: GoogleFonts.manrope(color: primary, fontSize: 11),
+                  style: GoogleFonts.manrope(
+                    color: primary,
+                    fontSize: AppTextSize.caption,
+                  ),
                 ),
               ],
             ),
@@ -124,7 +127,10 @@ class _AppCepFieldState extends State<AppCepField> {
             padding: const EdgeInsets.only(top: 4),
             child: Text(
               error,
-              style: GoogleFonts.manrope(color: AppColors.danger, fontSize: 11),
+              style: GoogleFonts.manrope(
+                color: AppColors.danger,
+                fontSize: AppTextSize.caption,
+              ),
             ),
           ),
       ],

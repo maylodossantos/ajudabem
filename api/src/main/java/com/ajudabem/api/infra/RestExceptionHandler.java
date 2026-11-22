@@ -20,6 +20,7 @@ import com.ajudabem.api.exceptions.CpfAlreadyExistsException;
 import com.ajudabem.api.exceptions.EmailAlreadyExistsException;
 import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.exceptions.HelpPointNotFoundException;
+import com.ajudabem.api.exceptions.InvalidCareActionException;
 import com.ajudabem.api.exceptions.InvalidDocumentFileException;
 import com.ajudabem.api.exceptions.MissingOrganizationDocumentsException;
 import com.ajudabem.api.exceptions.InvalidPasswordException;
@@ -30,6 +31,7 @@ import com.ajudabem.api.exceptions.NewsNotFoundException;
 import com.ajudabem.api.exceptions.OrganizationAlreadySubmittedException;
 import com.ajudabem.api.exceptions.OrganizationDocumentNotFoundException;
 import com.ajudabem.api.exceptions.OrganizationNotFoundException;
+import com.ajudabem.api.exceptions.OrganizationNotApprovedException;
 import com.ajudabem.api.exceptions.OrganizationNotPendingException;
 import com.ajudabem.api.exceptions.OrganizationResubmissionTooSoonException;
 import com.ajudabem.api.exceptions.PasswordMismatchException;
@@ -103,6 +105,7 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
             OrganizationAlreadySubmittedException.class,
             OrganizationResubmissionTooSoonException.class,
             OrganizationNotPendingException.class,
+            OrganizationNotApprovedException.class,
             UserAlreadyDeletedException.class
     })
     public ResponseEntity<ErrorResponseDTO> conflictHandler(RuntimeException exception) {
@@ -112,7 +115,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler({
             PasswordMismatchException.class,
             InvalidDocumentFileException.class,
-            MissingOrganizationDocumentsException.class
+            MissingOrganizationDocumentsException.class,
+            InvalidCareActionException.class
     })
     public ResponseEntity<ErrorResponseDTO> badRequestHandler(RuntimeException exception) {
         return error(HttpStatus.BAD_REQUEST, exception);

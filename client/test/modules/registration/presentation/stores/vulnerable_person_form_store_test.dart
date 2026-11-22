@@ -71,6 +71,49 @@ void main() {
     expect(repository.receivedParams?.country, 'Brasil');
   });
 
+  test('an unidentified person needs no name, age or sex', () async {
+    final repository = _FakeAssistedPersonRepository();
+    final store = _store(repository);
+    _fillRequiredFields(store);
+    store
+      ..setHasPersonalInformation(false)
+      ..setName('')
+      ..setAge('');
+
+    expect(store.asksIdentity, isFalse);
+    expect(store.canSubmit, isTrue);
+
+    await store.submit('jwt-token');
+
+    expect(repository.receivedParams?.identified, isFalse);
+    expect(repository.receivedParams?.fullName, isEmpty);
+    expect(repository.receivedParams?.age, isNull);
+    expect(repository.receivedParams?.gender, isNull);
+  });
+
+  test('without a fixed address it asks for the approximate place', () async {
+    final repository = _FakeAssistedPersonRepository();
+    final store = _store(repository);
+    _fillRequiredFields(store);
+    store.setHasFixedAddress(false);
+
+    expect(store.asksFixedAddress, isFalse);
+    expect(store.canSubmit, isFalse);
+
+    store.setLocationDescription('Embaixo da marquise da rodoviária');
+    expect(store.canSubmit, isTrue);
+
+    await store.submit('jwt-token');
+
+    expect(repository.receivedParams?.street, isEmpty);
+    expect(repository.receivedParams?.zipCode, isEmpty);
+    expect(repository.receivedParams?.city, isNotEmpty);
+    expect(
+      repository.receivedParams?.locationDescription,
+      'Embaixo da marquise da rodoviária',
+    );
+  });
+
   test('updates an existing registered person', () async {
     final repository = _FakeAssistedPersonRepository();
     final store = _store(repository);

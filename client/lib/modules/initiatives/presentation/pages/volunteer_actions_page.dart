@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
-import '../../../../core/widgets/app_search_field.dart';
+import '../../../../core/widgets/app_section_title.dart';
+import '../../../../core/widgets/app_status_view.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/campaign.dart';
 import '../../domain/entities/volunteer_action.dart';
@@ -26,7 +29,6 @@ class VolunteerActionsPage extends StatefulWidget {
 
 class _VolunteerActionsPageState extends State<VolunteerActionsPage> {
   late final OpenActionsStore _store;
-  final _search = TextEditingController();
 
   String? get _token => widget.token ?? Modular.get<LoginStore>().authToken;
 
@@ -35,12 +37,6 @@ class _VolunteerActionsPageState extends State<VolunteerActionsPage> {
     super.initState();
     _store = widget.store ?? Modular.get<OpenActionsStore>();
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
-  }
-
-  @override
-  void dispose() {
-    _search.dispose();
-    super.dispose();
   }
 
   Future<void> _load() async {
@@ -82,11 +78,23 @@ class _VolunteerActionsPageState extends State<VolunteerActionsPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-              child: AppSearchField(
-                controller: _search,
-                hintText: 'Nome, necessidade, região',
-                onSearch: () => _store.setSearch(_search.text),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppSectionTitle('Ações voluntárias'),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    'Escolha uma ação e candidate-se. A ONG confirma a sua '
+                    'participação.',
+                    style: GoogleFonts.manrope(
+                      color: AppColors.textSecondary,
+                      fontSize: AppTextSize.small,
+                      height: 1.4,
+                      letterSpacing: 0,
+                    ),
+                  ),
+                ],
               ),
             ),
             Expanded(
@@ -95,6 +103,17 @@ class _VolunteerActionsPageState extends State<VolunteerActionsPage> {
                 isLoading: _store.isLoading,
                 errorMessage: _store.errorMessage,
                 emptyMessage: 'Nenhuma ação voluntária aberta no momento.',
+                emptyView: const AppStatusView(
+                  illustration: Image(
+                    image: AssetImage(
+                      'assets/illustrations/empty_volunteer_actions.png',
+                    ),
+                  ),
+                  title: 'Nenhuma ação voluntária aberta no momento.',
+                  message:
+                      'Volte mais tarde e veja se surgiram novas '
+                      'oportunidades para ajudar.',
+                ),
                 onRefresh: _load,
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                 itemBuilder: (_, action) => OpenActionCard(

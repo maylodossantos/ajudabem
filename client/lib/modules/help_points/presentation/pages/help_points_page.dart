@@ -1,27 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_info_banner.dart';
-import '../../../../core/widgets/app_main_navigation.dart';
-import '../../../../core/widgets/app_square_icon_button.dart';
-import '../../../../core/widgets/auth_app_bar.dart';
+import '../../../../core/widgets/app_map.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
+import '../../../../core/widgets/app_floating_pill.dart';
 import '../../../profile/presentation/stores/profile_store.dart';
 import '../../domain/entities/help_point.dart';
 import '../../domain/entities/help_point_filter.dart';
 import '../stores/help_points_store.dart';
 import '../widgets/help_point_widgets.dart';
+import '../widgets/help_points_map.dart';
 
 class HelpPointsPage extends StatefulWidget {
-  const HelpPointsPage({super.key, this.store, this.canManage});
+  const HelpPointsPage({
+    super.key,
+    this.store,
+    this.canManage,
+    this.showTiles = true,
+  });
 
   final HelpPointsStore? store;
   final bool? canManage;
+  final bool showTiles;
 
   @override
   State<HelpPointsPage> createState() => _HelpPointsPageState();
@@ -29,6 +35,7 @@ class HelpPointsPage extends StatefulWidget {
 
 class _HelpPointsPageState extends State<HelpPointsPage> {
   late final HelpPointsStore _store;
+  bool _showList = false;
 
   @override
   void initState() {
@@ -68,215 +75,138 @@ class _HelpPointsPageState extends State<HelpPointsPage> {
     }
   }
 
+  Widget _viewToggle() => AppFloatingPill(
+    key: const Key('help_points_view_toggle'),
+    icon: _showList ? Icons.map_outlined : Icons.format_list_bulleted,
+    label: _showList ? 'Ver mapa' : 'Ver lista',
+    onTap: () => setState(() => _showList = !_showList),
+  );
+
+  Widget _addButton() => AppMapButton(
+    key: const Key('help_points_add_button'),
+    icon: Icons.add,
+    tooltip: 'Cadastrar ponto de ajuda',
+    onTap: _create,
+  );
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const AuthAppBar(),
-      bottomNavigationBar: const AppMainNavigation(
-        currentItem: AppNavigationItem.help,
-      ),
-      body: SafeArea(
-        top: false,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Observer(
-              builder: (_) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Pontos de ajuda',
-                            style: GoogleFonts.manrope(
-                              color: const Color(0xFF232323),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0,
-                            ),
-                          ),
-                        ),
-                        if (_canManage) ...[
-                          AppSquareIconButton(
-                            key: const Key('help_points_add_button'),
-                            icon: Icons.add,
-                            tooltip: 'Cadastrar ponto de ajuda',
-                            onPressed: _create,
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-                        AppSquareIconButton(
-                          icon: _store.showAsGrid
-                              ? Icons.view_agenda_outlined
-                              : Icons.grid_view,
-                          tooltip: _store.showAsGrid
-                              ? 'Mostrar em lista'
-                              : 'Mostrar em grade',
-                          onPressed: _store.toggleView,
-                        ),
-                        const SizedBox(width: 8),
-                        AppSquareIconButton(
-                          key: const Key('help_points_filter_button'),
-                          icon: Icons.tune,
-                          tooltip: 'Filtros',
-                          color: _store.filter.isEmpty ? null : Colors.white,
-                          background: _store.filter.isEmpty
-                              ? Colors.white
-                              : Theme.of(context).colorScheme.primary,
-                          onPressed: _openFilters,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _QuickFilters(store: _store),
-                  if (_store.isLocating)
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(20, 10, 20, 0),
-                      child: LinearProgressIndicator(minHeight: 2),
-                    ),
-                  if (_store.locationError case final error?
-                      when _store.filter.needsLocation)
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 10, 20, 0),
-                      child: AppInfoBanner(
-                        icon: Icons.location_off_outlined,
-                        message: error,
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: AppAsyncList<HelpPoint>(
-                      items: _store.visiblePoints,
+    return AppPageScaffold(
+      currentItem: AppNavigationItem.help,
+      maxWidth: double.infinity,
+      showBackButton: false,
+      floatingActionButton: _showList && _canManage ? _addButton() : null,
+      body: Observer(
+        builder: (_) => Stack(
+          fit: StackFit.expand,
+          children: [
+            Offstage(
+              offstage: _showList,
+              child: TickerMode(
+                enabled: !_showList,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    HelpPointsMap(
+                      points: _store.mappedPoints,
                       isLoading: _store.isLoading,
-                      errorMessage: _store.errorMessage,
-                      emptyMessage: _store.points.isEmpty
-                          ? 'Nenhum ponto de ajuda cadastrado.'
-                          : 'Nenhum ponto de ajuda com esses filtros.',
-                      onRefresh: _store.load,
-                      columns: _store.showAsGrid ? 2 : 1,
-                      gridItemHeight: 215,
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                      itemBuilder: (_, point) => HelpPointCard(
-                        point: point,
-                        horizontal: !_store.showAsGrid,
-                        distanceKm: _store.distanceKmTo(point),
-                        onTap: () => _open(point),
-                      ),
+                      showTiles: widget.showTiles,
+                      now: _store.now,
+                      distanceKmTo: _store.distanceKmTo,
+                      onOpen: _open,
+                      actions: [if (_canManage) _addButton()],
+                      bottomCenter: _viewToggle(),
                     ),
-                  ),
-                ],
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: _topControls(elevated: true),
+                    ),
+                  ],
+                ),
               ),
             ),
+            if (_showList)
+              ColoredBox(
+                color: AppColors.background,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _topControls(elevated: false),
+                    Expanded(child: _list()),
+                  ],
+                ),
+              ),
+            if (_showList)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 16,
+                child: Center(child: _viewToggle()),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _topControls({required bool elevated}) {
+    return Align(
+      alignment: Alignment.topCenter,
+      heightFactor: 1,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 520),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppFilterBar(
+                activeLabels: _store.filter.activeLabels,
+                onOpen: _openFilters,
+                elevated: elevated,
+              ),
+              if (_store.isLocating)
+                const Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: LinearProgressIndicator(minHeight: 2),
+                ),
+              if (_store.locationError case final error?
+                  when _store.filter.needsLocation)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: AppInfoBanner(
+                    icon: Icons.location_off_outlined,
+                    message: error,
+                  ),
+                ),
+            ],
           ),
         ),
       ),
     );
   }
-}
 
-class _QuickFilters extends StatelessWidget {
-  const _QuickFilters({required this.store});
-
-  final HelpPointsStore store;
-
-  static const _shelter = {AssistanceType.shelter, AssistanceType.overnight};
-  static const _health = {AssistanceType.medical, AssistanceType.psychological};
-
-  @override
-  Widget build(BuildContext context) {
-    return Observer(builder: (_) => _chips());
-  }
-
-  Widget _chips() {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Row(
-        children: [
-          if (store.options.hasLocations)
-            _QuickChip(
-              label: 'Próximos de você',
-              selected: store.isNearbyActive,
-              onTap: store.toggleNearby,
-            ),
-          if (store.options.offersAny(_shelter))
-            _QuickChip(
-              label: 'Albergue',
-              selected: store.hasTypes(_shelter),
-              onTap: () => store.toggleTypes(_shelter),
-            ),
-          if (store.options.organizationTypes.contains(
-            HelpPointOrganizationType.ngo,
-          ))
-            _QuickChip(
-              label: 'ONG’s',
-              selected: store.hasOrganizationType(
-                HelpPointOrganizationType.ngo,
-              ),
-              onTap: () =>
-                  store.toggleOrganizationType(HelpPointOrganizationType.ngo),
-            ),
-          if (store.options.offersAny(_health))
-            _QuickChip(
-              label: 'Saúde',
-              selected: store.hasTypes(_health),
-              onTap: () => store.toggleTypes(_health),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-class _QuickChip extends StatelessWidget {
-  const _QuickChip({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10, bottom: 4),
-      child: Material(
-        color: selected ? const Color(0xFF1E9E47) : AppColors.success,
-        elevation: 2,
-        shape: const StadiumBorder(),
-        child: InkWell(
-          onTap: onTap,
-          customBorder: const StadiumBorder(),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 7, 16, 7),
-            child: Row(
-              children: [
-                Icon(
-                  selected ? Icons.radio_button_checked : Icons.circle,
-                  color: Colors.white,
-                  size: 22,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  label,
-                  style: GoogleFonts.manrope(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ],
-            ),
+  Widget _list() {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 520),
+        child: AppAsyncList<HelpPoint>(
+          items: _store.visiblePoints,
+          isLoading: _store.isLoading,
+          errorMessage: _store.errorMessage,
+          emptyMessage: _store.points.isEmpty
+              ? 'Nenhum ponto de ajuda cadastrado.'
+              : 'Nenhum ponto de ajuda com esses filtros.',
+          onRefresh: _store.load,
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 84),
+          itemBuilder: (_, point) => HelpPointCard(
+            key: Key('help_point_list_${point.id}'),
+            point: point,
+            horizontal: true,
+            distanceKm: _store.distanceKmTo(point),
+            onTap: () => _open(point),
           ),
         ),
       ),

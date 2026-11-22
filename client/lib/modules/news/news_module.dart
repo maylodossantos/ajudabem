@@ -11,6 +11,7 @@ import 'data/repositories/news_repository_impl.dart';
 import 'domain/entities/news_article.dart';
 import 'domain/repositories/news_repository.dart';
 import 'presentation/pages/news_detail_page.dart';
+import 'presentation/pages/home_page.dart';
 import 'presentation/pages/news_form_page.dart';
 import 'presentation/pages/news_list_page.dart';
 import 'presentation/pages/news_manage_detail_page.dart';
@@ -37,7 +38,11 @@ class NewsModule extends Module {
       AppRoutes.news,
       transition: TransitionType.custom,
       customTransition: TabTransition.slide,
-      child: (_) => const NewsListPage(),
+      child: (_) => const HomePage(),
+    );
+    r.child(
+      AppRoutes.newsAll,
+      child: (_) => NewsListPage(showCampaigns: Modular.args.data == true),
     );
     r.child(
       AppRoutes.newsDetail,

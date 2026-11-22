@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/formatters/cnpj_input_formatter.dart';
 import '../../../../core/formatters/date_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
@@ -81,8 +82,8 @@ class _OngReviewListPageState extends State<OngReviewListPage> {
   @override
   Widget build(BuildContext context) {
     final titleStyle = GoogleFonts.manrope(
-      color: const Color(0xFF232323),
-      fontSize: 18,
+      color: AppColors.textStrong,
+      fontSize: AppTextSize.heading,
       fontWeight: FontWeight.w800,
       letterSpacing: 0,
     );
@@ -110,8 +111,8 @@ class _OngReviewListPageState extends State<OngReviewListPage> {
                     'Analise e aprove as solicitações de cadastro enviadas '
                     'pelas organizações.',
                     style: GoogleFonts.manrope(
-                      color: const Color(0xFF232323),
-                      fontSize: 13,
+                      color: AppColors.textStrong,
+                      fontSize: AppTextSize.small,
                       letterSpacing: 0,
                     ),
                   ),
@@ -179,10 +180,10 @@ class _StatusFilters extends StatelessWidget {
           for (final (status, label) in _options) ...[
             Material(
               color: status == selected ? primary : Colors.white,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               child: InkWell(
                 onTap: () => onSelected(status),
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 14,
@@ -192,7 +193,7 @@ class _StatusFilters extends StatelessWidget {
                     label,
                     style: GoogleFonts.manrope(
                       color: status == selected ? Colors.white : primary,
-                      fontSize: 15,
+                      fontSize: AppTextSize.title,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0,
                     ),
@@ -218,8 +219,8 @@ class _RequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final primary = Theme.of(context).colorScheme.primary;
     final detailStyle = GoogleFonts.manrope(
-      color: const Color(0xFF454545),
-      fontSize: 13,
+      color: AppColors.textBody,
+      fontSize: AppTextSize.small,
       letterSpacing: 0,
     );
     final submittedAt = organization.submittedAt;
@@ -228,12 +229,12 @@ class _RequestCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         child: Container(
           padding: const EdgeInsets.fromLTRB(14, 12, 12, 10),
           decoration: BoxDecoration(
             border: Border.all(color: primary),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -247,7 +248,7 @@ class _RequestCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.manrope(
                         color: primary,
-                        fontSize: 16,
+                        fontSize: AppTextSize.title,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0,
                       ),
@@ -280,7 +281,7 @@ class _RequestCard extends StatelessWidget {
                       'Ver solicitação',
                       style: GoogleFonts.manrope(
                         color: primary,
-                        fontSize: 15,
+                        fontSize: AppTextSize.title,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0,
                       ),

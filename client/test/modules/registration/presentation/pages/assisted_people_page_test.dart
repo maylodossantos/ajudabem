@@ -31,7 +31,7 @@ void main() {
       find.byKey(const Key('assisted_people_bottom_navigation')),
       findsOneWidget,
     );
-    expect(find.byTooltip('Opções do cadastro'), findsNWidgets(4));
+    expect(find.byTooltip('Excluir cadastro'), findsNWidgets(4));
   });
 }
 

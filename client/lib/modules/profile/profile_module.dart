@@ -4,6 +4,7 @@ import '../../core/core_module.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/routes/tab_transition.dart';
 import '../../core/routes/auth_guard.dart';
+import '../organization/organization_data_module.dart';
 import 'presentation/pages/needs_admin_page.dart';
 import 'presentation/pages/about_config_page.dart';
 import 'presentation/pages/delete_account_confirm_page.dart';
@@ -13,7 +14,7 @@ import 'presentation/stores/profile_edit_store.dart';
 
 class ProfileModule extends Module {
   @override
-  List<Module> get imports => [CoreModule()];
+  List<Module> get imports => [CoreModule(), OrganizationDataModule()];
 
   @override
   void binds(Injector i) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/app_status_pill.dart';
+import '../../../../core/widgets/app_badge.dart';
 import '../../domain/entities/organization.dart';
 
 class OrganizationStatusPill extends StatelessWidget {
@@ -11,22 +10,14 @@ class OrganizationStatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, background) = switch (status) {
-      OrganizationStatus.pending => (
-        AppColors.warningText,
-        AppColors.warningSoft,
-      ),
-      OrganizationStatus.approved => (
-        AppColors.successText,
-        AppColors.successSoft,
-      ),
-      OrganizationStatus.rejected => (AppColors.danger, AppColors.dangerSoft),
-    };
-
-    return AppStatusPill(
+    return AppBadge(
       label: status.label,
-      color: color,
-      background: background,
+      dot: true,
+      tone: switch (status) {
+        OrganizationStatus.pending => AppTone.warning,
+        OrganizationStatus.approved => AppTone.success,
+        OrganizationStatus.rejected => AppTone.danger,
+      },
     );
   }
 }

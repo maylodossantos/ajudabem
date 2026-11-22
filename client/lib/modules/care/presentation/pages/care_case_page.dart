@@ -6,15 +6,14 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/formatters/date_input_formatter.dart';
 import '../../../../core/geo/geo_point.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/app_card_actions.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_info_card.dart';
-import '../../../../core/widgets/app_main_navigation.dart';
-import '../../../../core/widgets/app_status_pill.dart';
-import '../../../../core/widgets/auth_app_bar.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/care_case.dart';
 import '../stores/care_case_store.dart';
@@ -80,124 +79,121 @@ class _CareCasePageState extends State<CareCasePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const AuthAppBar(showBackButton: true),
-      bottomNavigationBar: const AppMainNavigation(
-        currentItem: AppNavigationItem.ong,
+    return AppPageScaffold(
+      currentItem: AppNavigationItem.ong,
+      bottomBar: Observer(
+        builder: (_) => _actions() ?? const SizedBox.shrink(),
       ),
-      body: SafeArea(
-        top: false,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Observer(
-              builder: (_) {
-                final detail = _store.detail;
-                if (detail == null) {
-                  final error = _store.errorMessage;
-                  return error != null && !_store.isLoading
-                      ? AppErrorView(message: error, onRetry: _load)
-                      : const Center(child: CircularProgressIndicator());
-                }
+      body: Observer(
+        builder: (_) {
+          final detail = _store.detail;
+          if (detail == null) {
+            final error = _store.errorMessage;
+            return error != null && !_store.isLoading
+                ? AppErrorView(message: error, onRetry: _load)
+                : const Center(child: CircularProgressIndicator());
+          }
 
-                final person = detail.person;
-                final nominated = person.status == CareStatus.nominated;
-                return RefreshIndicator(
-                  onRefresh: _load,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        CareCaseHeader(person: person),
-                        const SizedBox(height: 14),
-                        if (!nominated) ...[
-                          CareStatusBanner(status: person.status),
-                          if (person.finishReason case final reason?) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              'Resultado: ${reason.label}',
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.manrope(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 14),
-                        ],
-                        _PersonInfo(person: person),
-                        if (detail.triage case final triage?) ...[
-                          const SizedBox(height: 14),
-                          _TriageCard(urgency: person.urgency, triage: triage),
-                        ],
-                        const SizedBox(height: 14),
-                        AppInfoCard(
-                          title: 'Necessidades',
-                          child: NeedChips(needs: person.needs),
+          final person = detail.person;
+          final nominated = person.status == CareStatus.nominated;
+          return RefreshIndicator(
+            onRefresh: _load,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CareCaseHeader(person: person),
+                  const SizedBox(height: 14),
+                  if (!nominated) ...[
+                    CareStatusBanner(status: person.status),
+                    if (person.finishReason case final reason?) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        'Resultado: ${reason.label}',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.manrope(
+                          fontSize: AppTextSize.body,
+                          fontWeight: FontWeight.w700,
                         ),
-                        if (AppBulletList.linesOf(person.notes) case final notes
-                            when notes.isNotEmpty) ...[
-                          const SizedBox(height: 14),
-                          AppInfoCard(
-                            title: 'Observações',
-                            child: AppBulletList(lines: notes),
-                          ),
-                        ],
-                        if (detail.referrals.isNotEmpty) ...[
-                          const SizedBox(height: 14),
-                          AppInfoCard(
-                            title: 'Encaminhamentos',
-                            child: AppBulletList(lines: detail.referrals),
-                          ),
-                        ],
-                        if (!nominated) ...[
-                          const SizedBox(height: 14),
-                          AppInfoCard(
-                            title: 'Histórico',
-                            child: detail.records.isEmpty
-                                ? Text(
-                                    'Nenhum andamento registrado ainda.',
-                                    style: GoogleFonts.manrope(fontSize: 13),
-                                  )
-                                : Column(
-                                    children: [
-                                      for (final record
-                                          in detail.records.reversed)
-                                        _RecordTile(record: record),
-                                    ],
-                                  ),
-                          ),
-                        ],
-                        const SizedBox(height: 20),
-                        if (nominated)
-                          AppCardActions(
-                            secondaryLabel: 'Voltar',
-                            onSecondary: () => Navigator.of(context).pop(),
-                            primaryLabel: 'Ajudar',
-                            primaryKey: const Key('care_case_assume_button'),
-                            isLoading: _store.isAssuming,
-                            onPrimary: _assume,
-                          )
-                        else if (person.status == CareStatus.inCare)
-                          AppPrimaryButton(
-                            key: const Key('care_case_add_record_button'),
-                            label: 'Adicionar Andamento',
-                            onPressed: () => _addRecord(detail),
-                          ),
-                      ],
-                    ),
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                  ],
+                  _PersonInfo(person: person),
+                  if (detail.triage case final triage?) ...[
+                    const SizedBox(height: 14),
+                    _TriageCard(urgency: person.urgency, triage: triage),
+                  ],
+                  const SizedBox(height: 14),
+                  AppInfoCard(
+                    title: 'Necessidades',
+                    child: NeedChips(needs: person.needs),
                   ),
-                );
-              },
+                  if (AppBulletList.linesOf(person.notes) case final notes
+                      when notes.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    AppInfoCard(
+                      title: 'Observações',
+                      child: AppBulletList(lines: notes),
+                    ),
+                  ],
+                  if (detail.referrals.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    AppInfoCard(
+                      title: 'Encaminhamentos',
+                      child: AppBulletList(lines: detail.referrals),
+                    ),
+                  ],
+                  if (!nominated) ...[
+                    const SizedBox(height: 14),
+                    AppInfoCard(
+                      title: 'Histórico',
+                      child: detail.records.isEmpty
+                          ? Text(
+                              'Nenhum andamento registrado ainda.',
+                              style: GoogleFonts.manrope(
+                                fontSize: AppTextSize.small,
+                              ),
+                            )
+                          : Column(
+                              children: [
+                                for (final record in detail.records.reversed)
+                                  _RecordTile(record: record),
+                              ],
+                            ),
+                    ),
+                  ],
+                ],
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
+  }
+
+  Widget? _actions() {
+    final detail = _store.detail;
+    if (detail == null) return null;
+
+    return switch (detail.person.status) {
+      CareStatus.nominated => AppBottomActions(
+        secondaryLabel: 'Voltar',
+        onSecondary: () => Navigator.of(context).pop(),
+        primaryLabel: 'Assumir atendimento',
+        primaryKey: const Key('care_case_assume_button'),
+        isLoading: _store.isAssuming,
+        onPrimary: _assume,
+      ),
+      CareStatus.inCare => AppPrimaryButton(
+        key: const Key('care_case_add_record_button'),
+        label: 'Adicionar andamento',
+        onPressed: () => _addRecord(detail),
+      ),
+      CareStatus.finished => null,
+    };
   }
 }
 
@@ -261,22 +257,22 @@ class _RecordTile extends StatelessWidget {
           tilePadding: EdgeInsets.zero,
           childrenPadding: const EdgeInsets.only(left: 24, bottom: 8),
           expandedCrossAxisAlignment: CrossAxisAlignment.start,
-          leading: Icon(Icons.circle, size: 14, color: record.status.dot),
-          title: Row(
+          title: Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Expanded(
-                child: Text(
-                  'Andamento #${record.number}',
-                  style: GoogleFonts.manrope(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
+              Text(
+                'Andamento #${record.number}',
+                style: GoogleFonts.manrope(
+                  fontSize: AppTextSize.title,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
-              AppStatusPill(
+              AppBadge(
                 label: record.status.label,
-                color: const Color(0xFF232323),
-                background: record.status.background,
+                tone: record.status.tone,
+                dot: true,
               ),
             ],
           ),
@@ -286,8 +282,8 @@ class _RecordTile extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.manrope(
-              color: const Color(0xFF454545),
-              fontSize: 13,
+              color: AppColors.textBody,
+              fontSize: AppTextSize.small,
             ),
           ),
           children: [
@@ -304,7 +300,7 @@ class _RecordTile extends StatelessWidget {
                       TextSpan(text: value),
                     ],
                   ),
-                  style: GoogleFonts.manrope(fontSize: 13.5),
+                  style: GoogleFonts.manrope(fontSize: AppTextSize.small),
                 ),
               ),
           ],
@@ -324,7 +320,7 @@ class _TriageCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final triagedAt = triage.triagedAt;
     final source = [
-      'Classificado por IA (${triage.model})',
+      'Classificado por IA',
       if (triagedAt != null) DateInputFormatter.displayWithTime(triagedAt),
     ].join(' em ');
 
@@ -335,14 +331,14 @@ class _TriageCard extends StatelessWidget {
         children: [
           Text(
             triage.justification,
-            style: GoogleFonts.manrope(fontSize: 14, height: 1.4),
+            style: GoogleFonts.manrope(fontSize: AppTextSize.body, height: 1.4),
           ),
           const SizedBox(height: 8),
           Text(
             source,
             style: GoogleFonts.manrope(
-              color: const Color(0xFFA2A2A2),
-              fontSize: 12,
+              color: AppColors.textMuted,
+              fontSize: AppTextSize.caption,
             ),
           ),
         ],

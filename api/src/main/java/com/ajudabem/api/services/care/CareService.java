@@ -14,11 +14,13 @@ import com.ajudabem.api.dto.care.RiskTriageResponseDTO;
 import com.ajudabem.api.exceptions.AssistedPersonNotFoundException;
 import com.ajudabem.api.exceptions.CaseAlreadyAssumedException;
 import com.ajudabem.api.exceptions.CaseClosedException;
+import com.ajudabem.api.exceptions.InvalidCareActionException;
 import com.ajudabem.api.exceptions.ForbiddenActionException;
 import com.ajudabem.api.mappers.CareMapper;
 import com.ajudabem.api.repositories.AssistedPersonRepository;
 import com.ajudabem.api.repositories.CareRecordRepository;
 import com.ajudabem.api.repositories.RiskTriageLogRepository;
+import com.ajudabem.api.services.assisted_person.TriageJustification;
 import com.ajudabem.api.repositories.TagRepository;
 import com.ajudabem.api.domains.notification.NotificationType;
 import com.ajudabem.api.services.notification.NotificationService;
@@ -61,6 +63,7 @@ public class CareService {
 
         return personRepository.findAllByCareStatusInAndLatitudeIsNotNull(
                         List.of(CareStatus.NOMINATED, CareStatus.IN_CARE)).stream()
+                .filter(person -> OrganizationAccessService.canSeeCase(user, origin, person))
                 .map(person -> toCase(person, origin))
                 .toList();
     }
@@ -83,7 +86,12 @@ public class CareService {
     public CareCaseDetailResponseDTO get(Long personId) {
         User user = currentUserService.get();
         requireCareTeam(user);
-        return detailOf(findPerson(personId), organizationOf(user));
+        Organization origin = organizationOf(user);
+        AssistedPerson person = findPerson(personId);
+        if (!OrganizationAccessService.canSeeCase(user, origin, person)) {
+            throw new ForbiddenActionException("Only the organization in charge can see this case");
+        }
+        return detailOf(person, origin);
     }
 
     @Transactional
@@ -119,10 +127,17 @@ public class CareService {
             throw new CaseClosedException("Case already finished");
         }
 
+        int number = recordRepository.countByAssistedPerson(person) + 1;
+        if (!dto.status().allowedAt(number)) {
+            throw new InvalidCareActionException(number == 1
+                    ? "This action is not available for the first record"
+                    : "This action is only available for the first record");
+        }
+
         CareRecord record = new CareRecord();
         record.setAssistedPerson(person);
         record.setAuthor(user);
-        record.setNumber(recordRepository.countByAssistedPerson(person) + 1);
+        record.setNumber(number);
         record.setStatus(dto.status());
         record.setOccurredAt(dto.occurredAt());
         record.setSituation(dto.situation());
@@ -160,7 +175,8 @@ public class CareService {
                         .toList(),
                 person.getRiskLevel() == null ? null : triageLogRepository
                         .findFirstByAssistedPersonOrderByCreatedAtDesc(person)
-                        .map(entry -> new RiskTriageResponseDTO(entry.getRiskLevel(), entry.getJustification(),
+                        .map(entry -> new RiskTriageResponseDTO(entry.getRiskLevel(),
+                                TriageJustification.clean(entry.getJustification()),
                                 entry.getModel(), entry.getCreatedAt()))
                         .orElse(null));
     }

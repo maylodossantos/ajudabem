@@ -15,7 +15,10 @@ class AssistedPerson {
     this.state = '',
     this.zipCode = '',
     this.country = '',
+    this.locationDescription = '',
   });
+
+  static const unidentifiedName = 'Pessoa não identificada';
 
   final int id;
   final String fullName;
@@ -29,6 +32,7 @@ class AssistedPerson {
   final String street;
   final String number;
   final String neighborhood;
+  final String locationDescription;
   final String city;
   final String state;
   final String zipCode;

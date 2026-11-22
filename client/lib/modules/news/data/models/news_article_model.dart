@@ -1,4 +1,5 @@
 import '../../domain/entities/news_article.dart';
+import '../../domain/entities/news_category.dart';
 
 class NewsArticleModel {
   const NewsArticleModel({
@@ -11,6 +12,7 @@ class NewsArticleModel {
     this.city = '',
     this.state = '',
     this.createdAt,
+    this.category = NewsCategory.other,
   });
 
   factory NewsArticleModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class NewsArticleModel {
       city: json['city'] as String? ?? '',
       state: json['state'] as String? ?? '',
       createdAt: createdAt is String ? DateTime.tryParse(createdAt) : null,
+      category: NewsCategory.fromApi(json['category'] as String?),
     );
   }
 
@@ -41,6 +44,7 @@ class NewsArticleModel {
   final String city;
   final String state;
   final DateTime? createdAt;
+  final NewsCategory category;
 
   NewsArticle toEntity() {
     return NewsArticle(
@@ -53,6 +57,7 @@ class NewsArticleModel {
       city: city,
       state: state,
       createdAt: createdAt,
+      category: category,
     );
   }
 }

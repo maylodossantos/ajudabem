@@ -4,6 +4,7 @@ import '../../../../core/errors/app_exception.dart';
 import '../../../../core/services/image_upload_service.dart';
 import '../../../../core/stores/image_upload_store.dart';
 import '../../domain/entities/news_article.dart';
+import '../../domain/entities/news_category.dart';
 import '../../domain/entities/news_form_params.dart';
 import '../../domain/repositories/news_repository.dart';
 
@@ -39,6 +40,9 @@ abstract class NewsFormStoreBase with Store {
   String state = 'PR';
 
   @observable
+  NewsCategory category = NewsCategory.other;
+
+  @observable
   bool isLoading = false;
 
   @observable
@@ -62,6 +66,7 @@ abstract class NewsFormStoreBase with Store {
     content = article.content;
     city = article.city;
     state = article.state.isEmpty ? 'PR' : article.state;
+    category = article.category;
     cover.setImageUrl(article.coverImage);
   }
 
@@ -81,6 +86,9 @@ abstract class NewsFormStoreBase with Store {
   void setState(String value) => state = value;
 
   @action
+  void setCategory(NewsCategory value) => category = value;
+
+  @action
   Future<bool> submit(String token) async {
     if (!canSubmit) {
       return false;
@@ -97,6 +105,7 @@ abstract class NewsFormStoreBase with Store {
         coverImage: cover.imageUrl,
         city: city,
         state: state,
+        category: category,
       );
 
       final id = articleId;

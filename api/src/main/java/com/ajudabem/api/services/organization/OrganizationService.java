@@ -8,6 +8,7 @@ import com.ajudabem.api.domains.organization.OrganizationStatus;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.domains.user.UserRole;
 import com.ajudabem.api.dto.organization.DocumentFileDTO;
+import com.ajudabem.api.dto.organization.OrganizationContactRequestDTO;
 import com.ajudabem.api.dto.organization.OrganizationRequestDTO;
 import com.ajudabem.api.dto.organization.OrganizationResponseDTO;
 import com.ajudabem.api.dto.organization.RejectOrganizationRequestDTO;
@@ -17,6 +18,7 @@ import com.ajudabem.api.exceptions.InvalidDocumentFileException;
 import com.ajudabem.api.exceptions.MissingOrganizationDocumentsException;
 import com.ajudabem.api.exceptions.OrganizationAlreadySubmittedException;
 import com.ajudabem.api.exceptions.OrganizationDocumentNotFoundException;
+import com.ajudabem.api.exceptions.OrganizationNotApprovedException;
 import com.ajudabem.api.exceptions.OrganizationNotFoundException;
 import com.ajudabem.api.exceptions.OrganizationNotPendingException;
 import com.ajudabem.api.exceptions.OrganizationResubmissionTooSoonException;
@@ -95,10 +97,7 @@ public class OrganizationService {
         organization.setCnpj(cnpj);
         organization.setState(dto.state().toUpperCase(Locale.ROOT));
         organization.setZipCode(Digits.only(dto.zipCode()));
-        var coordinates = geocodingService.locate(
-                dto.street(), dto.number(), dto.city(), organization.getState(), organization.getZipCode());
-        organization.setLatitude(coordinates.map(GeocodingService.Coordinates::latitude).orElse(null));
-        organization.setLongitude(coordinates.map(GeocodingService.Coordinates::longitude).orElse(null));
+        locate(organization);
         organization.setStatus(OrganizationStatus.PENDING);
         organization.setSubmittedAt(now);
         organization.setReviewedAt(null);
@@ -108,6 +107,27 @@ public class OrganizationService {
 
         repository.save(organization);
         files.forEach((type, file) -> storeDocument(organization, type, file, now));
+        return mapper.toResponse(organization);
+    }
+
+    @Transactional
+    public OrganizationResponseDTO updateContact(OrganizationContactRequestDTO dto) {
+        Organization organization = findByOwner(currentUserService.get());
+        if (organization.getStatus() != OrganizationStatus.APPROVED) {
+            throw new OrganizationNotApprovedException("Only approved organizations can update their contact");
+        }
+
+        organization.setStreet(dto.street());
+        organization.setNumber(dto.number());
+        organization.setNeighborhood(dto.neighborhood());
+        organization.setCity(dto.city());
+        organization.setState(dto.state().toUpperCase(Locale.ROOT));
+        organization.setZipCode(Digits.only(dto.zipCode()));
+        organization.setWebsite(dto.website());
+        organization.setInstagram(dto.instagram());
+        locate(organization);
+
+        repository.save(organization);
         return mapper.toResponse(organization);
     }
 
@@ -180,6 +200,13 @@ public class OrganizationService {
                 "A solicitação da " + organization.getTradeName() + " foi reprovada. Veja o motivo e reenvie.",
                 organization.getId());
         return mapper.toResponse(organization);
+    }
+
+    private void locate(Organization organization) {
+        var coordinates = geocodingService.locate(organization.getStreet(), organization.getNumber(),
+                organization.getCity(), organization.getState(), organization.getZipCode());
+        organization.setLatitude(coordinates.map(GeocodingService.Coordinates::latitude).orElse(null));
+        organization.setLongitude(coordinates.map(GeocodingService.Coordinates::longitude).orElse(null));
     }
 
     private Organization requireResubmittable(Organization organization) {

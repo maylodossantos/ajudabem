@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-import '../../../../core/constants/brazilian_states.dart';
 import '../../../../core/formatters/cnpj_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_button.dart';
-import '../../../../core/widgets/app_cep_field.dart';
 import '../../../../core/widgets/app_checkbox_tile.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_file_upload_tile.dart';
@@ -16,6 +14,7 @@ import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/organization.dart';
 import '../stores/organization_form_store.dart';
+import '../widgets/organization_widgets.dart';
 import '../widgets/step_dots.dart';
 
 class OngValidationFormPage extends StatefulWidget {
@@ -47,7 +46,7 @@ class _OngValidationFormPageState extends State<OngValidationFormPage> {
       _store.backToData();
       return;
     }
-    Navigator.maybePop(context);
+    Navigator.of(context).pop();
   }
 
   Future<void> _submit() async {
@@ -132,23 +131,23 @@ class _DataStep extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         AppLabeledField(
-          label: 'Razão Social:',
+          label: 'Razão social',
           required: true,
           initialValue: store.corporateName,
           onChanged: store.setCorporateName,
         ),
         _gap,
         AppLabeledField(
-          label: 'Nome Fantasia:',
+          label: 'Nome fantasia',
           required: true,
           initialValue: store.tradeName,
           onChanged: store.setTradeName,
         ),
         _gap,
         AppLabeledField(
-          label: 'CNPJ:',
+          label: 'CNPJ',
           required: true,
-          hintText: 'Ex.: 12.345.678/0001-90',
+          hintText: '12.345.678/0001-90',
           initialValue: store.cnpj,
           keyboardType: TextInputType.number,
           inputFormatters: [CnpjInputFormatter()],
@@ -156,7 +155,7 @@ class _DataStep extends StatelessWidget {
         ),
         _gap,
         AppLabeledDropdown<String>(
-          label: 'Área de atuação:',
+          label: 'Área de atuação',
           required: true,
           hintText: 'Selecione',
           value: store.activityArea,
@@ -165,88 +164,32 @@ class _DataStep extends StatelessWidget {
           onChanged: store.setActivityArea,
         ),
         _gap,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AppCepField(
-                key: const Key('ong_form_cep_field'),
-                initialValue: store.zipCode,
-                onChanged: store.setZipCode,
-                required: true,
-                onStreet: store.setStreet,
-                onNeighborhood: store.setNeighborhood,
-                onCity: store.setCity,
-                onState: store.setState,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppLabeledField(
-                label: 'Número:',
-                required: true,
-                initialValue: store.number,
-                onChanged: store.setNumber,
-              ),
-            ),
-          ],
-        ),
-        _gap,
-        AppLabeledField(
-          label: 'Endereço:',
-          required: true,
-          initialValue: store.street,
-          onChanged: store.setStreet,
-        ),
-        _gap,
-        AppLabeledField(
-          label: 'Bairro:',
-          initialValue: store.neighborhood,
-          onChanged: store.setNeighborhood,
-        ),
-        _gap,
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: AppLabeledField(
-                label: 'Cidade:',
-                required: true,
-                initialValue: store.city,
-                onChanged: store.setCity,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppLabeledDropdown<String>(
-                label: 'Estado:',
-                required: true,
-                hintText: 'Selecione',
-                value: store.state,
-                options: BrazilianStates.codes,
-                labelOf: BrazilianStates.nameOf,
-                onChanged: store.setState,
-              ),
-            ),
-          ],
-        ),
-        _gap,
-        AppLabeledField(
-          label: 'Site:',
-          initialValue: store.website,
-          keyboardType: TextInputType.url,
-          onChanged: store.setWebsite,
-        ),
-        _gap,
-        AppLabeledField(
-          label: 'Instagram:',
-          initialValue: store.instagram,
-          onChanged: store.setInstagram,
+        OrganizationAddressFields(
+          values: OrganizationAddressValues(
+            zipCode: store.zipCode,
+            number: store.number,
+            street: store.street,
+            neighborhood: store.neighborhood,
+            city: store.city,
+            state: store.state,
+            website: store.website,
+            instagram: store.instagram,
+          ),
+          callbacks: OrganizationAddressCallbacks(
+            onZipCode: store.setZipCode,
+            onNumber: store.setNumber,
+            onStreet: store.setStreet,
+            onNeighborhood: store.setNeighborhood,
+            onCity: store.setCity,
+            onState: store.setState,
+            onWebsite: store.setWebsite,
+            onInstagram: store.setInstagram,
+          ),
         ),
         const SizedBox(height: 28),
         AppPrimaryButton(
           key: const Key('ong_form_continue_button'),
-          label: 'Continuar Cadastro',
+          label: 'Continuar',
           onPressed: store.canContinue ? store.goToDocuments : null,
         ),
       ],
@@ -309,7 +252,7 @@ class _DocumentsStep extends StatelessWidget {
         const SizedBox(height: 24),
         AppPrimaryButton(
           key: const Key('ong_form_submit_button'),
-          label: 'Concluir Cadastro',
+          label: 'Enviar para análise',
           isLoading: store.isLoading,
           onPressed: store.canSubmit ? onSubmit : null,
         ),
@@ -350,7 +293,7 @@ class _DocumentFieldState extends State<_DocumentField> {
 
         return AppFileUploadTile(
           key: Key('ong_document_${widget.type.apiValue}'),
-          label: '${widget.type.label}:',
+          label: widget.type.label,
           isDone: picked != null || sentBefore != null,
           isLoading: _isPicking,
           doneText: picked?.name ?? 'Documento enviado para análise',

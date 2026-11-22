@@ -60,6 +60,28 @@ public class GeocodingService {
         }
     }
 
+    public Optional<Coordinates> search(String query) {
+        try {
+            Place[] places = nominatim.get()
+                    .uri(uri -> uri.path("/search")
+                            .queryParam("format", "json")
+                            .queryParam("limit", 1)
+                            .queryParam("countrycodes", "br")
+                            .queryParam("q", query)
+                            .build())
+                    .retrieve()
+                    .body(Place[].class);
+
+            if (places == null || places.length == 0) {
+                return Optional.empty();
+            }
+            return Optional.of(new Coordinates(Double.parseDouble(places[0].lat()), Double.parseDouble(places[0].lon())));
+        } catch (Exception exception) {
+            log.warn("Could not geocode \"{}\"", query, exception);
+            return Optional.empty();
+        }
+    }
+
     private static RestClient nominatimClient(String baseUrl) {
         JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(
                 HttpClient.newBuilder()

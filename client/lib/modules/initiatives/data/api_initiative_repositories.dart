@@ -52,6 +52,7 @@ class ApiCampaignRepository implements CampaignRepository {
     coverImage: json['coverImage'] as String?,
     status: InitiativeStatus.fromApi(json['status'] as String?),
     organizationName: _organizationName(json),
+    createdAt: _date(json['createdAt']),
   );
 
   Campaign _decode(http.Response response) =>
