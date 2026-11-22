@@ -1,22 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 import 'ajuda_bem_logo.dart';
 import 'app_notification_bell.dart';
 
 class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AuthAppBar({
-    super.key,
-    this.showBackButton = false,
-    this.showSearchButton = false,
-    this.onBack,
-    this.onSearch,
-  });
+  const AuthAppBar({super.key, this.showBackButton = false, this.onBack});
 
   final bool showBackButton;
-  final bool showSearchButton;
   final VoidCallback? onBack;
-  final VoidCallback? onSearch;
 
   @override
   Size get preferredSize => const Size.fromHeight(64);
@@ -47,18 +38,6 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
           color: Theme.of(context).colorScheme.primary,
         ),
         tooltip: 'Voltar',
-      );
-    }
-
-    if (showSearchButton) {
-      return IconButton(
-        onPressed: onSearch,
-        icon: SvgPicture.asset(
-          'assets/icons/search.svg',
-          width: 30,
-          height: 30,
-        ),
-        tooltip: 'Pesquisar',
       );
     }
 

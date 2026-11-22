@@ -82,6 +82,7 @@ class AssistedPersonDatasourceImpl implements AssistedPersonDatasource {
 
   Map<String, dynamic> _requestBody(CreateAssistedPersonParams params) {
     return {
+      'identified': params.identified,
       'full_name': params.fullName,
       'age': params.age,
       'gender': params.gender,
@@ -94,6 +95,7 @@ class AssistedPersonDatasourceImpl implements AssistedPersonDatasource {
       'state': params.state,
       'zip_code': params.zipCode,
       'country': params.country,
+      'locationDescription': params.locationDescription,
     };
   }
 }

@@ -17,7 +17,13 @@ abstract class CareRecordFormStoreBase with Store {
   final CareRepository _repository;
 
   @observable
-  CareRecordStatus status = CareRecordStatus.started;
+  CareRecordStatus status = CareRecordStatus.inCare;
+
+  @observable
+  CareRecordStatus lastAction = CareRecordStatus.inCare;
+
+  @computed
+  bool get finishing => status == CareRecordStatus.finished;
 
   @observable
   String date = DateInputFormatter.display(DateTime.now());
@@ -68,20 +74,28 @@ abstract class CareRecordFormStoreBase with Store {
     final moment = occurredAt;
     return moment != null &&
         !moment.isAfter(DateTime.now()) &&
-        (status != CareRecordStatus.finished || finishReason != null) &&
+        (!finishing || finishReason != null) &&
         !isSaving;
   }
 
   @action
   void startWith(CareCase person, {required bool firstRecord}) {
-    status = firstRecord
-        ? CareRecordStatus.started
-        : CareRecordStatus.inProgress;
+    lastAction = CareRecordStatus.actionsFor(firstRecord: firstRecord).first;
+    status = lastAction;
     needs = ObservableSet.of(person.needs);
   }
 
   @action
-  void setStatus(CareRecordStatus value) => status = value;
+  void setStatus(CareRecordStatus value) {
+    status = value;
+    if (value != CareRecordStatus.finished) lastAction = value;
+  }
+
+  @action
+  void startFinishing() => status = CareRecordStatus.finished;
+
+  @action
+  void cancelFinishing() => status = lastAction;
 
   @action
   void setDate(String value) => date = value;
@@ -134,15 +148,13 @@ abstract class CareRecordFormStoreBase with Store {
           status: status,
           occurredAt: moment,
           tagIds: tagIdsOf(needs),
-          situation: situation,
-          actionTaken: actionTaken,
-          referral: referral,
-          nextStep: nextStep,
-          summary: summary,
+          situation: status.asksSituation ? situation : '',
+          actionTaken: status.asksActionTaken ? actionTaken : '',
+          referral: status.asksReferral ? referral : '',
+          nextStep: status.asksNextStep ? nextStep : '',
+          summary: finishing ? summary : '',
           note: note,
-          finishReason: status == CareRecordStatus.finished
-              ? finishReason
-              : null,
+          finishReason: finishing ? finishReason : null,
         ),
         token,
       );

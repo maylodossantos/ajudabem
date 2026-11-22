@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_text_field.dart';
@@ -49,7 +50,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                           color: Theme.of(context).colorScheme.primary,
-                          fontSize: 16,
+                          fontSize: AppTextSize.title,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0,
                         ),
@@ -106,7 +107,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
                 child: Observer(
                   builder: (_) => AppPrimaryButton(
                     key: const Key('reset_password_submit_button'),
-                    label: 'Resetar senha',
+                    label: 'Redefinir senha',
                     onPressed: store.canSubmitNewPassword
                         ? () => _submit(context, store)
                         : null,

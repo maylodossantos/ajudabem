@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/tags/tags_store.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_labeled_field.dart';
@@ -84,7 +85,9 @@ class VulnerablePersonFormPage extends StatelessWidget {
                     const AppSectionTitle('Informações Gerais'),
                     const SizedBox(height: 10),
                     AppLabeledField(
-                      label: 'Nome:',
+                      key: const Key('person_form_name'),
+                      label: 'Nome',
+                      enabled: formStore.asksIdentity,
                       initialValue: formStore.name,
                       onChanged: formStore.setName,
                     ),
@@ -94,7 +97,8 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       children: [
                         Expanded(
                           child: AppLabeledField(
-                            label: 'Idade:',
+                            label: 'Idade',
+                            enabled: formStore.asksIdentity,
                             initialValue: formStore.age,
                             keyboardType: TextInputType.number,
                             onChanged: formStore.setAge,
@@ -103,7 +107,8 @@ class VulnerablePersonFormPage extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: AppLabeledDropdown<String>(
-                            label: 'Sexo:',
+                            label: 'Sexo',
+                            enabled: formStore.asksIdentity,
                             value: formStore.sex,
                             options: const [
                               'Masculino',
@@ -128,18 +133,36 @@ class VulnerablePersonFormPage extends StatelessWidget {
                       onChanged: formStore.setHasFixedAddress,
                     ),
                     const SizedBox(height: 12),
-                    AppLabeledField(
-                      label: 'Endereço:',
-                      initialValue: formStore.address,
-                      onChanged: formStore.setAddress,
-                    ),
-                    const SizedBox(height: 10),
+                    if (formStore.asksFixedAddress) ...[
+                      AppLabeledField(
+                        key: const Key('person_form_address'),
+                        label: 'Endereço',
+                        initialValue: formStore.address,
+                        onChanged: formStore.setAddress,
+                      ),
+                      const SizedBox(height: 10),
+                    ] else ...[
+                      const _Question(
+                        title: 'Descreva o local aproximado',
+                        helper:
+                            'Onde ela costuma ficar: rua, praça, ponto de '
+                            'referência. Usamos isso para marcar um ponto '
+                            'aproximado no mapa.',
+                      ),
+                      const SizedBox(height: 8),
+                      _MultilineField(
+                        key: const Key('person_form_location_description'),
+                        initialValue: formStore.locationDescription,
+                        onChanged: formStore.setLocationDescription,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
                           child: AppLabeledField(
-                            label: 'Cidade:',
+                            label: 'Cidade',
                             initialValue: formStore.city,
                             onChanged: formStore.setCity,
                           ),
@@ -147,7 +170,7 @@ class VulnerablePersonFormPage extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: AppLabeledDropdown<String>(
-                            label: 'Estado:',
+                            label: 'Estado',
                             value: formStore.state,
                             options: const [
                               'Paraná',
@@ -162,29 +185,31 @@ class VulnerablePersonFormPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: AppLabeledField(
-                            label: 'CEP:',
-                            initialValue: formStore.zipCode,
-                            keyboardType: TextInputType.number,
-                            onChanged: formStore.setZipCode,
+                    if (formStore.asksFixedAddress) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AppLabeledField(
+                              label: 'CEP',
+                              initialValue: formStore.zipCode,
+                              keyboardType: TextInputType.number,
+                              onChanged: formStore.setZipCode,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: AppLabeledField(
-                            label: 'Numero:',
-                            initialValue: formStore.number,
-                            keyboardType: TextInputType.number,
-                            onChanged: formStore.setNumber,
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: AppLabeledField(
+                              label: 'Número',
+                              initialValue: formStore.number,
+                              keyboardType: TextInputType.number,
+                              onChanged: formStore.setNumber,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
+                        ],
+                      ),
+                    ],
                     const SizedBox(height: 18),
                     const AppSectionTitle('Necessidades identificadas'),
                     const SizedBox(height: 12),
@@ -263,21 +288,21 @@ class VulnerablePersonFormPage extends StatelessWidget {
 abstract final class _FormTypography {
   static final question = GoogleFonts.manrope(
     color: Colors.black,
-    fontSize: 16,
+    fontSize: AppTextSize.title,
     fontWeight: FontWeight.w400,
     letterSpacing: 0,
   );
 
   static final helper = GoogleFonts.manrope(
-    color: const Color(0xFFBABABA),
-    fontSize: 12,
+    color: AppColors.textMuted,
+    fontSize: AppTextSize.caption,
     fontWeight: FontWeight.w500,
     letterSpacing: 0,
   );
 
   static final button = GoogleFonts.manrope(
     color: Colors.white,
-    fontSize: 14,
+    fontSize: AppTextSize.body,
     fontWeight: FontWeight.w500,
     letterSpacing: 0,
   );
@@ -331,7 +356,11 @@ class _BinaryChoice extends StatelessWidget {
 }
 
 class _MultilineField extends StatelessWidget {
-  const _MultilineField({required this.initialValue, required this.onChanged});
+  const _MultilineField({
+    required this.initialValue,
+    required this.onChanged,
+    super.key,
+  });
 
   final String initialValue;
   final ValueChanged<String> onChanged;
@@ -346,7 +375,7 @@ class _MultilineField extends StatelessWidget {
         maxLines: null,
         expands: true,
         textAlignVertical: TextAlignVertical.top,
-        style: GoogleFonts.manrope(fontSize: 14),
+        style: GoogleFonts.manrope(fontSize: AppTextSize.body),
         decoration: _inputDecoration(
           context,
         ).copyWith(contentPadding: const EdgeInsets.all(10)),
@@ -376,10 +405,12 @@ class _ToggleButton extends StatelessWidget {
       style: FilledButton.styleFrom(
         minimumSize: const Size(0, 32),
         backgroundColor: selected
-            ? const Color(0xFF037D68)
+            ? AppColors.brandDark
             : Theme.of(context).colorScheme.primary,
         padding: EdgeInsets.symmetric(horizontal: width == null ? 10 : 0),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sm),
+        ),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
       child: Text(label, style: _FormTypography.button),
@@ -407,7 +438,7 @@ class _SubmitBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: Color(0xFFF3F3F3),
+        color: AppColors.background,
         boxShadow: [
           BoxShadow(
             color: Color(0x12000000),
@@ -438,11 +469,11 @@ InputDecoration _inputDecoration(BuildContext context) {
     filled: false,
     contentPadding: const EdgeInsets.symmetric(horizontal: 10),
     enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
     ),
     focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       borderSide: BorderSide(
         color: Theme.of(context).colorScheme.primary,
         width: 1.5,

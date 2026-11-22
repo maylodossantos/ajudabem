@@ -32,10 +32,11 @@ VolunteerAction actionWith({
   InitiativeStatus status = InitiativeStatus.active,
   String? phone,
   String? email,
+  DateTime? date,
 }) => VolunteerAction(
   id: id,
   title: title,
-  date: DateTime(2026, 3, 21),
+  date: date ?? DateTime(2026, 3, 21),
   startTime: '18:00',
   endTime: '21:00',
   volunteersNeeded: needed,

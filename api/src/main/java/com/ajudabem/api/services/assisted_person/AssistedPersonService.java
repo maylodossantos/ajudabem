@@ -13,6 +13,7 @@ import com.ajudabem.api.repositories.TagRepository;
 import com.ajudabem.api.domains.notification.NotificationType;
 import com.ajudabem.api.services.help_point.GeocodingService;
 import com.ajudabem.api.services.notification.NotificationService;
+import com.ajudabem.api.services.organization.OrganizationAccessService;
 import com.ajudabem.api.services.user.CurrentUserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +22,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
 public class AssistedPersonService {
-
-    private static final Set<UserRole> ROLES_THAT_SEE_EVERYONE = Set.of(UserRole.ADMIN, UserRole.USER_ONG);
 
     private final AssistedPersonRepository assistedPersonRepository;
     private final CurrentUserService currentUserService;
@@ -35,6 +33,7 @@ public class AssistedPersonService {
     private final AssistedPersonMapper mapper;
     private final GeocodingService geocodingService;
     private final NotificationService notificationService;
+    private final OrganizationAccessService organizationAccess;
 
     @Transactional
     public AssistedPersonResponseDTO createAssistedPerson(AssistedPersonRequestDTO dto) {
@@ -43,6 +42,7 @@ public class AssistedPersonService {
 
         AssistedPerson assistedPerson = mapper.toEntity(dto);
 
+        applyIdentity(dto, assistedPerson);
         assistedPerson.setAuthor(user);
         assistedPerson.setRiskLevel(null);
         assistedPerson.setTags(tagRepository.findAllById(dto.tagIds()));
@@ -65,6 +65,7 @@ public class AssistedPersonService {
         AssistedPerson assistedPerson = findOwnAssistedPerson(id);
 
         mapper.updateEntity(dto, assistedPerson);
+        applyIdentity(dto, assistedPerson);
         assistedPerson.setTags(tagRepository.findAllById(dto.tagIds()));
         assistedPerson.setRiskLevel(null);
         locate(assistedPerson);
@@ -85,8 +86,11 @@ public class AssistedPersonService {
         AssistedPerson assistedPerson = findAssistedPerson(id);
         User user = currentUserService.get();
 
-        if (!isAuthor(user, assistedPerson) && !ROLES_THAT_SEE_EVERYONE.contains(user.getRole())) {
-            throw new ForbiddenActionException("Only the author can access this assisted person");
+        if (!isAuthor(user, assistedPerson)) {
+            if (user.getRole() != UserRole.ADMIN && user.getRole() != UserRole.USER_ONG) {
+                throw new ForbiddenActionException("Only the author can access this assisted person");
+            }
+            organizationAccess.requireCaseAccess(user, assistedPerson);
         }
 
         return mapper.toResponse(assistedPerson);
@@ -119,12 +123,34 @@ public class AssistedPersonService {
         return assistedPerson.getAuthor() != null && assistedPerson.getAuthor().getId().equals(user.getId());
     }
 
+    private static void applyIdentity(AssistedPersonRequestDTO dto, AssistedPerson person) {
+        if (dto.isUnidentified()) {
+            person.setFull_name(AssistedPersonRequestDTO.UNIDENTIFIED_NAME);
+            person.setAge(null);
+            person.setGender(null);
+        }
+    }
+
     private void locate(AssistedPerson person) {
-        var coordinates = StringUtils.hasText(person.getStreet()) && StringUtils.hasText(person.getCity())
+        boolean hasAddress = StringUtils.hasText(person.getStreet()) && StringUtils.hasText(person.getCity());
+        if (hasAddress) {
+            person.setLocationDescription(null);
+        }
+
+        var coordinates = hasAddress
                 ? geocodingService.locate(person.getStreet(), person.getNumber(), person.getCity(),
                         person.getState(), person.getZip_code())
-                : Optional.<GeocodingService.Coordinates>empty();
+                : cityCenter(person);
         person.setLatitude(coordinates.map(GeocodingService.Coordinates::latitude).orElse(null));
         person.setLongitude(coordinates.map(GeocodingService.Coordinates::longitude).orElse(null));
+        person.setLocationPending(!hasAddress && StringUtils.hasText(person.getLocationDescription()));
+    }
+
+    private Optional<GeocodingService.Coordinates> cityCenter(AssistedPerson person) {
+        if (!StringUtils.hasText(person.getCity())) {
+            return Optional.empty();
+        }
+        String state = StringUtils.hasText(person.getState()) ? ", " + person.getState() : "";
+        return geocodingService.search(person.getCity() + state + ", Brasil");
     }
 }

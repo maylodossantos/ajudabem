@@ -81,8 +81,8 @@ class _NewsManageDetailPageState extends State<NewsManageDetailPage> {
   @override
   Widget build(BuildContext context) {
     final bodyStyle = GoogleFonts.manrope(
-      color: const Color(0xFF232323),
-      fontSize: 13.5,
+      color: AppColors.textStrong,
+      fontSize: AppTextSize.small,
       height: 1.45,
       letterSpacing: 0,
     );
@@ -107,9 +107,9 @@ class _NewsManageDetailPageState extends State<NewsManageDetailPage> {
           AppCoverImage(
             imageUrl: _article.coverImage,
             aspectRatio: 1.83,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             placeholder: const ColoredBox(
-              color: Color(0xFFA2A2A2),
+              color: AppColors.textMuted,
               child: Icon(Icons.newspaper, size: 56, color: Colors.white),
             ),
           ),
@@ -121,7 +121,7 @@ class _NewsManageDetailPageState extends State<NewsManageDetailPage> {
           if (_article.subtitle.isNotEmpty) ...[
             const SizedBox(height: 14),
             AppInfoCard(
-              title: 'Sub-Título',
+              title: 'Subtítulo',
               child: Text(_article.subtitle, style: bodyStyle),
             ),
           ],

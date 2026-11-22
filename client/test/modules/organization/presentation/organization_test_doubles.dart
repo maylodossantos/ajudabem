@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:ajuda_bem/core/files/selected_file.dart';
 import 'package:ajuda_bem/core/services/document_picker_service.dart';
 import 'package:ajuda_bem/modules/organization/domain/entities/organization.dart';
+import 'package:ajuda_bem/modules/organization/domain/entities/organization_contact_params.dart';
 import 'package:ajuda_bem/modules/organization/domain/entities/organization_form_params.dart';
 import 'package:ajuda_bem/modules/organization/domain/repositories/organization_repository.dart';
 
@@ -29,10 +30,12 @@ Organization organizationWith({
 }
 
 class FakeOrganizationRepository implements OrganizationRepository {
-  FakeOrganizationRepository({this.error});
+  FakeOrganizationRepository({this.error, this.mine});
 
   final Object? error;
+  final Organization? mine;
   OrganizationFormParams? submitted;
+  OrganizationContactParams? contactParams;
   int? approvedId;
   (int, RejectionReason, String?)? rejected;
 
@@ -42,12 +45,21 @@ class FakeOrganizationRepository implements OrganizationRepository {
   }
 
   @override
-  Future<Organization?> getMine(String token) async => null;
+  Future<Organization?> getMine(String token) async => mine;
 
   @override
   Future<Organization> submit(OrganizationFormParams params, String token) {
     submitted = params;
     return _answer(organizationWith());
+  }
+
+  @override
+  Future<Organization> updateContact(
+    OrganizationContactParams params,
+    String token,
+  ) {
+    contactParams = params;
+    return _answer(organizationWith(status: OrganizationStatus.approved));
   }
 
   @override

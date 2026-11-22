@@ -16,6 +16,34 @@ mixin _$VulnerablePersonFormStore on VulnerablePersonFormStoreBase, Store {
     () => super.isEditing,
     name: 'VulnerablePersonFormStoreBase.isEditing',
   )).value;
+  Computed<bool>? _$asksIdentityComputed;
+
+  @override
+  bool get asksIdentity => (_$asksIdentityComputed ??= Computed<bool>(
+    () => super.asksIdentity,
+    name: 'VulnerablePersonFormStoreBase.asksIdentity',
+  )).value;
+  Computed<bool>? _$asksFixedAddressComputed;
+
+  @override
+  bool get asksFixedAddress => (_$asksFixedAddressComputed ??= Computed<bool>(
+    () => super.asksFixedAddress,
+    name: 'VulnerablePersonFormStoreBase.asksFixedAddress',
+  )).value;
+  Computed<bool>? _$hasIdentityComputed;
+
+  @override
+  bool get hasIdentity => (_$hasIdentityComputed ??= Computed<bool>(
+    () => super.hasIdentity,
+    name: 'VulnerablePersonFormStoreBase.hasIdentity',
+  )).value;
+  Computed<bool>? _$hasLocationComputed;
+
+  @override
+  bool get hasLocation => (_$hasLocationComputed ??= Computed<bool>(
+    () => super.hasLocation,
+    name: 'VulnerablePersonFormStoreBase.hasLocation',
+  )).value;
   Computed<bool>? _$canSubmitComputed;
 
   @override
@@ -244,6 +272,24 @@ mixin _$VulnerablePersonFormStore on VulnerablePersonFormStoreBase, Store {
     });
   }
 
+  late final _$locationDescriptionAtom = Atom(
+    name: 'VulnerablePersonFormStoreBase.locationDescription',
+    context: context,
+  );
+
+  @override
+  String get locationDescription {
+    _$locationDescriptionAtom.reportRead();
+    return super.locationDescription;
+  }
+
+  @override
+  set locationDescription(String value) {
+    _$locationDescriptionAtom.reportWrite(value, super.locationDescription, () {
+      super.locationDescription = value;
+    });
+  }
+
   late final _$selectedNeedsAtom = Atom(
     name: 'VulnerablePersonFormStoreBase.selectedNeeds',
     context: context,
@@ -437,6 +483,19 @@ mixin _$VulnerablePersonFormStore on VulnerablePersonFormStoreBase, Store {
   }
 
   @override
+  void setLocationDescription(String value) {
+    final _$actionInfo = _$VulnerablePersonFormStoreBaseActionController
+        .startAction(
+          name: 'VulnerablePersonFormStoreBase.setLocationDescription',
+        );
+    try {
+      return super.setLocationDescription(value);
+    } finally {
+      _$VulnerablePersonFormStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   void toggleNeed(String need) {
     final _$actionInfo = _$VulnerablePersonFormStoreBaseActionController
         .startAction(name: 'VulnerablePersonFormStoreBase.toggleNeed');
@@ -473,10 +532,15 @@ state: ${state},
 zipCode: ${zipCode},
 number: ${number},
 description: ${description},
+locationDescription: ${locationDescription},
 selectedNeeds: ${selectedNeeds},
 isLoading: ${isLoading},
 errorMessage: ${errorMessage},
 isEditing: ${isEditing},
+asksIdentity: ${asksIdentity},
+asksFixedAddress: ${asksFixedAddress},
+hasIdentity: ${hasIdentity},
+hasLocation: ${hasLocation},
 canSubmit: ${canSubmit}
     ''';
   }

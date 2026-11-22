@@ -7,15 +7,14 @@ import '../../../../core/formatters/date_input_formatter.dart';
 import '../../../../core/formatters/time_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/tags/tags_store.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
-import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_choice_chip.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_filter_scaffold.dart';
 import '../../../../core/widgets/app_form_parts.dart';
 import '../../../../core/widgets/app_labeled_field.dart';
-import '../../../../core/widgets/app_main_navigation.dart';
-import '../../../../core/widgets/auth_app_bar.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/care_case.dart';
 import '../stores/care_record_form_store.dart';
@@ -82,173 +81,171 @@ class _CareRecordFormPageState extends State<CareRecordFormPage> {
 
   @override
   Widget build(BuildContext context) {
-    final statuses = _firstRecord
-        ? const [CareRecordStatus.started, CareRecordStatus.finished]
-        : const [CareRecordStatus.inProgress, CareRecordStatus.finished];
+    return Observer(
+      builder: (_) {
+        final finishing = _store.finishing;
+        final status = _store.status;
+        final needOptions = {
+          ..._tags.tags.map((tag) => tag.name),
+          ..._store.needs,
+        }.toList()..sort();
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: const AuthAppBar(showBackButton: true),
-      bottomNavigationBar: const AppMainNavigation(
-        currentItem: AppNavigationItem.ong,
-      ),
-      body: SafeArea(
-        top: false,
-        child: Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 520),
-            child: Observer(
-              builder: (_) {
-                final finishing = _store.status == CareRecordStatus.finished;
-                final needOptions = {
-                  ..._tags.tags.map((tag) => tag.name),
-                  ..._store.needs,
-                }.toList()..sort();
-
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      CareCaseHeader(person: widget.detail.person),
-                      const SizedBox(height: 8),
-                      Text(
-                        _firstRecord
-                            ? 'Primeiro atendimento'
-                            : 'Andamento #${widget.detail.records.length + 1}',
-                        style: GoogleFonts.manrope(
-                          color: const Color(0xFF232323),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0,
-                        ),
-                      ),
-                      AppFilterSection(
-                        title: 'Status',
-                        child: AppChoiceChipGroup<CareRecordStatus>(
-                          options: statuses,
-                          labelOf: (status) => status.label,
-                          isSelected: (status) => _store.status == status,
-                          onToggle: _store.setStatus,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppLabeledField(
-                              key: const Key('care_record_date_field'),
-                              label: 'Data',
-                              initialValue: _store.date,
-                              hintText: 'Ex.: 14/10/2026',
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [DateInputFormatter()],
-                              onChanged: _store.setDate,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: AppLabeledField(
-                              key: const Key('care_record_time_field'),
-                              label: 'Horário',
-                              initialValue: _store.time,
-                              hintText: 'Ex.: 14:30',
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [TimeInputFormatter()],
-                              onChanged: _store.setTime,
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_store.occurredAt == null) ...[
-                        const SizedBox(height: 6),
-                        const AppFormError(
-                          'Informe uma data e um horário válidos.',
-                        ),
-                      ] else if (_store.occurredAt!.isAfter(
-                        DateTime.now(),
-                      )) ...[
-                        const SizedBox(height: 6),
-                        const AppFormError(
-                          'O atendimento não pode estar no futuro.',
-                        ),
-                      ],
-                      if (needOptions.isNotEmpty)
-                        AppFilterSection(
-                          title: 'Necessidades',
-                          child: AppChoiceChipGroup<String>(
-                            options: needOptions,
-                            labelOf: (need) => need,
-                            isSelected: _store.needs.contains,
-                            onToggle: _store.toggleNeed,
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      if (_firstRecord) ...[
-                        _TextArea(
-                          label: 'Situação encontrada',
-                          value: _store.situation,
-                          onChanged: _store.setSituation,
-                        ),
-                        _TextArea(
-                          label: 'Ação realizada',
-                          value: _store.actionTaken,
-                          onChanged: _store.setActionTaken,
-                        ),
-                      ] else
-                        _TextArea(
-                          label: 'O que foi feito',
-                          value: _store.actionTaken,
-                          onChanged: _store.setActionTaken,
-                        ),
-                      _TextArea(
-                        label: 'Encaminhamento',
-                        value: _store.referral,
-                        onChanged: _store.setReferral,
-                      ),
-                      if (finishing) ...[
-                        AppLabeledDropdown<FinishReason>(
-                          key: const Key('care_record_finish_reason'),
-                          label: 'Motivo da finalização',
-                          hintText: 'Selecione',
-                          value: _store.finishReason,
-                          options: FinishReason.values,
-                          labelOf: (reason) => reason.label,
-                          onChanged: _store.setFinishReason,
-                        ),
-                        const SizedBox(height: 14),
-                        _TextArea(
-                          label: 'Resumo final',
-                          value: _store.summary,
-                          onChanged: _store.setSummary,
-                        ),
-                      ] else
-                        _TextArea(
-                          label: 'Próximo passo',
-                          value: _store.nextStep,
-                          onChanged: _store.setNextStep,
-                        ),
-                      _TextArea(
-                        label: 'Observação',
-                        value: _store.note,
-                        onChanged: _store.setNote,
-                      ),
-                      const SizedBox(height: 8),
-                      AppPrimaryButton(
-                        key: const Key('care_record_submit_button'),
-                        label: finishing ? 'Finalizar atendimento' : 'Salvar',
-                        isLoading: _store.isSaving,
-                        onPressed: _store.canSubmit ? _submit : null,
-                      ),
-                    ],
+        return AppPageScaffold(
+          currentItem: AppNavigationItem.ong,
+          bottomBar: finishing
+              ? AppBottomActions(
+                  secondaryKey: const Key('care_record_back_button'),
+                  secondaryLabel: 'Voltar',
+                  onSecondary: _store.cancelFinishing,
+                  primaryKey: const Key('care_record_submit_button'),
+                  primaryLabel: 'Finalizar',
+                  isLoading: _store.isSaving,
+                  onPrimary: _store.canSubmit ? _submit : null,
+                )
+              : AppBottomActions(
+                  secondaryKey: const Key('care_record_finish_button'),
+                  secondaryLabel: 'Finalizar',
+                  onSecondary: _store.startFinishing,
+                  primaryKey: const Key('care_record_submit_button'),
+                  primaryLabel: 'Salvar',
+                  isLoading: _store.isSaving,
+                  onPrimary: _store.canSubmit ? _submit : null,
+                ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  'Atendimento #${widget.detail.records.length + 1}',
+                  style: GoogleFonts.manrope(
+                    color: AppColors.textStrong,
+                    fontSize: AppTextSize.heading,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0,
                   ),
-                );
-              },
+                ),
+                Text(
+                  widget.detail.person.fullName,
+                  style: GoogleFonts.manrope(
+                    color: AppColors.textSecondary,
+                    fontSize: AppTextSize.small,
+                    letterSpacing: 0,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                CareActionSelector(
+                  key: const Key('care_record_action'),
+                  value: status,
+                  options: finishing
+                      ? const []
+                      : CareRecordStatus.actionsFor(firstRecord: _firstRecord),
+                  onChanged: _store.setStatus,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: AppLabeledField(
+                        key: const Key('care_record_date_field'),
+                        label: 'Data',
+                        initialValue: _store.date,
+                        hintText: '14/10/2026',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [DateInputFormatter()],
+                        onChanged: _store.setDate,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AppLabeledField(
+                        key: const Key('care_record_time_field'),
+                        label: 'Horário',
+                        initialValue: _store.time,
+                        hintText: '14:30',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [TimeInputFormatter()],
+                        onChanged: _store.setTime,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_store.occurredAt == null) ...[
+                  const SizedBox(height: 6),
+                  const AppFormError('Informe uma data e um horário válidos.'),
+                ] else if (_store.occurredAt!.isAfter(DateTime.now())) ...[
+                  const SizedBox(height: 6),
+                  const AppFormError('O atendimento não pode estar no futuro.'),
+                ],
+                if (_firstRecord && !finishing && needOptions.isNotEmpty)
+                  AppFilterSection(
+                    title: 'Necessidades identificadas',
+                    child: AppChoiceChipGroup<String>(
+                      options: needOptions,
+                      labelOf: (need) => need,
+                      isSelected: _store.needs.contains,
+                      onToggle: _store.toggleNeed,
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                if (finishing) ...[
+                  _TextArea(
+                    label: 'Resumo do atendimento',
+                    value: _store.summary,
+                    onChanged: _store.setSummary,
+                  ),
+                  _TextArea(
+                    label: 'Observação',
+                    value: _store.note,
+                    onChanged: _store.setNote,
+                  ),
+                  AppLabeledDropdown<FinishReason>(
+                    key: const Key('care_record_finish_reason'),
+                    label: 'Resultado do atendimento',
+                    required: true,
+                    hintText: 'Selecione',
+                    value: _store.finishReason,
+                    options: FinishReason.values,
+                    labelOf: (reason) => reason.label,
+                    onChanged: _store.setFinishReason,
+                  ),
+                ] else ...[
+                  if (status.asksSituation)
+                    _TextArea(
+                      label: 'Situação identificada',
+                      value: _store.situation,
+                      onChanged: _store.setSituation,
+                    ),
+                  if (status.asksActionTaken)
+                    _TextArea(
+                      label: status.actionTakenLabel,
+                      value: _store.actionTaken,
+                      onChanged: _store.setActionTaken,
+                    ),
+                  if (status.asksReferral)
+                    _TextArea(
+                      label: status.referralLabel,
+                      value: _store.referral,
+                      onChanged: _store.setReferral,
+                    ),
+                  if (status.asksNextStep)
+                    _TextArea(
+                      label: status.nextStepLabel,
+                      value: _store.nextStep,
+                      onChanged: _store.setNextStep,
+                    ),
+                  _TextArea(
+                    label: 'Observação',
+                    value: _store.note,
+                    onChanged: _store.setNote,
+                  ),
+                ],
+              ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

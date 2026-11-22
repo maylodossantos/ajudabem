@@ -1,6 +1,7 @@
 package com.ajudabem.api.services.news;
 
 import com.ajudabem.api.domains.news.News;
+import com.ajudabem.api.domains.news.NewsCategory;
 import com.ajudabem.api.domains.user.User;
 import com.ajudabem.api.domains.user.UserRole;
 import com.ajudabem.api.dto.news.NewsRequestDTO;
@@ -39,7 +40,7 @@ class NewsServiceTest {
     private NewsService newsService;
 
     private NewsRequestDTO requestDTO() {
-        return new NewsRequestDTO("Title", "Subtitle", "Content", "cover.png", "Cascavel", "PR");
+        return new NewsRequestDTO("Title", "Subtitle", "Content", "cover.png", "Cascavel", "PR", NewsCategory.HEALTH);
     }
 
     private User userWithRole(UserRole role) {
@@ -66,6 +67,31 @@ class NewsServiceTest {
         assertThat(result).isEqualTo(expected);
         assertThat(entity.getAuthor()).isEqualTo(author);
         verify(repository).save(entity);
+    }
+
+    @Test
+    void createNews_shouldKeepTheChosenCategory() {
+        News entity = new News();
+        entity.setCategory(NewsCategory.HEALTH);
+
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.ADMIN));
+        when(mapper.toEntity(any(NewsRequestDTO.class))).thenReturn(entity);
+
+        newsService.createNews(requestDTO());
+
+        assertThat(entity.getCategory()).isEqualTo(NewsCategory.HEALTH);
+    }
+
+    @Test
+    void createNews_shouldDefaultToOther_whenNoCategoryIsSent() {
+        News entity = new News();
+
+        when(currentUserService.get()).thenReturn(userWithRole(UserRole.ADMIN));
+        when(mapper.toEntity(any(NewsRequestDTO.class))).thenReturn(entity);
+
+        newsService.createNews(requestDTO());
+
+        assertThat(entity.getCategory()).isEqualTo(NewsCategory.OTHER);
     }
 
     @Test

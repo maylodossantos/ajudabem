@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-enum AppNavigationItem { news, help, profile, register, ong }
+import '../theme/app_colors.dart';
+
+enum AppNavigationItem { news, help, profile, ong, register }
 
 class AppBottomNavigation extends StatelessWidget {
   const AppBottomNavigation({
@@ -14,6 +16,7 @@ class AppBottomNavigation extends StatelessWidget {
     this.onRegister,
     this.showOng = false,
     this.onOng,
+    this.signedIn = true,
   });
 
   final AppNavigationItem currentItem;
@@ -24,13 +27,14 @@ class AppBottomNavigation extends StatelessWidget {
 
   final bool showOng;
   final VoidCallback? onOng;
+  final bool signedIn;
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: Color(0xFFF3F3F3),
-        border: Border(top: BorderSide(color: Color(0xFFE2E2E2))),
+        color: AppColors.background,
+        border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: SafeArea(
         top: false,
@@ -38,37 +42,39 @@ class AppBottomNavigation extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _NavigationButton(
-                iconAsset: 'assets/icons/navigation/news.svg',
-                label: 'Notícias',
+                iconAsset: 'assets/icons/navigation/inicio.svg',
+                label: 'Início',
                 selected: currentItem == AppNavigationItem.news,
                 onTap: onNews,
               ),
               _NavigationButton(
-                iconAsset: 'assets/icons/navigation/heart.svg',
+                iconAsset: 'assets/icons/navigation/mapa.svg',
                 label: 'Ajuda',
                 selected: currentItem == AppNavigationItem.help,
                 onTap: onHelp,
               ),
               _NavigationButton(
-                iconAsset: 'assets/icons/navigation/profile.svg',
-                label: 'Perfil',
+                iconAsset: 'assets/icons/navigation/perfil.svg',
+                label: signedIn ? 'Perfil' : 'Entrar',
                 selected: currentItem == AppNavigationItem.profile,
                 onTap: onProfile,
               ),
-              _NavigationButton(
-                iconAsset: 'assets/icons/navigation/add.svg',
-                label: 'Cadastro',
-                selected: currentItem == AppNavigationItem.register,
-                onTap: onRegister,
-              ),
               if (showOng)
                 _NavigationButton(
-                  iconAsset: 'assets/icons/navigation/ong.svg',
-                  label: 'Ong',
+                  iconAsset: 'assets/icons/navigation/base_da_ong.svg',
+                  label: 'ONG',
                   selected: currentItem == AppNavigationItem.ong,
                   onTap: onOng,
+                ),
+              if (signedIn)
+                _NavigationButton(
+                  iconAsset: 'assets/icons/navigation/cadastro.svg',
+                  label: 'Indicar',
+                  selected: currentItem == AppNavigationItem.register,
+                  onTap: onRegister,
                 ),
             ],
           ),
@@ -95,13 +101,13 @@ class _NavigationButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = selected
         ? Theme.of(context).colorScheme.primary
-        : const Color(0xFF494949);
+        : AppColors.textBody;
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(6),
+      borderRadius: BorderRadius.circular(AppRadius.sm),
       child: SizedBox(
-        width: 58,
+        width: 64,
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),
           child: Column(
@@ -116,10 +122,14 @@ class _NavigationButton extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.manrope(
                   color: color,
-                  fontSize: 10,
+                  fontSize: AppTextSize.caption,
                   fontWeight: FontWeight.w500,
+                  height: 1.15,
                   letterSpacing: 0,
                 ),
               ),

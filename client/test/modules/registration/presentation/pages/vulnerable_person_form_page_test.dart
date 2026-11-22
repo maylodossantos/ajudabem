@@ -33,7 +33,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Informações Gerais'), findsOneWidget);
-    expect(find.text('Nome:'), findsOneWidget);
+    expect(find.text('Nome'), findsOneWidget);
     expect(find.text('Necessidades identificadas'), findsOneWidget);
     expect(find.text('Como você descreveria essa pessoa?'), findsOneWidget);
     expect(find.text('Alimentação'), findsOneWidget);

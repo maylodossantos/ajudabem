@@ -230,7 +230,7 @@ class IdorSecurityTest extends SecurityTestSupport {
 
         mockMvc.perform(post(path + "/records").header("Authorization", bearer(otherOng))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"status\":\"STARTED\",\"occurredAt\":\"" + LocalDateTime.now().minusHours(1).withNano(0) + "\"}"))
+                        .content("{\"status\":\"IN_CARE\",\"occurredAt\":\"" + LocalDateTime.now().minusHours(1).withNano(0) + "\"}"))
                 .andExpect(status().isForbidden());
         mockMvc.perform(get(path).header("Authorization", bearer(author)))
                 .andExpect(status().isForbidden());

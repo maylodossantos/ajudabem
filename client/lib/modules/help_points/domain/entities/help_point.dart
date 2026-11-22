@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/geo/geo_point.dart';
+import '../../../../core/theme/app_colors.dart';
 
 enum AssistanceType {
   shelter('SHELTER', 'Abrigo', Color(0xFF009B7D)),
   overnight('OVERNIGHT', 'Pernoite', Color(0xFF6A4BF0)),
   reception('RECEPTION', 'Acolhimento', Color(0xFF12BFC7)),
   food('FOOD', 'Alimentação', Color(0xFF1A7FF5)),
-  clothing('CLOTHING', 'Doação de roupas', Color(0xFFE8841A)),
-  medical('MEDICAL', 'Atendimento médico', Color(0xFFE5484D)),
+  clothing('CLOTHING', 'Doação de roupas', AppColors.warning),
+  medical('MEDICAL', 'Atendimento médico', AppColors.urgencyHigh),
   psychological('PSYCHOLOGICAL', 'Atendimento psicológico', Color(0xFF8E44AD));
 
   const AssistanceType(this.apiValue, this.label, this.color);

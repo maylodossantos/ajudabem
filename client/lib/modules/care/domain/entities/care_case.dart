@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/widgets/app_badge.dart';
+
 import '../../../../core/formatters/cep_input_formatter.dart';
+import '../../../../core/theme/app_colors.dart';
 
 enum Urgency {
-  high('HIGH', 'Alta', Color(0xFFE5484D)),
-  medium('MEDIUM', 'Média', Color(0xFFF08A24)),
-  low('LOW', 'Baixa', Color(0xFF34C759)),
-  pending(null, 'Em triagem', Color(0xFFBDBDBD));
+  high('HIGH', 'Alta', AppColors.urgencyHigh),
+  medium('MEDIUM', 'Média', AppColors.warning),
+  low('LOW', 'Baixa', AppColors.success),
+  pending(null, 'Em triagem', AppColors.urgencyPending);
 
   const Urgency(this.apiValue, this.label, this.color);
+
+  AppTone get tone => switch (this) {
+    high => AppTone.danger,
+    medium => AppTone.warning,
+    low => AppTone.success,
+    pending => AppTone.neutral,
+  };
+
+  String get badgeLabel =>
+      this == pending ? 'Em triagem' : 'Urgência ${label.toLowerCase()}';
 
   final String? apiValue;
   final String label;
@@ -37,36 +50,94 @@ enum CareStatus {
 }
 
 enum CareRecordStatus {
-  started('STARTED', 'Iniciado', Color(0xFFFFADAD), Color(0xFFE00000)),
-  inProgress(
-    'IN_PROGRESS',
-    'Em atendimento',
-    Color(0xFFF9BC8A),
-    Color(0xFFF08A24),
+  inCare('IN_CARE', 'Em atendimento', 'Em atendimento', AppTone.warning),
+  referred('REFERRED', 'Encaminhar', 'Encaminhado', AppTone.info),
+  unsuccessfulAttempt(
+    'UNSUCCESSFUL_ATTEMPT',
+    'Tentativa sem sucesso',
+    'Tentativa sem sucesso',
+    AppTone.danger,
   ),
-  finished('FINISHED', 'Finalizado', Color(0xFFB7F5BE), Color(0xFF34C759));
+  awaitingReturn(
+    'AWAITING_RETURN',
+    'Aguardando retorno',
+    'Aguardando retorno',
+    AppTone.neutral,
+  ),
+  progressUpdate(
+    'PROGRESS_UPDATE',
+    'Registrar andamento',
+    'Andamento registrado',
+    AppTone.warning,
+  ),
+  finished('FINISHED', 'Finalizar atendimento', 'Finalizado', AppTone.success);
 
-  const CareRecordStatus(this.apiValue, this.label, this.background, this.dot);
+  const CareRecordStatus(this.apiValue, this.action, this.label, this.tone);
 
   final String apiValue;
+  final String action;
   final String label;
-  final Color background;
-  final Color dot;
+  final AppTone tone;
 
-  static CareRecordStatus fromApi(String? value) => values.firstWhere(
-    (status) => status.apiValue == value,
-    orElse: () => started,
-  );
+  Color get background => tone.soft;
+  Color get dot => tone.strong;
+
+  static const firstActions = [inCare, referred, unsuccessfulAttempt];
+  static const followUpActions = [
+    progressUpdate,
+    awaitingReturn,
+    unsuccessfulAttempt,
+  ];
+
+  static List<CareRecordStatus> actionsFor({required bool firstRecord}) =>
+      firstRecord ? firstActions : followUpActions;
+
+  bool get asksSituation => this == inCare || this == referred;
+
+  bool get asksActionTaken =>
+      this == inCare ||
+      this == unsuccessfulAttempt ||
+      this == awaitingReturn ||
+      this == progressUpdate;
+
+  bool get asksReferral =>
+      this == inCare || this == referred || this == progressUpdate;
+
+  bool get asksNextStep =>
+      this == unsuccessfulAttempt ||
+      this == awaitingReturn ||
+      this == progressUpdate;
+
+  String get actionTakenLabel => switch (this) {
+    unsuccessfulAttempt => 'O que foi tentado',
+    _ => 'Ação realizada',
+  };
+
+  String get referralLabel =>
+      this == referred ? 'Para onde foi encaminhado' : 'Encaminhamento';
+
+  String get nextStepLabel => switch (this) {
+    unsuccessfulAttempt => 'Próxima tentativa',
+    awaitingReturn => 'Retorno esperado',
+    _ => 'Próxima ação',
+  };
+
+  static CareRecordStatus fromApi(String? value) => switch (value) {
+    'STARTED' => inCare,
+    'IN_PROGRESS' => progressUpdate,
+    _ => values.firstWhere(
+      (status) => status.apiValue == value,
+      orElse: () => progressUpdate,
+    ),
+  };
 }
 
 enum FinishReason {
   helped('HELPED', 'Ajudado com sucesso'),
   partiallyHelped('PARTIALLY_HELPED', 'Ajudado parcialmente'),
-  awaitingReturn('AWAITING_RETURN', 'Aguardando retorno'),
-  unsuccessfulAttempt('UNSUCCESSFUL_ATTEMPT', 'Tentativa sem sucesso'),
+  referredElsewhere('REFERRED_ELSEWHERE', 'Encaminhado para outra instituição'),
   couldNotHelp('COULD_NOT_HELP', 'Não foi possível ajudar'),
-  notFound('NOT_FOUND', 'Não foi possível localizar'),
-  referredElsewhere('REFERRED_ELSEWHERE', 'Encaminhado para outra instituição');
+  notFound('NOT_FOUND', 'Não foi possível localizar');
 
   const FinishReason(this.apiValue, this.label);
 
@@ -105,6 +176,7 @@ class CareCase {
     this.careUpdatedAt,
     this.organizationName,
     this.distanceKm,
+    this.locationDescription = '',
   });
 
   final int id;
@@ -129,16 +201,19 @@ class CareCase {
   final DateTime? careUpdatedAt;
   final String? organizationName;
   final double? distanceKm;
+  final String locationDescription;
 
   String get cityLabel =>
       [city, state].where((part) => part.isNotEmpty).join(' - ');
 
   String get region => neighborhood.isNotEmpty ? neighborhood : cityLabel;
 
-  String get addressLabel => [
-    number.isEmpty ? street : '$street, $number',
-    CepInputFormatter.display(zipCode),
-  ].where((part) => part.isNotEmpty).join(' - ');
+  String get addressLabel => street.isEmpty && locationDescription.isNotEmpty
+      ? 'Aproximado: $locationDescription'
+      : [
+          number.isEmpty ? street : '$street, $number',
+          CepInputFormatter.display(zipCode),
+        ].where((part) => part.isNotEmpty).join(' - ');
 
   String get genderLabel => switch (gender) {
     'MALE' => 'Masculino',

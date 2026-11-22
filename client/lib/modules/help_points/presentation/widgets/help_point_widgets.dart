@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/geo/geo_point.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_cover_image.dart';
+import '../../../../core/widgets/app_list_card.dart';
 import '../../../../core/widgets/app_status_pill.dart';
 import '../../domain/entities/help_point.dart';
 
@@ -25,10 +27,10 @@ class HelpPointCover extends StatelessWidget {
       aspectRatio: aspectRatio,
       borderRadius: BorderRadius.circular(radius),
       placeholder: ColoredBox(
-        color: const Color(0xFF343741),
+        color: AppColors.coverDark,
         child: Center(
           child: Icon(
-            _iconOf(point),
+            iconOf(point),
             color: Colors.white.withValues(alpha: 0.55),
             size: 34,
           ),
@@ -37,7 +39,7 @@ class HelpPointCover extends StatelessWidget {
     );
   }
 
-  static IconData _iconOf(HelpPoint point) {
+  static IconData iconOf(HelpPoint point) {
     final services = point.services;
     if (services.contains(AssistanceType.shelter) ||
         services.contains(AssistanceType.overnight)) {
@@ -75,6 +77,26 @@ class HelpPointCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (horizontal) {
+      return AppListCard(
+        onTap: onTap,
+        leading: SizedBox(
+          width: 84,
+          child: HelpPointCover(point: point, aspectRatio: 1),
+        ),
+        title: point.name,
+        subtitle: point.cityLabel,
+        details: [
+          if (distanceKm case final km?)
+            AppDetail(
+              Icons.near_me_outlined,
+              '${GeoPoint.formatKm(km)} de você',
+              color: AppColors.brandDark,
+            ),
+        ],
+      );
+    }
+
     final details = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -87,8 +109,8 @@ class HelpPointCard extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFF454545),
-                  fontSize: 12,
+                  color: AppColors.textBody,
+                  fontSize: AppTextSize.caption,
                   letterSpacing: 0,
                 ),
               ),
@@ -98,7 +120,7 @@ class HelpPointCard extends StatelessWidget {
                 GeoPoint.formatKm(km),
                 style: GoogleFonts.manrope(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: 12,
+                  fontSize: AppTextSize.caption,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
@@ -112,7 +134,7 @@ class HelpPointCard extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: GoogleFonts.manrope(
             color: Colors.black,
-            fontSize: 15,
+            fontSize: AppTextSize.title,
             fontWeight: FontWeight.w600,
             height: 1.25,
             letterSpacing: 0,
@@ -123,10 +145,10 @@ class HelpPointCard extends StatelessWidget {
 
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: horizontal

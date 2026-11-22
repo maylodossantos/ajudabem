@@ -57,6 +57,7 @@ class Campaign {
     this.deadline,
     this.coverImage,
     this.organizationName = '',
+    this.createdAt,
   });
 
   final int id;
@@ -70,6 +71,7 @@ class Campaign {
   final String? coverImage;
   final InitiativeStatus status;
   final String organizationName;
+  final DateTime? createdAt;
 
   bool get isActive => status == InitiativeStatus.active;
 

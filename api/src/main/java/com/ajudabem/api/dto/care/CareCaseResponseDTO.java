@@ -26,6 +26,7 @@ public record CareCaseResponseDTO(
         String city,
         String state,
         String zipCode,
+        String locationDescription,
         Double latitude,
         Double longitude,
         LocalDateTime createdAt,
@@ -37,7 +38,7 @@ public record CareCaseResponseDTO(
 
     public CareCaseResponseDTO withDistanceKm(Double km) {
         return new CareCaseResponseDTO(id, fullName, age, gender, riskLevel, careStatus, finishReason, tags, notes,
-                street, number, neighborhood, city, state, zipCode, latitude, longitude, createdAt, careStartedAt,
+                street, number, neighborhood, city, state, zipCode, locationDescription, latitude, longitude, createdAt, careStartedAt,
                 careUpdatedAt, organization, km);
     }
 }

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class AppIconBadge extends StatelessWidget {
   const AppIconBadge({
     required this.icon,
     super.key,
-    this.iconColor = const Color(0xFFA2A2A2),
-    this.backgroundColor = const Color(0xFFE9E9E9),
+    this.iconColor = AppColors.textMuted,
+    this.backgroundColor = AppColors.surfaceMuted,
     this.size = 108,
   });
 

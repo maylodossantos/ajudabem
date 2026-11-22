@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/formatters/date_input_formatter.dart';
 import '../../../../core/geo/geo_point.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_card_actions.dart';
 import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_list_card.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_search_field.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
@@ -158,58 +159,6 @@ class _CareListPageState extends State<CareListPage> {
   }
 }
 
-class _CardShell extends StatelessWidget {
-  const _CardShell({required this.person, required this.children});
-
-  final CareCase person;
-  final List<Widget> children;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  person.fullName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.manrope(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ),
-              Text(
-                'Urgência: ',
-                style: GoogleFonts.manrope(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              UrgencyBar(urgency: person.urgency, width: 84),
-            ],
-          ),
-          const SizedBox(height: 8),
-          ...children,
-        ],
-      ),
-    );
-  }
-}
-
-TextStyle _detail() =>
-    GoogleFonts.manrope(color: const Color(0xFF232323), fontSize: 13.5);
-
 class _NominatedCard extends StatelessWidget {
   const _NominatedCard({
     required this.person,
@@ -225,32 +174,27 @@ class _NominatedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _CardShell(
-      person: person,
-      children: [
-        Text('Região: ${person.region}', style: _detail()),
-        if (person.distanceKm case final km?) ...[
-          const SizedBox(height: 6),
-          Text(
-            'Distância aproximada: ${GeoPoint.formatKm(km)}',
-            style: _detail(),
+    return AppListCard(
+      onTap: onOpen,
+      title: person.fullName,
+      subtitle: person.region,
+      badge: UrgencyBadge(urgency: person.urgency),
+      details: [
+        if (person.distanceKm case final km?)
+          AppDetail(
+            Icons.near_me_outlined,
+            '${GeoPoint.formatKm(km)} de distância',
           ),
-        ],
-        const SizedBox(height: 6),
-        Text(
-          'Necessidades: ${person.needs.isEmpty ? 'não informadas' : person.needs.join(', ')}',
-          style: _detail(),
-        ),
-        const SizedBox(height: 12),
-        AppCardActions(
-          secondaryLabel: 'Ver detalhes',
-          onSecondary: onOpen,
-          primaryLabel: 'Assumir atendimento',
-          primaryKey: Key('care_assume_${person.id}'),
-          isLoading: isAssuming,
-          onPrimary: onAssume,
-        ),
       ],
+      body: NeedChips(needs: person.needs, maxVisible: 3),
+      footer: AppCardActions(
+        secondaryLabel: 'Ver detalhes',
+        onSecondary: onOpen,
+        primaryLabel: 'Assumir atendimento',
+        primaryKey: Key('care_assume_${person.id}'),
+        isLoading: isAssuming,
+        onPrimary: onAssume,
+      ),
     );
   }
 }
@@ -268,36 +212,34 @@ class _InCareCard extends StatelessWidget {
     final finished = person.status == CareStatus.finished;
     final stale = !finished && (days ?? 0) >= 3;
 
-    return _CardShell(
-      person: person,
-      children: [
+    return AppListCard(
+      onTap: onOpen,
+      title: person.fullName,
+      subtitle: person.region,
+      badge: UrgencyBadge(urgency: person.urgency),
+      details: [
         if (started != null)
-          Text(
-            'Início: ${DateInputFormatter.display(started)}',
-            style: _detail(),
+          AppDetail(
+            Icons.event_outlined,
+            'Início em ${DateInputFormatter.display(started)}',
           ),
-        const SizedBox(height: 6),
-        Text(
-          'Responsável: ${person.organizationName ?? '—'}',
-          style: _detail(),
-        ),
-        const SizedBox(height: 12),
-        AppCardActions(
-          secondaryLabel: finished
-              ? (person.finishReason?.label ?? 'Finalizado')
-              : days == null || days == 0
-              ? 'Atualizado hoje'
-              : '$days ${days == 1 ? 'dia' : 'dias'} sem atualização',
-          secondaryLeading: Icon(
-            finished ? Icons.check_circle_outline : Icons.info_outline,
-            size: 18,
-            color: stale ? const Color(0xFFE07B00) : null,
-          ),
-          onSecondary: onOpen,
-          primaryLabel: 'Ver caso',
-          onPrimary: onOpen,
-        ),
+        AppDetail(Icons.apartment_outlined, person.organizationName ?? '—'),
       ],
+      footer: AppCardActions(
+        secondaryLabel: finished
+            ? (person.finishReason?.label ?? 'Finalizado')
+            : days == null || days == 0
+            ? 'Atualizado hoje'
+            : '$days ${days == 1 ? 'dia' : 'dias'} sem atualização',
+        secondaryLeading: Icon(
+          finished ? Icons.check_circle_outline : Icons.info_outline,
+          size: 18,
+          color: stale ? AppColors.warningText : null,
+        ),
+        onSecondary: onOpen,
+        primaryLabel: 'Ver detalhes',
+        onPrimary: onOpen,
+      ),
     );
   }
 }

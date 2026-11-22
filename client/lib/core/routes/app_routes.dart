@@ -5,6 +5,7 @@ abstract final class AppRoutes {
   static const verifyCode = '/verify-code/';
   static const resetPassword = '/reset-password/';
   static const news = '/news/';
+  static const newsAll = '/news/all/';
   static const newsDetail = '/news/detail/';
   static const newsForm = '/news/form/';
   static const newsManage = '/news/manage/';
@@ -18,6 +19,8 @@ abstract final class AppRoutes {
   static const vulnerablePersonRegistration = '/forms/vulnerable-person/';
   static const assistedPeople = '/assisted-people/';
   static const ong = '/ong/';
+  static const myOng = '/ong/mine/';
+  static const ongContactForm = '/ong/mine/contact/';
   static const ongValidation = '/ong/validation/';
   static const ongValidationForm = '/ong/validation/form/';
   static const ongReviews = '/ong/reviews/';

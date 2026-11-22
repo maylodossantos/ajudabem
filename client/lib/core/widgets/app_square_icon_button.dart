@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
+
 class AppSquareIconButton extends StatelessWidget {
   const AppSquareIconButton({
     required this.icon,
@@ -27,7 +29,9 @@ class AppSquareIconButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: background,
         fixedSize: Size(size, size),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
       ),
     );
   }

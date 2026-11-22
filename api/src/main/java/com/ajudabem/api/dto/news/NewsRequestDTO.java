@@ -1,5 +1,6 @@
 package com.ajudabem.api.dto.news;
 
+import com.ajudabem.api.domains.news.NewsCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
@@ -22,5 +23,7 @@ public record NewsRequestDTO(
         String city,
 
         @Size(max = 2, message = "Use a sigla do estado")
-        String state
+        String state,
+
+        NewsCategory category
 ) { }

@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_dialog.dart';
 import '../../../../core/widgets/app_labeled_field.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../domain/entities/organization.dart';
 
 Future<bool> showApproveOrganizationDialog(BuildContext context) async {
@@ -25,14 +26,12 @@ Future<bool> showApproveOrganizationDialog(BuildContext context) async {
         ],
       ),
       actions: [
-        AppOutlinedButton(
-          label: 'Cancelar',
-          onPressed: () => Navigator.of(dialogContext).pop(false),
-        ),
-        AppPrimaryButton(
-          key: const Key('ong_confirm_approve_button'),
-          label: 'Aprovar',
-          onPressed: () => Navigator.of(dialogContext).pop(true),
+        AppBottomActions(
+          secondaryLabel: 'Cancelar',
+          onSecondary: () => Navigator.of(dialogContext).pop(false),
+          primaryKey: const Key('ong_confirm_approve_button'),
+          primaryLabel: 'Aprovar',
+          onPrimary: () => Navigator.of(dialogContext).pop(true),
         ),
       ],
     ),
@@ -105,7 +104,7 @@ class _RejectDialogState extends State<_RejectDialog> {
         children: [
           AppLabeledDropdown<RejectionReason>(
             key: const Key('ong_reject_reason_field'),
-            label: 'Motivo:',
+            label: 'Motivo',
             required: true,
             hintText: 'Selecione o motivo',
             value: reason,
@@ -121,20 +120,20 @@ class _RejectDialogState extends State<_RejectDialog> {
             controller: _noteController,
             maxLines: 5,
             maxLength: 1000,
-            style: GoogleFonts.manrope(fontSize: 14),
+            style: GoogleFonts.manrope(fontSize: AppTextSize.body),
             decoration: InputDecoration(
               hintText: 'Descreva os detalhes da reprovação',
               hintStyle: AppFieldStyles.hint,
               counterText: '',
               contentPadding: const EdgeInsets.all(12),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: BorderSide(
                   color: Theme.of(context).colorScheme.primary,
                   width: 1.5,
@@ -145,15 +144,13 @@ class _RejectDialogState extends State<_RejectDialog> {
         ],
       ),
       actions: [
-        AppOutlinedButton(
-          label: 'Cancelar',
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        AppPrimaryButton(
-          key: const Key('ong_confirm_reject_button'),
-          label: 'Reprovar',
-          color: AppColors.danger,
-          onPressed: reason == null
+        AppBottomActions(
+          secondaryLabel: 'Cancelar',
+          onSecondary: () => Navigator.of(context).pop(),
+          primaryKey: const Key('ong_confirm_reject_button'),
+          primaryLabel: 'Reprovar',
+          primaryColor: AppColors.danger,
+          onPrimary: reason == null
               ? null
               : () => Navigator.of(context).pop((reason, _noteController.text)),
         ),
@@ -179,8 +176,8 @@ class _Benefit extends StatelessWidget {
             child: Text(
               text,
               style: GoogleFonts.manrope(
-                color: const Color(0xFF232323),
-                fontSize: 14,
+                color: AppColors.textStrong,
+                fontSize: AppTextSize.body,
                 letterSpacing: 0,
               ),
             ),

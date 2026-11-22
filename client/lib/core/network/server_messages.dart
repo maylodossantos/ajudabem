@@ -17,5 +17,7 @@ abstract final class ServerMessages {
     'Documents must be PDF files up to 10 MB':
         'Os documentos precisam ser arquivos PDF de até 10 MB.',
     'File is too large': 'Os documentos precisam ter no máximo 10 MB cada.',
+    'Only approved organizations can update their contact':
+        'Só ONGs aprovadas podem alterar os dados de contato.',
   };
 }

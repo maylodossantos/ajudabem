@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_error_view.dart';
 
@@ -16,6 +15,8 @@ class AppAsyncList<T> extends StatelessWidget {
     this.columns = 1,
     this.gridItemHeight,
     this.padding,
+    this.emptyIcon = Icons.inbox_outlined,
+    this.emptyView,
   });
 
   final List<T> items;
@@ -29,6 +30,8 @@ class AppAsyncList<T> extends StatelessWidget {
   final int columns;
   final double? gridItemHeight;
   final EdgeInsetsGeometry? padding;
+  final IconData emptyIcon;
+  final Widget? emptyView;
 
   @override
   Widget build(BuildContext context) {
@@ -42,16 +45,7 @@ class AppAsyncList<T> extends StatelessWidget {
     }
 
     if (items.isEmpty) {
-      return Center(
-        child: Text(
-          emptyMessage,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.manrope(
-            color: const Color(0xFF454545),
-            fontSize: 14,
-          ),
-        ),
-      );
+      return emptyView ?? AppEmptyView(message: emptyMessage, icon: emptyIcon);
     }
 
     return RefreshIndicator(

@@ -92,7 +92,7 @@ class _CareFilterPageState extends State<CareFilterPage> {
         if (options.hasDistances)
           AppFilterSection(
             title: 'Distância',
-            child: AppDistanceSlider(
+            child: AppDistanceChoice(
               key: const Key('care_filter_distance'),
               maxDistanceKm: _filter.maxDistanceKm,
               onChanged: (km) => _update(_filter.withMaxDistance(km)),

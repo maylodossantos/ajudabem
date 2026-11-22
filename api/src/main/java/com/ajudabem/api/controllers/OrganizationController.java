@@ -3,6 +3,7 @@ package com.ajudabem.api.controllers;
 import com.ajudabem.api.domains.organization.OrganizationDocumentType;
 import com.ajudabem.api.domains.organization.OrganizationStatus;
 import com.ajudabem.api.dto.organization.DocumentFileDTO;
+import com.ajudabem.api.dto.organization.OrganizationContactRequestDTO;
 import com.ajudabem.api.dto.organization.OrganizationRequestDTO;
 import com.ajudabem.api.dto.organization.OrganizationResponseDTO;
 import com.ajudabem.api.dto.organization.RejectOrganizationRequestDTO;
@@ -20,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,6 +61,13 @@ public class OrganizationController {
             }
         }
         return ResponseEntity.ok(organizationService.submit(body, documents));
+    }
+
+    @Operation(summary = "Update the contact and address of my approved organization")
+    @PutMapping("/me/contact")
+    public ResponseEntity<OrganizationResponseDTO> updateContact(
+            @Valid @RequestBody OrganizationContactRequestDTO body) {
+        return ResponseEntity.ok(organizationService.updateContact(body));
     }
 
     @Operation(summary = "List validation requests (admin)")

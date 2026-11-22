@@ -6,12 +6,13 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../../core/routes/app_routes.dart';
-import '../../../../core/services/location_service.dart';
-import '../../../../core/widgets/app_avatar.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_card_actions.dart';
 import '../../../../core/widgets/app_choice_chip.dart';
 import '../../../../core/widgets/app_feedback.dart';
+import '../../../../core/widgets/app_map.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/care_case.dart';
@@ -26,8 +27,6 @@ class CareMapPage extends StatefulWidget {
   final String? token;
   final bool showTiles;
 
-  static const cascavel = LatLng(-24.9555, -53.4552);
-
   @override
   State<CareMapPage> createState() => _CareMapPageState();
 }
@@ -35,6 +34,7 @@ class CareMapPage extends StatefulWidget {
 class _CareMapPageState extends State<CareMapPage> {
   late final CareMapStore _store;
   final _map = MapController();
+  bool _onMe = false;
 
   String? get _token => widget.token ?? Modular.get<LoginStore>().authToken;
 
@@ -53,17 +53,11 @@ class _CareMapPageState extends State<CareMapPage> {
     }
     await _store.load(token);
     final first = _store.cases.where((person) => person.hasLocation);
-    if (mounted && first.isNotEmpty) {
-      _map.move(LatLng(first.first.latitude!, first.first.longitude!), 13);
-    }
-  }
-
-  Future<void> _centerOnMe() async {
-    try {
-      final point = await Modular.get<LocationService>().currentPosition();
-      _map.move(LatLng(point.latitude, point.longitude), 14);
-    } catch (error) {
-      if (mounted) showAppSnackBar(context, '$error');
+    if (mounted && !_onMe && first.isNotEmpty) {
+      _map.move(
+        LatLng(first.first.latitude!, first.first.longitude!),
+        AppMap.streetZoom,
+      );
     }
   }
 
@@ -82,7 +76,7 @@ class _CareMapPageState extends State<CareMapPage> {
 
   void _openFocus(CareFocus focus) {
     _store.showPeople();
-    _map.move(LatLng(focus.latitude, focus.longitude), 15);
+    _map.move(LatLng(focus.latitude, focus.longitude), AppMap.closeZoom);
   }
 
   @override
@@ -93,166 +87,110 @@ class _CareMapPageState extends State<CareMapPage> {
       body: Observer(
         builder: (_) {
           final selected = _store.selected;
+          final foci = _store.mode == MapMode.foci;
 
-          return Stack(
-            children: [
-              FlutterMap(
-                mapController: _map,
-                options: MapOptions(
-                  initialCenter: CareMapPage.cascavel,
-                  initialZoom: 13,
-                  onTap: (_, _) => _store.select(null),
-                ),
-                children: [
-                  if (widget.showTiles)
-                    TileLayer(
-                      urlTemplate:
-                          'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-                      subdomains: const ['a', 'b', 'c', 'd'],
-                      retinaMode: RetinaMode.isHighDensity(context),
-                      userAgentPackageName: 'com.example.ajuda_bem',
-                    ),
-                  if (_store.mode == MapMode.foci) ...[
-                    CircleLayer(
-                      circles: [
-                        for (final focus in _store.foci)
-                          CircleMarker(
-                            point: LatLng(focus.latitude, focus.longitude),
-                            radius: 120.0 + 60 * focus.count,
-                            useRadiusInMeter: true,
-                            color: focus.urgency.color.withValues(alpha: 0.4),
-                            borderColor: focus.urgency.color,
-                            borderStrokeWidth: 1,
-                          ),
-                      ],
-                    ),
-                    MarkerLayer(
-                      markers: [
-                        for (final focus in _store.foci)
-                          Marker(
-                            point: LatLng(focus.latitude, focus.longitude),
-                            width: 44,
-                            height: 44,
-                            child: GestureDetector(
-                              key: Key('focus_${focus.label}'),
-                              onTap: () => _openFocus(focus),
-                              child: Center(
-                                child: Text(
-                                  '${focus.count}',
-                                  style: GoogleFonts.manrope(
-                                    color: const Color(0xFF232323),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ] else
-                    MarkerLayer(
-                      markers: [
-                        for (final person in _store.visible)
-                          if (person.hasLocation)
-                            Marker(
-                              point: LatLng(
-                                person.latitude!,
-                                person.longitude!,
-                              ),
-                              width: 30,
-                              height: 30,
-                              child: GestureDetector(
-                                key: Key('person_marker_${person.id}'),
-                                onTap: () => _store.select(person),
-                                child: _Dot(
-                                  color: person.urgency.color,
-                                  selected: person.id == selected?.id,
-                                ),
-                              ),
-                            ),
-                      ],
-                    ),
-                  Align(
-                    alignment: Alignment.bottomLeft,
-                    child: Container(
-                      color: Colors.white70,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      child: const Text(
-                        '© OpenStreetMap · © CARTO',
-                        style: TextStyle(fontSize: 10),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: Container(
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        for (final layer in MapLayer.values)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8),
-                            child: AppChoiceChip(
-                              key: Key('map_layer_${layer.name}'),
-                              label: layer.label,
-                              selected: _store.layer == layer,
-                              onTap: () => _store.setLayer(layer),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              if (_store.isLoading)
-                const Positioned(
-                  top: 64,
-                  left: 0,
-                  right: 0,
-                  child: LinearProgressIndicator(),
-                ),
-              Positioned(
-                right: 16,
-                bottom: selected == null ? 24 : 250,
-                child: Column(
+          return AppMap(
+            controller: _map,
+            showTiles: widget.showTiles,
+            isLoading: _store.isLoading,
+            onTapEmpty: () => _store.select(null),
+            onLocated: (_) => _onMe = true,
+            top: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
                   children: [
-                    _RoundButton(
-                      key: const Key('map_center_me'),
-                      icon: Icons.my_location,
-                      tooltip: 'Minha localização',
-                      onTap: _centerOnMe,
-                    ),
-                    const SizedBox(height: 14),
-                    _RoundButton(
-                      key: const Key('map_toggle_mode'),
-                      icon: _store.mode == MapMode.foci
-                          ? Icons.person_outline
-                          : Icons.donut_large,
-                      tooltip: _store.mode == MapMode.foci
-                          ? 'Ver pessoas'
-                          : 'Ver focos',
-                      onTap: _store.toggleMode,
-                    ),
+                    for (final layer in MapLayer.values)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: AppChoiceChip(
+                          key: Key('map_layer_${layer.name}'),
+                          label: layer.label,
+                          selected: _store.layer == layer,
+                          onTap: () => _store.setLayer(layer),
+                        ),
+                      ),
                   ],
                 ),
               ),
-              if (selected != null)
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: _PersonSheet(
+            ),
+            actions: [
+              AppMapButton(
+                key: const Key('map_toggle_mode'),
+                icon: foci ? Icons.person_outline : Icons.donut_large,
+                tooltip: foci ? 'Ver pessoas' : 'Ver focos',
+                onTap: _store.toggleMode,
+              ),
+            ],
+            layers: [
+              if (foci) ...[
+                CircleLayer(
+                  circles: [
+                    for (final focus in _store.foci)
+                      CircleMarker(
+                        point: LatLng(focus.latitude, focus.longitude),
+                        radius: 120.0 + 60 * focus.count,
+                        useRadiusInMeter: true,
+                        color: focus.urgency.color.withValues(alpha: 0.4),
+                        borderColor: focus.urgency.color,
+                        borderStrokeWidth: 1,
+                      ),
+                  ],
+                ),
+                MarkerLayer(
+                  markers: [
+                    for (final focus in _store.foci)
+                      Marker(
+                        point: LatLng(focus.latitude, focus.longitude),
+                        width: 44,
+                        height: 44,
+                        child: GestureDetector(
+                          key: Key('focus_${focus.label}'),
+                          onTap: () => _openFocus(focus),
+                          child: Center(
+                            child: Text(
+                              '${focus.count}',
+                              style: GoogleFonts.manrope(
+                                color: AppColors.textStrong,
+                                fontSize: AppTextSize.title,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ] else
+                MarkerLayer(
+                  markers: [
+                    for (final person in _store.visible)
+                      if (person.hasLocation)
+                        Marker(
+                          point: LatLng(person.latitude!, person.longitude!),
+                          width: AppMapPin.size,
+                          height: AppMapPin.size,
+                          alignment: Alignment.topCenter,
+                          child: GestureDetector(
+                            key: Key('person_marker_${person.id}'),
+                            onTap: () => _store.select(person),
+                            child: AppMapPin(
+                              color: person.id == selected?.id
+                                  ? AppColors.textStrong
+                                  : person.urgency.color,
+                              icon: Icons.person,
+                              selected: person.id == selected?.id,
+                            ),
+                          ),
+                        ),
+                  ],
+                ),
+            ],
+            selected: selected == null
+                ? null
+                : _PersonSheet(
                     person: selected,
                     isAssuming: _store.isAssuming,
                     onOpen: () => Modular.to.pushNamed(
@@ -261,63 +199,8 @@ class _CareMapPageState extends State<CareMapPage> {
                     ),
                     onAssume: _assume,
                   ),
-                ),
-            ],
           );
         },
-      ),
-    );
-  }
-}
-
-class _Dot extends StatelessWidget {
-  const _Dot({required this.color, required this.selected});
-
-  final Color color;
-  final bool selected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: selected ? 26 : 20,
-        height: selected ? 26 : 20,
-        decoration: BoxDecoration(
-          color: color,
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
-          boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4)],
-        ),
-      ),
-    );
-  }
-}
-
-class _RoundButton extends StatelessWidget {
-  const _RoundButton({
-    required this.icon,
-    required this.tooltip,
-    required this.onTap,
-    super.key,
-  });
-
-  final IconData icon;
-  final String tooltip;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      elevation: 4,
-      child: IconButton(
-        tooltip: tooltip,
-        iconSize: 30,
-        padding: const EdgeInsets.all(14),
-        color: Theme.of(context).colorScheme.primary,
-        onPressed: onTap,
-        icon: Icon(icon),
       ),
     );
   }
@@ -338,90 +221,97 @@ class _PersonSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = GoogleFonts.manrope(
-      fontSize: 14,
-      fontWeight: FontWeight.w800,
-    );
     final nominated = person.status == CareStatus.nominated;
+    final organization = person.organizationName;
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8)],
-      ),
+    return AppMapSheet(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const AppAvatar(radius: 28, imageUrl: null),
-              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       person.fullName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.manrope(
-                        fontSize: 17,
+                        color: AppColors.textStrong,
+                        fontSize: AppTextSize.title,
                         fontWeight: FontWeight.w700,
+                        letterSpacing: 0,
                       ),
                     ),
                     if (person.cityLabel.isNotEmpty)
                       Text(
                         person.cityLabel,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFFA2A2A2),
-                          fontWeight: FontWeight.w700,
+                          color: AppColors.textSecondary,
+                          fontSize: AppTextSize.small,
+                          letterSpacing: 0,
                         ),
                       ),
-                    const SizedBox(height: 4),
-                    UrgencyBar(urgency: person.urgency, width: 110),
                   ],
                 ),
               ),
+              const SizedBox(width: AppSpacing.sm),
+              UrgencyBadge(urgency: person.urgency),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
+          NeedChips(needs: person.needs, maxVisible: 4),
+          const SizedBox(height: AppSpacing.md),
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const Icon(
+                Icons.apartment_outlined,
+                size: 18,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Necessidades:', style: label),
-                    const SizedBox(height: 6),
-                    NeedChips(needs: person.needs),
-                  ],
+                child: Text(
+                  organization ?? 'Aguardando uma ONG',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.manrope(
+                    color: AppColors.textBody,
+                    fontSize: AppTextSize.small,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0,
+                  ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('ONG Responsável:', style: label),
-                    const SizedBox(height: 6),
-                    Text(person.organizationName ?? 'Não atribuída.'),
-                  ],
+              if (!nominated)
+                AppBadge(
+                  label: person.status.label,
+                  tone: person.status == CareStatus.finished
+                      ? AppTone.success
+                      : AppTone.brand,
+                  dot: true,
                 ),
-              ),
             ],
           ),
-          const SizedBox(height: 14),
-          AppCardActions(
-            secondaryLabel: 'Ver detalhes',
-            onSecondary: onOpen,
-            primaryLabel: nominated ? 'Ajudar' : 'Em atendimento',
-            primaryKey: const Key('map_assume'),
-            primaryDone: !nominated,
-            isLoading: isAssuming,
-            onPrimary: onAssume,
-          ),
+          const SizedBox(height: AppSpacing.lg),
+          if (nominated)
+            AppCardActions(
+              secondaryLabel: 'Ver detalhes',
+              onSecondary: onOpen,
+              primaryLabel: 'Assumir atendimento',
+              primaryKey: const Key('map_assume'),
+              isLoading: isAssuming,
+              onPrimary: onAssume,
+            )
+          else
+            AppCardButton(
+              key: const Key('map_open_case'),
+              label: 'Ver detalhes',
+              onPressed: onOpen,
+            ),
         ],
       ),
     );

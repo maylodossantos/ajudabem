@@ -54,6 +54,9 @@ abstract class VulnerablePersonFormStoreBase with Store {
   String description = '';
 
   @observable
+  String locationDescription = '';
+
+  @observable
   Set<String> selectedNeeds = {};
 
   @observable
@@ -66,17 +69,34 @@ abstract class VulnerablePersonFormStoreBase with Store {
   bool get isEditing => assistedPersonId != null;
 
   @computed
+  bool get asksIdentity => hasPersonalInformation != false;
+
+  @computed
+  bool get asksFixedAddress => hasFixedAddress != false;
+
+  @computed
+  bool get hasIdentity =>
+      !asksIdentity ||
+      (name.trim().isNotEmpty &&
+          int.tryParse(age.trim()) != null &&
+          sex.trim().isNotEmpty);
+
+  @computed
+  bool get hasLocation =>
+      city.trim().isNotEmpty &&
+      state.trim().isNotEmpty &&
+      (asksFixedAddress
+          ? address.trim().isNotEmpty &&
+                zipCode.trim().isNotEmpty &&
+                number.trim().isNotEmpty
+          : locationDescription.trim().isNotEmpty);
+
+  @computed
   bool get canSubmit =>
       hasPersonalInformation != null &&
       hasFixedAddress != null &&
-      name.trim().isNotEmpty &&
-      int.tryParse(age.trim()) != null &&
-      sex.trim().isNotEmpty &&
-      address.trim().isNotEmpty &&
-      city.trim().isNotEmpty &&
-      state.trim().isNotEmpty &&
-      zipCode.trim().isNotEmpty &&
-      number.trim().isNotEmpty &&
+      hasIdentity &&
+      hasLocation &&
       description.trim().isNotEmpty &&
       selectedNeeds.isNotEmpty &&
       !isLoading;
@@ -119,6 +139,9 @@ abstract class VulnerablePersonFormStoreBase with Store {
   void setDescription(String value) => description = value;
 
   @action
+  void setLocationDescription(String value) => locationDescription = value;
+
+  @action
   void toggleNeed(String need) {
     final updatedNeeds = Set<String>.from(selectedNeeds);
     updatedNeeds.contains(need)
@@ -132,9 +155,9 @@ abstract class VulnerablePersonFormStoreBase with Store {
   @action
   void populate(AssistedPerson person) {
     assistedPersonId = person.id;
-    hasPersonalInformation = true;
+    hasPersonalInformation = person.fullName != AssistedPerson.unidentifiedName;
     hasFixedAddress = person.street.isNotEmpty;
-    name = person.fullName;
+    name = hasPersonalInformation! ? person.fullName : '';
     age = person.age > 0 ? person.age.toString() : '';
     sex = _labelByGender[person.gender] ?? 'Outro';
     address = person.street;
@@ -143,6 +166,7 @@ abstract class VulnerablePersonFormStoreBase with Store {
     zipCode = person.zipCode;
     number = person.number;
     description = person.notes;
+    locationDescription = person.locationDescription;
     selectedNeeds = Set<String>.from(person.tags);
   }
 
@@ -189,19 +213,23 @@ abstract class VulnerablePersonFormStoreBase with Store {
   };
 
   CreateAssistedPersonParams _buildParams() {
+    final identified = asksIdentity;
+    final fixed = asksFixedAddress;
     return CreateAssistedPersonParams(
-      fullName: name.trim(),
-      age: int.parse(age.trim()),
-      gender: _genderByLabel[sex] ?? 'OTHER',
+      identified: identified,
+      fullName: identified ? name.trim() : '',
+      age: identified ? int.parse(age.trim()) : null,
+      gender: identified ? _genderByLabel[sex] ?? 'OTHER' : null,
       tagIds: _tags.idsOf(selectedNeeds),
       notes: description.trim(),
-      street: address.trim(),
-      number: number.trim(),
+      street: fixed ? address.trim() : '',
+      number: fixed ? number.trim() : '',
       neighborhood: '',
       city: city.trim(),
       state: state.trim(),
-      zipCode: zipCode.trim(),
+      zipCode: fixed ? zipCode.trim() : '',
       country: 'Brasil',
+      locationDescription: fixed ? '' : locationDescription.trim(),
     );
   }
 }

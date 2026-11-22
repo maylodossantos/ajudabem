@@ -5,10 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/external_link_service.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_error_view.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_info_card.dart';
+import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/campaign.dart';
@@ -98,7 +100,13 @@ class _ActionDetailPageState extends State<ActionDetailPage> {
     void back() => Navigator.of(context).maybePop();
 
     if (widget.args.manage) {
-      if (!action.isActive) return null;
+      if (!action.isActive) {
+        return AppOutlinedButton(
+          key: const Key('action_back'),
+          label: 'Voltar',
+          onPressed: back,
+        );
+      }
       return AppBottomActions(
         secondaryLabel: 'Finalizar',
         secondaryKey: const Key('action_finish'),
@@ -196,8 +204,8 @@ class _ActionBody extends StatelessWidget {
     final email = action.contactEmail;
     final phone = action.contactPhone;
     final sections = [
-      ('Afazeres', action.tasks),
-      ('Quem pode ajudar?', action.requirements),
+      ('Atividades', action.tasks),
+      ('Perfil do voluntário', action.requirements),
     ];
 
     return SingleChildScrollView(
@@ -214,7 +222,7 @@ class _ActionBody extends StatelessWidget {
                     child: _ContactButton(
                       key: const Key('action_contact_email'),
                       label: 'Falar com a ONG',
-                      background: const Color(0xFFEBEBEB),
+                      background: AppColors.surfaceMuted,
                       onTap: () => onEmail(email),
                     ),
                   ),
@@ -250,7 +258,10 @@ class _ActionBody extends StatelessWidget {
             title: 'Descrição',
             child: Text(
               action.description,
-              style: GoogleFonts.manrope(fontSize: 14, height: 1.4),
+              style: GoogleFonts.manrope(
+                fontSize: AppTextSize.body,
+                height: 1.4,
+              ),
             ),
           ),
           for (final (title, text) in sections)
@@ -268,7 +279,10 @@ class _ActionBody extends StatelessWidget {
               title: 'Observações',
               child: Text(
                 action.notes,
-                style: GoogleFonts.manrope(fontSize: 14, height: 1.4),
+                style: GoogleFonts.manrope(
+                  fontSize: AppTextSize.body,
+                  height: 1.4,
+                ),
               ),
             ),
           ],
@@ -299,14 +313,16 @@ class _ContactButton extends StatelessWidget {
         style: FilledButton.styleFrom(
           backgroundColor: background,
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
         ),
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
             color: Theme.of(context).colorScheme.primary,
-            fontSize: 14,
+            fontSize: AppTextSize.body,
             fontWeight: FontWeight.w700,
           ),
         ),

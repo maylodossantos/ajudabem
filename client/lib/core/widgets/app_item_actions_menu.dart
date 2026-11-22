@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
-enum _ItemAction { edit, delete }
+import '../theme/app_colors.dart';
+import 'app_svg_icon.dart';
 
 class AppItemActionsMenu extends StatelessWidget {
   const AppItemActionsMenu({
-    required this.tooltip,
+    required this.itemLabel,
     required this.isBusy,
     required this.onEdit,
     required this.onDelete,
     super.key,
   });
 
-  final String tooltip;
+  final String itemLabel;
   final bool isBusy;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -20,40 +21,65 @@ class AppItemActionsMenu extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isBusy) {
       return const Padding(
-        padding: EdgeInsets.all(12),
+        padding: EdgeInsets.all(AppSpacing.sm),
         child: SizedBox.square(
-          dimension: 20,
+          dimension: AppRoundIconButton.iconSize,
           child: CircularProgressIndicator(strokeWidth: 2),
         ),
       );
     }
 
-    return PopupMenuButton<_ItemAction>(
-      tooltip: tooltip,
-      onSelected: (action) =>
-          action == _ItemAction.edit ? onEdit() : onDelete(),
-      itemBuilder: (_) => const [
-        PopupMenuItem(
-          value: _ItemAction.edit,
-          child: Row(
-            children: [
-              Icon(Icons.edit_outlined),
-              SizedBox(width: 10),
-              Text('Editar'),
-            ],
-          ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: AppSpacing.xs,
+      children: [
+        AppRoundIconButton(
+          asset: AppIcons.edit,
+          tooltip: 'Editar $itemLabel',
+          tint: Theme.of(context).colorScheme.primary,
+          onPressed: onEdit,
         ),
-        PopupMenuItem(
-          value: _ItemAction.delete,
-          child: Row(
-            children: [
-              Icon(Icons.delete_outline),
-              SizedBox(width: 10),
-              Text('Excluir'),
-            ],
-          ),
+        AppRoundIconButton(
+          asset: AppIcons.delete,
+          tooltip: 'Excluir $itemLabel',
+          tint: AppColors.danger,
+          onPressed: onDelete,
         ),
       ],
+    );
+  }
+}
+
+class AppRoundIconButton extends StatelessWidget {
+  const AppRoundIconButton({
+    required this.asset,
+    required this.tooltip,
+    required this.tint,
+    required this.onPressed,
+    super.key,
+  });
+
+  static const size = 36.0;
+  static const iconSize = 18.0;
+
+  final String asset;
+  final String tooltip;
+  final Color tint;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      constraints: const BoxConstraints.tightFor(width: size, height: size),
+      padding: EdgeInsets.zero,
+      style: IconButton.styleFrom(
+        shape: const CircleBorder(),
+        hoverColor: tint.withValues(alpha: 0.1),
+        highlightColor: tint.withValues(alpha: 0.16),
+      ),
+      icon: AppSvgIcon(asset, size: iconSize),
     );
   }
 }

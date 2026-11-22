@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
-import '../../../../core/widgets/app_button.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/app_document_card.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../stores/register_store.dart';
@@ -216,30 +216,13 @@ class TermsOfUsePage extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          child: Row(
-            children: [
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: AppOutlinedButton(
-                    key: const Key('terms_decline_button'),
-                    label: 'Recusar',
-                    onPressed: () => answer(false),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: SizedBox(
-                  height: 44,
-                  child: AppPrimaryButton(
-                    key: const Key('terms_accept_button'),
-                    label: 'Aceitar',
-                    onPressed: () => answer(true),
-                  ),
-                ),
-              ),
-            ],
+          child: AppBottomActions(
+            secondaryKey: const Key('terms_decline_button'),
+            secondaryLabel: 'Recusar',
+            onSecondary: () => answer(false),
+            primaryKey: const Key('terms_accept_button'),
+            primaryLabel: 'Aceitar',
+            onPrimary: () => answer(true),
           ),
         ),
       ),

@@ -39,9 +39,6 @@ abstract class HelpPointsStoreBase with Store {
   String? locationError;
 
   @observable
-  bool showAsGrid = true;
-
-  @observable
   Set<int> deletingIds = {};
 
   @observable
@@ -50,6 +47,10 @@ abstract class HelpPointsStoreBase with Store {
   @computed
   List<HelpPoint> get visiblePoints =>
       filter.apply(points, now: now, origin: origin);
+
+  @computed
+  List<HelpPoint> get mappedPoints =>
+      visiblePoints.where((point) => point.location != null).toList();
 
   @computed
   HelpPointOptions get options => HelpPointOptions.from(points, now);
@@ -136,9 +137,6 @@ abstract class HelpPointsStoreBase with Store {
     if (!next.remove(type)) next.add(type);
     filter = filter.copyWith(organizationTypes: next);
   }
-
-  @action
-  void toggleView() => showAsGrid = !showAsGrid;
 
   @action
   Future<bool> delete(int id, String token) async {

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:ajuda_bem/core/errors/app_exception.dart';
 import 'package:ajuda_bem/core/network/api_config.dart';
 import 'package:ajuda_bem/modules/news/data/datasources/news_datasource_impl.dart';
+import 'package:ajuda_bem/modules/news/domain/entities/news_category.dart';
 import 'package:ajuda_bem/modules/news/domain/entities/news_form_params.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -104,6 +105,7 @@ void main() {
         coverImage: 'https://i.ibb.co/abc/cover.png',
         city: ' Cascavel ',
         state: 'PR',
+        category: NewsCategory.health,
       ),
       'jwt-token',
     );
@@ -117,6 +119,7 @@ void main() {
       'cover_image': 'https://i.ibb.co/abc/cover.png',
       'city': 'Cascavel',
       'state': 'PR',
+      'category': 'HEALTH',
     });
     expect(article.title, 'Título');
   });

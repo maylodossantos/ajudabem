@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
+
 class AppTextField extends StatelessWidget {
   const AppTextField({
     required this.hintText,
@@ -46,7 +48,7 @@ class AppTextField extends StatelessWidget {
             label!,
             style: GoogleFonts.manrope(
               color: color,
-              fontSize: 16,
+              fontSize: AppTextSize.title,
               fontWeight: FontWeight.w700,
               letterSpacing: 0,
             ),
@@ -64,8 +66,8 @@ class AppTextField extends StatelessWidget {
             maxLines: maxLines,
             inputFormatters: inputFormatters,
             style: GoogleFonts.manrope(
-              color: const Color(0xFFA2A2A2),
-              fontSize: 16,
+              color: AppColors.textMuted,
+              fontSize: AppTextSize.title,
               fontWeight: FontWeight.w400,
               letterSpacing: 0,
             ),

@@ -80,7 +80,7 @@ void main() {
     await tester.tap(find.byKey(const Key('person_marker_1')));
     await tester.pumpAndSettle();
     expect(find.text('Pessoa 1'), findsOneWidget);
-    expect(find.text('Não atribuída.'), findsOneWidget);
+    expect(find.text('Aguardando uma ONG'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('map_assume')));
     await tester.pumpAndSettle();

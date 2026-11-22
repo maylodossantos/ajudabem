@@ -42,8 +42,8 @@ void main() {
   ) async {
     await pumpForm(tester);
 
-    expect(find.text('Razão Social:'), findsOneWidget);
-    expect(find.text('CNPJ:'), findsOneWidget);
+    expect(find.text('Razão social'), findsOneWidget);
+    expect(find.text('CNPJ'), findsOneWidget);
     expect(button(tester, 'ong_form_continue_button').onPressed, isNull);
   });
 
@@ -60,12 +60,44 @@ void main() {
 
     expect(store.step, OrganizationFormStoreBase.documentsStep);
     for (final type in OrganizationDocumentType.values) {
-      expect(find.text('${type.label}:'), findsOneWidget);
+      expect(find.text(type.label), findsOneWidget);
     }
     expect(button(tester, 'ong_form_submit_button').onPressed, isNull);
 
     await tester.tap(find.byTooltip('Voltar'));
     await tester.pump();
     expect(store.step, OrganizationFormStoreBase.dataStep);
+  });
+
+  testWidgets('going back from the data step leaves the form', (tester) async {
+    final store = OrganizationFormStore(
+      FakeOrganizationRepository(),
+      FakeDocumentPicker(),
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.light,
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => OngValidationFormPage(store: store),
+              ),
+            ),
+            child: const Text('open form'),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('open form'));
+    await tester.pumpAndSettle();
+    expect(find.text('Razão social'), findsOneWidget);
+
+    await tester.tap(find.byTooltip('Voltar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Razão social'), findsNothing);
+    expect(find.text('open form'), findsOneWidget);
   });
 }

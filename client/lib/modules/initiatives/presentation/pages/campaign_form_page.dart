@@ -84,7 +84,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('campaign_title'),
-                  label: 'Título:',
+                  label: 'Título',
                   required: true,
                   initialValue: _store.title,
                   onChanged: _store.setTitle,
@@ -93,7 +93,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('campaign_donations'),
-                  label: 'Doações:',
+                  label: 'Doações',
                   hintText: 'Descreva como as pessoas podem contribuir.',
                   initialValue: _store.donationInfo,
                   maxLines: 4,
@@ -102,7 +102,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               ),
               AppFormGap(
                 AppLabeledField(
-                  label: 'Título Auxiliar:',
+                  label: 'Subtítulo',
                   hintText: 'Descreva resumidamente a campanha.',
                   initialValue: _store.subtitle,
                   maxLines: 2,
@@ -112,7 +112,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('campaign_description'),
-                  label: 'Descrição:',
+                  label: 'Descrição',
                   required: true,
                   hintText: 'Descreva o objetivo e como ela será realizada.',
                   initialValue: _store.description,
@@ -122,7 +122,7 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               ),
               AppFormGap(
                 AppLabeledDropdown<CampaignCategory>(
-                  label: 'Categoria:',
+                  label: 'Categoria',
                   value: _store.category,
                   options: CampaignCategory.values,
                   labelOf: (category) => category.label,
@@ -132,8 +132,8 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               AppFormGap(
                 AppLabeledField(
                   key: const Key('campaign_goal'),
-                  label: 'Meta financeira (R\$):',
-                  hintText: 'Ex.: 1.500,00',
+                  label: 'Meta financeira (R\$)',
+                  hintText: '1.500,00',
                   initialValue: _store.goal,
                   keyboardType: TextInputType.number,
                   inputFormatters: [MoneyInputFormatter()],
@@ -142,8 +142,8 @@ class _CampaignFormPageState extends State<CampaignFormPage> {
               ),
               AppLabeledField(
                 key: const Key('campaign_deadline'),
-                label: 'Prazo da campanha:',
-                hintText: 'Ex.: 30/12/2026',
+                label: 'Prazo da campanha',
+                hintText: '30/12/2026',
                 initialValue: _store.deadline,
                 keyboardType: TextInputType.number,
                 inputFormatters: [DateInputFormatter()],

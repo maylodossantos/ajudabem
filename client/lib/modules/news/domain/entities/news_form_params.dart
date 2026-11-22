@@ -1,3 +1,5 @@
+import 'news_category.dart';
+
 class NewsFormParams {
   const NewsFormParams({
     required this.title,
@@ -6,6 +8,7 @@ class NewsFormParams {
     required this.coverImage,
     this.city = '',
     this.state = '',
+    this.category = NewsCategory.other,
   });
 
   final String title;
@@ -14,4 +17,5 @@ class NewsFormParams {
   final String? coverImage;
   final String city;
   final String state;
+  final NewsCategory category;
 }

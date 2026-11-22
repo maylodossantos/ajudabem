@@ -1,3 +1,5 @@
+import 'news_category.dart';
+
 class NewsArticle {
   const NewsArticle({
     required this.id,
@@ -9,6 +11,7 @@ class NewsArticle {
     this.city = '',
     this.state = '',
     this.createdAt,
+    this.category = NewsCategory.other,
   });
 
   final int id;
@@ -20,6 +23,7 @@ class NewsArticle {
   final String city;
   final String state;
   final DateTime? createdAt;
+  final NewsCategory category;
 
   String get locationLabel =>
       [city, state].where((part) => part.isNotEmpty).join(', ');

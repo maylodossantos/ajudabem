@@ -22,7 +22,7 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Cadastro de Pessoa em Vulnerabilidade'), findsOneWidget);
+    expect(find.text('Indicar pessoa'), findsOneWidget);
     expect(find.byType(Image), findsOneWidget);
     expect(
       find.byKey(const Key('registration_menu_bottom_navigation')),

@@ -13,13 +13,14 @@ import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_info_banner.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
+import '../../../../core/widgets/app_page_scaffold.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
 import '../../../auth/presentation/stores/login_store.dart';
 import '../../domain/entities/organization.dart';
 import '../stores/organization_review_store.dart';
 import '../widgets/organization_status_pill.dart';
+import '../widgets/organization_widgets.dart';
 import '../widgets/review_dialogs.dart';
-import 'document_viewer_page.dart';
 
 class OngReviewDetailPage extends StatefulWidget {
   const OngReviewDetailPage({required this.organization, super.key});
@@ -110,8 +111,8 @@ class _OngReviewDetailPageState extends State<OngReviewDetailPage> {
                       Text(
                         'Detalhes da solicitação',
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF232323),
-                          fontSize: 18,
+                          color: AppColors.textStrong,
+                          fontSize: AppTextSize.heading,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 0,
                         ),
@@ -169,13 +170,13 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final labelStyle = GoogleFonts.manrope(
       color: AppColors.textMuted,
-      fontSize: 15,
+      fontSize: AppTextSize.title,
       fontWeight: FontWeight.w700,
       letterSpacing: 0,
     );
     final valueStyle = GoogleFonts.manrope(
-      color: const Color(0xFF454545),
-      fontSize: 15,
+      color: AppColors.textBody,
+      fontSize: AppTextSize.title,
       letterSpacing: 0,
     );
     final submittedAt = organization.submittedAt;
@@ -186,7 +187,7 @@ class _Header extends StatelessWidget {
           width: 120,
           height: 120,
           decoration: const BoxDecoration(
-            color: Color(0xFFD9D9D9),
+            color: AppColors.border,
             shape: BoxShape.circle,
           ),
           child: Icon(
@@ -200,8 +201,8 @@ class _Header extends StatelessWidget {
           organization.tradeName,
           textAlign: TextAlign.center,
           style: GoogleFonts.manrope(
-            color: const Color(0xFF454545),
-            fontSize: 18,
+            color: AppColors.textBody,
+            fontSize: AppTextSize.heading,
             fontWeight: FontWeight.w700,
             letterSpacing: 0,
           ),
@@ -249,12 +250,12 @@ class _ReviewStepper extends StatelessWidget {
               child: Container(
                 height: 1,
                 margin: const EdgeInsets.only(top: 22),
-                color: const Color(0xFF9E9E9E),
+                color: AppColors.textMuted,
               ),
             ),
           InkWell(
             onTap: () => onTap(i),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppRadius.pill),
             child: SizedBox(
               width: 86,
               child: Column(
@@ -265,24 +266,27 @@ class _ReviewStepper extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: i <= current ? primary : const Color(0xFF9E9E9E),
+                        color: i <= current ? primary : AppColors.textMuted,
                       ),
                     ),
                     child: Icon(
                       _steps[i].$1,
                       size: 20,
                       color: i <= current
-                          ? const Color(0xFF454545)
-                          : const Color(0xFF9E9E9E),
+                          ? AppColors.textBody
+                          : AppColors.textMuted,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text('${i + 1}', style: GoogleFonts.manrope(fontSize: 14)),
+                  Text(
+                    '${i + 1}',
+                    style: GoogleFonts.manrope(fontSize: AppTextSize.body),
+                  ),
                   Text(
                     _steps[i].$2,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.manrope(
-                      fontSize: 12,
+                      fontSize: AppTextSize.caption,
                       fontWeight: i == current
                           ? FontWeight.w800
                           : FontWeight.w400,
@@ -309,8 +313,8 @@ class _OutlinedCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFF9E9E9E)),
-        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.textMuted),
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: child,
     );
@@ -351,7 +355,7 @@ class _DataCard extends StatelessWidget {
           Text(
             'Dados da organização',
             style: GoogleFonts.manrope(
-              fontSize: 16,
+              fontSize: AppTextSize.title,
               fontWeight: FontWeight.w800,
               letterSpacing: 0,
             ),
@@ -359,61 +363,18 @@ class _DataCard extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             'Confira as informações cadastradas pela ONG.',
-            style: GoogleFonts.manrope(fontSize: 13, letterSpacing: 0),
+            style: GoogleFonts.manrope(
+              fontSize: AppTextSize.small,
+              letterSpacing: 0,
+            ),
           ),
           const SizedBox(height: 14),
-          for (var i = 0; i < fields.length; i += 2) ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: _Field(fields[i].$1, fields[i].$2)),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: i + 1 < fields.length
-                      ? _Field(fields[i + 1].$1, fields[i + 1].$2)
-                      : const SizedBox.shrink(),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-          ],
+          OrganizationFieldGrid(fields: fields),
+          const SizedBox(height: 12),
           const SizedBox(height: 4),
           AppPrimaryButton(label: 'Continuar', onPressed: onContinue),
         ],
       ),
-    );
-  }
-}
-
-class _Field extends StatelessWidget {
-  const _Field(this.label, this.value);
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.manrope(
-            color: AppColors.textMuted,
-            fontSize: 13,
-            letterSpacing: 0,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          value.isEmpty ? '—' : value,
-          style: GoogleFonts.manrope(
-            color: const Color(0xFF454545),
-            fontSize: 13,
-            letterSpacing: 0,
-          ),
-        ),
-      ],
     );
   }
 }
@@ -439,14 +400,14 @@ class _Documents extends StatelessWidget {
         Text(
           'Documentos enviados',
           style: GoogleFonts.manrope(
-            fontSize: 18,
+            fontSize: AppTextSize.heading,
             fontWeight: FontWeight.w800,
             letterSpacing: 0,
           ),
         ),
         const SizedBox(height: 12),
         for (final type in OrganizationDocumentType.values) ...[
-          _DocumentTile(
+          OrganizationDocumentTile(
             organizationId: organization.id,
             type: type,
             document: organization.documentOf(type),
@@ -456,104 +417,6 @@ class _Documents extends StatelessWidget {
         const SizedBox(height: 4),
         AppPrimaryButton(label: 'Concluir', onPressed: onContinue),
       ],
-    );
-  }
-}
-
-class _DocumentTile extends StatelessWidget {
-  const _DocumentTile({
-    required this.organizationId,
-    required this.type,
-    required this.document,
-  });
-
-  final int organizationId;
-  final OrganizationDocumentType type;
-  final OrganizationDocument? document;
-
-  @override
-  Widget build(BuildContext context) {
-    final document = this.document;
-    final sentAt = document?.sentAt;
-
-    return Material(
-      color: const Color(0xFFFAFAFA),
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        onTap: document == null
-            ? null
-            : () => Modular.to.pushNamed(
-                AppRoutes.documentViewer,
-                arguments: DocumentViewerArgs(
-                  organizationId: organizationId,
-                  document: document,
-                ),
-              ),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8E8E8),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.description_outlined,
-                  color: Color(0xFF454545),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      type.label,
-                      style: GoogleFonts.manrope(
-                        color: const Color(0xFF454545),
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      document == null
-                          ? 'Não enviado'
-                          : sentAt == null
-                          ? 'Enviado'
-                          : 'Enviado em ${DateInputFormatter.display(sentAt)}',
-                      style: GoogleFonts.manrope(
-                        color: document == null
-                            ? AppColors.danger
-                            : AppColors.textMuted,
-                        fontSize: 13,
-                        letterSpacing: 0,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF9E9E9E)),
-                ),
-                child: const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFF9E9E9E),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
@@ -574,11 +437,14 @@ class _DecisionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final titleStyle = GoogleFonts.manrope(
-      fontSize: 18,
+      fontSize: AppTextSize.heading,
       fontWeight: FontWeight.w800,
       letterSpacing: 0,
     );
-    final bodyStyle = GoogleFonts.manrope(fontSize: 14, letterSpacing: 0);
+    final bodyStyle = GoogleFonts.manrope(
+      fontSize: AppTextSize.body,
+      letterSpacing: 0,
+    );
     final reviewedAt = organization.reviewedAt;
 
     final Widget content = switch (organization.status) {
@@ -596,26 +462,15 @@ class _DecisionCard extends StatelessWidget {
             style: bodyStyle,
           ),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: AppOutlinedButton(
-                  key: const Key('ong_reject_button'),
-                  label: 'Reprovar',
-                  color: AppColors.danger,
-                  onPressed: isSubmitting ? null : onReject,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppPrimaryButton(
-                  key: const Key('ong_approve_button'),
-                  label: 'Aprovar',
-                  isLoading: isSubmitting,
-                  onPressed: onApprove,
-                ),
-              ),
-            ],
+          AppBottomActions(
+            secondaryKey: const Key('ong_reject_button'),
+            secondaryLabel: 'Reprovar',
+            secondaryColor: AppColors.danger,
+            onSecondary: isSubmitting ? null : onReject,
+            primaryKey: const Key('ong_approve_button'),
+            primaryLabel: 'Aprovar',
+            isLoading: isSubmitting,
+            onPrimary: onApprove,
           ),
         ],
       ),

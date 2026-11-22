@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/widgets/app_async_list.dart';
+import '../../../../core/widgets/app_badge.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_item_actions_menu.dart';
+import '../../../../core/widgets/app_list_card.dart';
 import '../../../../core/widgets/app_main_navigation.dart';
 import '../../../../core/widgets/app_section_title.dart';
 import '../../../../core/widgets/auth_app_bar.dart';
@@ -152,51 +153,25 @@ class _PersonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
+    return AppListCard(
+      title: person.fullName,
+      body: Align(
+        alignment: Alignment.centerLeft,
+        child: AppBadge(
+          label: person.statusLabel,
+          dot: true,
+          tone: switch (person.careStatus) {
+            'IN_CARE' => AppTone.brand,
+            'FINISHED' => AppTone.success,
+            _ => AppTone.neutral,
+          },
+        ),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  person.fullName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.manrope(
-                    color: const Color(0xFF232323),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  person.statusLabel,
-                  style: GoogleFonts.manrope(
-                    color: Theme.of(context).colorScheme.primary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          AppItemActionsMenu(
-            tooltip: 'Opções do cadastro',
-            isBusy: isDeleting,
-            onEdit: onEdit,
-            onDelete: onDelete,
-          ),
-        ],
+      trailing: AppItemActionsMenu(
+        itemLabel: 'cadastro',
+        isBusy: isDeleting,
+        onEdit: onEdit,
+        onDelete: onDelete,
       ),
     );
   }

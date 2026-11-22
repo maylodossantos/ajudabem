@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/constants/brazilian_states.dart';
 import '../../../../core/formatters/phone_input_formatter.dart';
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_cep_field.dart';
 import '../../../../core/widgets/app_choice_chip.dart';
@@ -88,7 +89,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                         : 'Novo ponto de ajuda',
                     style: GoogleFonts.manrope(
                       color: Theme.of(context).colorScheme.primary,
-                      fontSize: 18,
+                      fontSize: AppTextSize.heading,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0,
                     ),
@@ -98,14 +99,14 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                   const SizedBox(height: 16),
                   AppLabeledField(
                     key: const Key('help_point_form_name'),
-                    label: 'Nome:',
+                    label: 'Nome',
                     required: true,
                     initialValue: _store.name,
                     onChanged: _store.setName,
                   ),
                   _gap,
                   AppLabeledDropdown<HelpPointOrganizationType>(
-                    label: 'Tipo de organização:',
+                    label: 'Tipo de organização',
                     required: true,
                     hintText: 'Selecione',
                     value: _store.organizationType,
@@ -124,7 +125,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                   ),
                   _gap,
                   AppLabeledField(
-                    label: 'Descrição:',
+                    label: 'Descrição',
                     initialValue: _store.description,
                     maxLines: 4,
                     onChanged: _store.setDescription,
@@ -143,7 +144,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                   ),
                   _gap,
                   AppLabeledField(
-                    label: 'Rua:',
+                    label: 'Rua',
                     required: true,
                     initialValue: _store.street,
                     onChanged: _store.setStreet,
@@ -154,7 +155,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                     children: [
                       Expanded(
                         child: AppLabeledField(
-                          label: 'Número:',
+                          label: 'Número',
                           initialValue: _store.number,
                           onChanged: _store.setNumber,
                         ),
@@ -163,7 +164,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                       Expanded(
                         flex: 2,
                         child: AppLabeledField(
-                          label: 'Bairro:',
+                          label: 'Bairro',
                           initialValue: _store.neighborhood,
                           onChanged: _store.setNeighborhood,
                         ),
@@ -176,7 +177,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                     children: [
                       Expanded(
                         child: AppLabeledField(
-                          label: 'Cidade:',
+                          label: 'Cidade',
                           required: true,
                           initialValue: _store.city,
                           onChanged: _store.setCity,
@@ -185,7 +186,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: AppLabeledDropdown<String>(
-                          label: 'Estado:',
+                          label: 'Estado',
                           required: true,
                           hintText: 'Selecione',
                           value: _store.state,
@@ -204,7 +205,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                     children: [
                       Expanded(
                         child: AppLabeledField(
-                          label: 'Telefone:',
+                          label: 'Telefone',
                           initialValue: _store.phone,
                           keyboardType: TextInputType.phone,
                           inputFormatters: [PhoneInputFormatter()],
@@ -214,7 +215,7 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: AppLabeledField(
-                          label: 'WhatsApp:',
+                          label: 'WhatsApp',
                           initialValue: _store.whatsapp,
                           keyboardType: TextInputType.phone,
                           inputFormatters: [PhoneInputFormatter()],
@@ -225,32 +226,32 @@ class _HelpPointFormPageState extends State<HelpPointFormPage> {
                   ),
                   _gap,
                   AppLabeledField(
-                    label: 'E-mail:',
+                    label: 'E-mail',
                     initialValue: _store.email,
                     keyboardType: TextInputType.emailAddress,
                     onChanged: _store.setEmail,
                   ),
                   _gap,
                   AppLabeledField(
-                    label: 'Responsável:',
+                    label: 'Responsável',
                     initialValue: _store.responsible,
                     onChanged: _store.setResponsible,
                   ),
                   const SizedBox(height: 20),
-                  const AppSectionTitle('Horário de Funcionamento'),
+                  const AppSectionTitle('Horário de funcionamento'),
                   const SizedBox(height: 4),
                   for (var day = DateTime.monday; day <= DateTime.sunday; day++)
                     _DayHoursRow(store: _store, weekday: day),
                   _gap,
                   AppLabeledField(
-                    label: 'Observação do horário:',
-                    hintText: 'Ex.: Feriados: 18h00 às 08h00',
+                    label: 'Observação do horário',
+                    hintText: 'Feriados: 18h00 às 08h00',
                     initialValue: _store.scheduleNote,
                     onChanged: _store.setScheduleNote,
                   ),
                   _gap,
                   AppLabeledField(
-                    label: 'Observações (uma por linha):',
+                    label: 'Observações (uma por linha)',
                     initialValue: _store.notes,
                     maxLines: 4,
                     onChanged: _store.setNotes,
@@ -300,7 +301,10 @@ class _DayHoursRow extends StatelessWidget {
     return Observer(
       builder: (_) {
         final hours = store.hours[weekday];
-        final style = GoogleFonts.manrope(fontSize: 14, letterSpacing: 0);
+        final style = GoogleFonts.manrope(
+          fontSize: AppTextSize.body,
+          letterSpacing: 0,
+        );
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 2),

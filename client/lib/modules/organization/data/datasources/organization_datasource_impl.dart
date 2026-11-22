@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import '../../../../core/network/api_requester.dart';
 import '../../../../core/network/server_messages.dart';
 import '../../domain/entities/organization.dart';
+import '../../domain/entities/organization_contact_params.dart';
 import '../../domain/entities/organization_form_params.dart';
 import '../models/organization_model.dart';
 import 'organization_datasource.dart';
@@ -69,6 +70,32 @@ class OrganizationDatasourceImpl implements OrganizationDatasource {
       statusMessages: const {
         413: 'Os documentos precisam ter no máximo 10 MB cada.',
       },
+      serverMessages: ServerMessages.organization,
+      sessionExpiredStatuses: _sessionExpiredStatuses,
+      onSuccess: _decode,
+    );
+  }
+
+  @override
+  Future<Organization> updateContact(
+    OrganizationContactParams params,
+    String token,
+  ) {
+    return _api.request(
+      HttpMethod.put,
+      '/organization/me/contact',
+      token: token,
+      body: {
+        'street': params.street,
+        'number': params.number,
+        'neighborhood': params.neighborhood,
+        'city': params.city,
+        'state': params.state,
+        'zipCode': params.zipCode,
+        'website': params.website,
+        'instagram': params.instagram,
+      },
+      errorMessage: 'Não foi possível salvar os dados da ONG.',
       serverMessages: ServerMessages.organization,
       sessionExpiredStatuses: _sessionExpiredStatuses,
       onSuccess: _decode,

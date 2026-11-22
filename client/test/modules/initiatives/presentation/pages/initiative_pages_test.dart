@@ -9,6 +9,7 @@ import 'package:ajuda_bem/modules/initiatives/presentation/pages/volunteer_actio
 import 'package:ajuda_bem/modules/initiatives/presentation/stores/action_stores.dart';
 import 'package:ajuda_bem/modules/initiatives/presentation/stores/campaign_stores.dart';
 import 'package:ajuda_bem/modules/initiatives/presentation/stores/initiatives_store.dart';
+import 'package:ajuda_bem/modules/initiatives/presentation/widgets/initiative_cards.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,14 +65,16 @@ void main() {
 
     expect(find.text('Cestas Básicas'), findsOneWidget);
     expect(find.text('Sem prazo definido.'), findsOneWidget);
-    expect(find.text('Criar campanha'), findsOneWidget);
+    expect(find.byKey(const Key('initiatives_create_fab')), findsOneWidget);
+    expect(find.text('Criar campanha'), findsNothing);
 
     await tester.tap(find.byKey(const Key('tab_Ações')));
     await tester.pumpAndSettle();
 
     expect(find.text('Distribuição de alimentos'), findsOneWidget);
-    expect(find.text('Data: Sábado, 21 de março.'), findsOneWidget);
-    expect(find.text('Criar Ação'), findsOneWidget);
+    expect(find.textContaining('Sábado, 21 de março.'), findsOneWidget);
+    expect(find.byKey(const Key('initiatives_create_fab')), findsOneWidget);
+    expect(find.text('Criar Ação'), findsNothing);
   });
 
   testWidgets('a volunteer applies and can cancel before being accepted', (
@@ -193,6 +196,48 @@ void main() {
     expect(button(tester, 'accept_volunteer_2').onPressed, isNull);
   });
 
+  testWidgets('the NGO list flags open actions whose date has passed', (
+    tester,
+  ) async {
+    final now = DateTime.now();
+    await pump(
+      tester,
+      Scaffold(
+        body: ListView(
+          children: [
+            ManagedActionCard(
+              action: actionWith(
+                id: 1,
+                date: now.subtract(const Duration(days: 2)),
+              ),
+              onOpen: () {},
+              onVolunteers: () {},
+            ),
+            ManagedActionCard(
+              action: actionWith(id: 2, date: now),
+              onOpen: () {},
+              onVolunteers: () {},
+            ),
+            ManagedActionCard(
+              action: actionWith(
+                id: 3,
+                date: now.subtract(const Duration(days: 2)),
+                status: InitiativeStatus.finished,
+              ),
+              onOpen: () {},
+              onVolunteers: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('action_overdue_1')), findsOneWidget);
+    expect(find.byKey(const Key('action_overdue_2')), findsNothing);
+    expect(find.byKey(const Key('action_overdue_3')), findsNothing);
+    expect(find.text('Data vencida'), findsOneWidget);
+  });
+
   testWidgets('the volunteer list shows what the user already joined', (
     tester,
   ) async {
@@ -214,7 +259,7 @@ void main() {
 
     expect(find.text('Participando'), findsOneWidget);
     expect(find.text('Vagas esgotadas'), findsOneWidget);
-    expect(find.text('Responsável: Projeto Mãos que Ajudam'), findsNWidgets(3));
+    expect(find.text('Projeto Mãos que Ajudam'), findsNWidgets(3));
 
     await tester.ensureVisible(find.byKey(const Key('action_apply_3')));
     await tester.pumpAndSettle();
@@ -222,6 +267,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Aguardando'), findsOneWidget);
   });
+
+  testWidgets(
+    'the volunteer list has no search and an illustrated empty state',
+    (tester) async {
+      await pump(
+        tester,
+        VolunteerActionsPage(
+          store: OpenActionsStore(FakeActionRepository(actions: [])),
+          token: 'jwt',
+        ),
+      );
+
+      expect(find.text('Ações voluntárias'), findsOneWidget);
+      expect(find.byType(TextField), findsNothing);
+      expect(
+        find.text('Nenhuma ação voluntária aberta no momento.'),
+        findsOneWidget,
+      );
+      expect(
+        find.textContaining('novas oportunidades para ajudar'),
+        findsOneWidget,
+      );
+    },
+  );
 
   testWidgets('a campaign shows how to help, and its ONG can finish it', (
     tester,

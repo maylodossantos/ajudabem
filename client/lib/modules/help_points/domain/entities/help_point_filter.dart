@@ -56,6 +56,14 @@ class HelpPointFilter {
       availability.isEmpty &&
       organizationTypes.isEmpty;
 
+  List<String> get activeLabels => [
+    for (final type in types) type.label,
+    if (maxDistanceKm case final km?) 'Até ${km.round()} km',
+    if (sort != HelpPointSort.recent) sort.label,
+    for (final option in availability) option.label,
+    for (final type in organizationTypes) type.label,
+  ];
+
   HelpPointFilter copyWith({
     Set<AssistanceType>? types,
     HelpPointSort? sort,

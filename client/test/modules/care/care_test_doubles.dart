@@ -38,7 +38,7 @@ CareCase careCase({
 
 CareRecord careRecord({
   int number = 1,
-  CareRecordStatus status = CareRecordStatus.started,
+  CareRecordStatus status = CareRecordStatus.inCare,
   String? referral,
 }) => CareRecord(
   id: number,

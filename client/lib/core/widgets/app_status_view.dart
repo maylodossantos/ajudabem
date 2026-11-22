@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../theme/app_colors.dart';
 import 'app_button.dart';
 
 class AppStatusView extends StatelessWidget {
@@ -39,7 +40,7 @@ class AppStatusView extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
                   color: Theme.of(context).colorScheme.primary,
-                  fontSize: 18,
+                  fontSize: AppTextSize.heading,
                   fontWeight: FontWeight.w800,
                   letterSpacing: 0,
                 ),
@@ -49,8 +50,8 @@ class AppStatusView extends StatelessWidget {
                 message,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.manrope(
-                  color: const Color(0xFF232323),
-                  fontSize: 15,
+                  color: AppColors.textStrong,
+                  fontSize: AppTextSize.body,
                   height: 1.35,
                   letterSpacing: 0,
                 ),

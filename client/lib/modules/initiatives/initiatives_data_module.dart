@@ -3,6 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../core/core_module.dart';
 import 'data/api_initiative_repositories.dart';
 import 'domain/repositories/initiative_repositories.dart';
+import 'presentation/stores/action_stores.dart';
 import 'presentation/stores/campaign_stores.dart';
 
 class InitiativesDataModule extends Module {
@@ -14,5 +15,6 @@ class InitiativesDataModule extends Module {
     i.addSingleton<CampaignRepository>(ApiCampaignRepository.new);
     i.addSingleton<VolunteerActionRepository>(ApiVolunteerActionRepository.new);
     i.add(CampaignsFeedStore.new);
+    i.add(OpenActionsStore.new);
   }
 }

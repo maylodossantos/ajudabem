@@ -117,19 +117,22 @@ Started ApiApplication
 
 A raiz `/` não é uma tela do sistema e sua resposta não confirma, por si só, um problema de inicialização. Use o Swagger para consultar os endpoints. Para rotas autenticadas, faça login e informe o JWT no botão **Authorize** do Swagger.
 
-### Administrador local
+### Contas locais de teste
 
-Ao iniciar no perfil `dev`, a API cria esta conta automaticamente, caso ainda não exista:
+Ao iniciar no perfil `dev`, a API cria uma conta por papel, caso ainda não exista (`DevelopmentUsersInitializer`):
 
-| Campo | Valor |
-| --- | --- |
-| E-mail | `admin@ajudabem.local` |
-| Senha inicial | `Admin@123456` |
-| Permissão | `ADMIN` |
+| Papel | E-mail | Senha inicial |
+| --- | --- | --- |
+| `ADMIN` | `admin@ajudabem.local` | `Admin@123456` |
+| `USER_ONG` | `ong@ajudabem.local` | `Ong@123456` |
+| `USER_ONG` (ONG 2) | `ong2@ajudabem.local` | `Ong2@123456` |
+| `USER` | `usuario@ajudabem.local` | `Usuario@123456` |
 
-Entre pelo login normal do app. No **Perfil**, acesse a análise das ONGs para aprovar ou rejeitar solicitações.
+A conta `USER_ONG` já vem com a ONG "ONG Dev" aprovada pelo admin (CNPJ `99887766000105`, na Rua Paraná, em Cascavel), pronta para assumir casos e criar campanhas e ações. A conta `ong2@` vem com a "ONG Dev 2" (CNPJ `11222333000181`, na Avenida Brasil, em Cascavel), para testar que uma ONG não enxerga os casos assumidos por outra.
 
-A senha é armazenada criptografada. Reiniciar a API não duplica a conta nem redefine a senha. Uma conta existente com o mesmo e-mail é preservada, inclusive suas permissões. Em uma máquina nova com banco novo, iniciar a API cria o administrador novamente; os demais dados da máquina antiga não são transferidos automaticamente.
+No app rodando em **debug**, a tela de login mostra os botões **Admin**, **ONG** e **Usuário**, que entram direto com essas contas. Em build release ou profile os botões não aparecem.
+
+As senhas são armazenadas criptografadas. Reiniciar a API não duplica as contas nem redefine senhas. Uma conta existente com o mesmo e-mail é preservada, inclusive suas permissões. Em uma máquina nova com banco novo, iniciar a API cria as contas novamente; os demais dados da máquina antiga não são transferidos automaticamente.
 
 ## 6. Configuração por variáveis de ambiente
 
@@ -174,7 +177,7 @@ Para usar Flutter web em outra origem, adicione-a em `CORS_ALLOWED_ORIGINS`. Em 
 
 Em produção, defina `SPRING_PROFILES_ACTIVE=prod`, um `JWT_SECRET` próprio e as credenciais/endpoints dos serviços desse ambiente. O perfil não fornece esses valores automaticamente.
 
-O administrador de teste não é criado fora de `dev`, nem quando `prod` ou `production` estão ativos junto dele. Trocar o perfil não remove uma conta já criada: use bancos separados para desenvolvimento e produção.
+As contas de teste não são criadas fora de `dev`, nem quando `prod` ou `production` estão ativos junto dele. Trocar o perfil não remove uma conta já criada: use bancos separados para desenvolvimento e produção.
 
 ## 7. Testes e build
 
@@ -233,7 +236,7 @@ O banco e o modelo ficam em volumes Docker e são reutilizados nos próximos in�
 | Falha em `http://localhost:11434/api/chat` | Inicie `ollama` e `ollama-pull`, aguarde o modelo e confira `docker compose exec ollama ollama list`. A API pode continuar rodando enquanto a triagem aguarda. |
 | Porta 8080 ocupada | Pare a outra execução da API ou defina `SERVER_PORT` com uma porta livre. |
 | `JAVA_HOME` inválido ou erro de compilação por versão Java | Configure JDK 17 no terminal e no IntelliJ; confira `java -version`, `javac -version` e `.\mvnw.cmd -version`. |
-| Admin local não disponível | Confirme o perfil `dev`, reinicie a API e verifique se já existe uma conta com o mesmo e-mail e outra senha ou permissão. |
+| Conta local de teste não disponível | Confirme o perfil `dev`, reinicie a API e verifique se já existe uma conta com o mesmo e-mail e outra senha ou permissão. |
 | Aviso `spring.jpa.open-in-view` | Esse aviso não impede a inicialização da API. |
 
 Para consultar os logs dos serviços:

@@ -7,9 +7,12 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../modules/auth/presentation/stores/login_store.dart';
 import '../notifications/notifications_store.dart';
 import '../routes/app_routes.dart';
+import '../theme/app_colors.dart';
 
 class AppNotificationBell extends StatefulWidget {
-  const AppNotificationBell({super.key});
+  const AppNotificationBell({super.key, this.size = 32});
+
+  final double size;
 
   @override
   State<AppNotificationBell> createState() => _AppNotificationBellState();
@@ -41,8 +44,8 @@ class _AppNotificationBellState extends State<AppNotificationBell> {
   Widget build(BuildContext context) {
     final icon = SvgPicture.asset(
       'assets/icons/notify_icon.svg',
-      width: 32,
-      height: 32,
+      width: widget.size,
+      height: widget.size,
     );
     final store = _store;
     if (store == null || _token == null) return icon;
@@ -59,11 +62,11 @@ class _AppNotificationBellState extends State<AppNotificationBell> {
             label: Text(
               unread > 9 ? '9+' : '$unread',
               style: GoogleFonts.manrope(
-                fontSize: 10,
+                fontSize: AppTextSize.caption,
                 fontWeight: FontWeight.w800,
               ),
             ),
-            backgroundColor: const Color(0xFFE5484D),
+            backgroundColor: AppColors.urgencyHigh,
             child: icon,
           );
         },

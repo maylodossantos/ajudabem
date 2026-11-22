@@ -5,6 +5,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_button.dart';
 import '../../../../core/widgets/app_feedback.dart';
 import '../../../../core/widgets/app_icon_badge.dart';
@@ -81,7 +82,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                         textAlign: TextAlign.center,
                         style: GoogleFonts.manrope(
                           color: Theme.of(context).colorScheme.primary,
-                          fontSize: 16,
+                          fontSize: AppTextSize.title,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0,
                         ),
@@ -93,7 +94,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.manrope(
                             color: Theme.of(context).colorScheme.primary,
-                            fontSize: 14,
+                            fontSize: AppTextSize.body,
                             fontWeight: FontWeight.w400,
                             letterSpacing: 0,
                           ),
@@ -136,7 +137,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                                     color: Theme.of(
                                       context,
                                     ).colorScheme.primary,
-                                    fontSize: 14,
+                                    fontSize: AppTextSize.body,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0,
                                   ),
@@ -146,7 +147,7 @@ class _VerifyCodePageState extends State<VerifyCodePage> {
                                 TextSpan(
                                   style: GoogleFonts.manrope(
                                     color: Colors.black,
-                                    fontSize: 14,
+                                    fontSize: AppTextSize.body,
                                     fontWeight: FontWeight.w700,
                                     letterSpacing: 0,
                                   ),
@@ -274,7 +275,7 @@ class _CodeDigitField extends StatelessWidget {
             counterText: '',
             hintText: '_',
             hintStyle: GoogleFonts.manrope(
-              color: const Color(0xFFBDBDBD),
+              color: AppColors.textMuted,
               fontSize: 28,
               fontWeight: FontWeight.w400,
               height: 1,

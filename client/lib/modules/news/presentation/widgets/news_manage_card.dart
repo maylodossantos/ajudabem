@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_cover_image.dart';
 import '../../../initiatives/presentation/widgets/initiative_cards.dart';
 import '../../domain/entities/news_article.dart';
@@ -31,9 +32,9 @@ class NewsManageCard extends StatelessWidget {
                 child: AppCoverImage(
                   imageUrl: article.coverImage,
                   aspectRatio: 1,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   placeholder: const ColoredBox(
-                    color: Color(0xFFD9D9D9),
+                    color: AppColors.border,
                     child: Icon(Icons.newspaper, color: Colors.white),
                   ),
                 ),
@@ -48,8 +49,8 @@ class NewsManageCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.manrope(
-                        color: const Color(0xFF1B1B1B),
-                        fontSize: 15,
+                        color: AppColors.textStrong,
+                        fontSize: AppTextSize.title,
                         fontWeight: FontWeight.w600,
                         height: 1.3,
                         letterSpacing: 0,
@@ -62,8 +63,8 @@ class NewsManageCard extends StatelessWidget {
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF454545),
-                          fontSize: 12,
+                          color: AppColors.textBody,
+                          fontSize: AppTextSize.caption,
                           height: 1.35,
                           letterSpacing: 0,
                         ),
@@ -74,8 +75,8 @@ class NewsManageCard extends StatelessWidget {
                       Text(
                         article.locationLabel,
                         style: GoogleFonts.manrope(
-                          color: const Color(0xFF454545),
-                          fontSize: 12,
+                          color: AppColors.textBody,
+                          fontSize: AppTextSize.caption,
                           letterSpacing: 0,
                         ),
                       ),
@@ -92,16 +93,16 @@ class NewsManageCard extends StatelessWidget {
               key: Key('news_manage_open_${article.id}'),
               onPressed: onOpen,
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFEBEBEB),
+                backgroundColor: AppColors.surfaceMuted,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
               ),
               child: Text(
                 'Ver detalhes',
                 style: GoogleFonts.manrope(
                   color: primary,
-                  fontSize: 13,
+                  fontSize: AppTextSize.small,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0,
                 ),

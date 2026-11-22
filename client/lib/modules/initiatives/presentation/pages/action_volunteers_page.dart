@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_routes.dart';
 import '../../../../core/services/external_link_service.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_async_list.dart';
 import '../../../../core/widgets/app_avatar.dart';
 import '../../../../core/widgets/app_bottom_navigation.dart';
@@ -91,8 +92,9 @@ class _ActionVolunteersPageState extends State<ActionVolunteersPage> {
           bottomBar: AppBottomActions(
             secondaryLabel: 'Voltar',
             onSecondary: () => Navigator.of(context).maybePop(),
-            primaryLabel: 'Visualizar',
-            onPrimary: () => Modular.to.pushNamed(
+            primaryLabel: 'Ver ação',
+            primaryKey: const Key('action_volunteers_open_action'),
+            onPrimary: () => Modular.to.pushReplacementNamed(
               AppRoutes.actionDetail,
               arguments: InitiativeArgs(widget.actionId, manage: true),
             ),
@@ -152,7 +154,7 @@ class _Header extends StatelessWidget {
           Text(
             action.title,
             style: GoogleFonts.manrope(
-              fontSize: 18,
+              fontSize: AppTextSize.heading,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -161,15 +163,15 @@ class _Header extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '$accepted de $needed voluntários',
-            style: GoogleFonts.manrope(fontSize: 13.5),
+            style: GoogleFonts.manrope(fontSize: AppTextSize.small),
           ),
           const SizedBox(height: 12),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppRadius.md),
             child: LinearProgressIndicator(
               value: needed == 0 ? 0 : (accepted / needed).clamp(0, 1),
               minHeight: 8,
-              backgroundColor: const Color(0xFFEBEBEB),
+              backgroundColor: AppColors.surfaceMuted,
             ),
           ),
         ],
@@ -206,7 +208,7 @@ class _VolunteerCard extends StatelessWidget {
                 child: Text(
                   application.name,
                   style: GoogleFonts.manrope(
-                    fontSize: 16,
+                    fontSize: AppTextSize.title,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
